@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -18,36 +18,18 @@ const CheckoutForm = ({ planId, planDetails }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
+    if (!stripe || !elements) return;
     setLoading(true);
-
     try {
       const response = await fetch("/api/payment/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId,
-          billingCycle: "monthly",
-        }),
+        body: JSON.stringify({ planId, billingCycle: "monthly" }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create checkout session");
-      }
-
+      if (!response.ok) throw new Error("Failed to create checkout session");
       const { sessionId } = await response.json();
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId,
-      });
-
-      if (error) {
-        toast.error(error.message);
-      }
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) toast.error(error.message);
     } catch (error) {
       console.error(error);
       toast.error(error.message || "Payment failed");
@@ -64,7 +46,6 @@ const CheckoutForm = ({ planId, planDetails }) => {
           £{planDetails?.price?.toFixed(2)}
         </p>
       </div>
-
       <div className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
         <CardElement
           options={{
@@ -72,18 +53,13 @@ const CheckoutForm = ({ planId, planDetails }) => {
               base: {
                 fontSize: "16px",
                 color: "#424770",
-                "::placeholder": {
-                  color: "#aab7c4",
-                },
+                "::placeholder": { color: "#aab7c4" },
               },
-              invalid: {
-                color: "#9e2146",
-              },
+              invalid: { color: "#9e2146" },
             },
           }}
         />
       </div>
-
       <button
         type="submit"
         disabled={!stripe || loading}
@@ -96,17 +72,16 @@ const CheckoutForm = ({ planId, planDetails }) => {
   );
 };
 
-const CheckoutPage = () => {
+// ── Inner component that uses useSearchParams ──
+const CheckoutContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams.get("planId");
   const [planDetails, setPlanDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const checkAuthAndPlan = async () => {
-      // Check authentication first
       try {
         const authResponse = await fetch("/api/parent/profile");
         if (!authResponse.ok) {
@@ -120,16 +95,12 @@ const CheckoutPage = () => {
         return;
       }
 
-      setIsAuthenticated(true);
-
-      // Check planId
       if (!planId) {
         toast.error("No plan selected");
         router.push("/pricing");
         return;
       }
 
-      // Fetch plan details
       try {
         const response = await fetch("/api/parent/subscription");
         const { plans } = await response.json();
@@ -166,11 +137,9 @@ const CheckoutPage = () => {
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
           Checkout
         </h1>
-
         <Elements stripe={stripePromise}>
           <CheckoutForm planId={planId} planDetails={planDetails} />
         </Elements>
-
         <button
           onClick={() => router.push("/pricing")}
           className="w-full mt-4 text-center text-brandColor hover:underline py-2"
@@ -179,6 +148,19 @@ const CheckoutPage = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+// ── Main export wrapped in Suspense ──
+const CheckoutPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader size={40} className="animate-spin text-brandColor" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 };
 
