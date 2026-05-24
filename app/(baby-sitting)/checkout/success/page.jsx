@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Loader } from "lucide-react";
 import { toast } from "sonner";
 
-const CheckoutSuccessPage = () => {
+const CheckoutSuccessContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId");
@@ -65,15 +65,12 @@ const CheckoutSuccessPage = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check size={32} className="text-green-600" />
           </div>
-
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Payment Successful!
           </h1>
-
           <p className="text-gray-600 mb-4">
             Your subscription has been activated. You'll be redirected to your dashboard in a few seconds.
           </p>
-
           {subscription && (
             <div className="bg-gray-100 rounded-lg p-4 mb-6 text-left">
               <p className="text-sm text-gray-600">Plan</p>
@@ -84,7 +81,6 @@ const CheckoutSuccessPage = () => {
               </p>
             </div>
           )}
-
           <button
             onClick={() => router.push("/dashboard/parent")}
             className="w-full bg-brandColor text-white py-3 rounded-lg font-semibold hover:bg-[#558b2f]"
@@ -108,6 +104,19 @@ const CheckoutSuccessPage = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+// ── Wrapped in Suspense to fix build error ──
+const CheckoutSuccessPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader size={50} className="animate-spin text-brandColor" />
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 };
 
