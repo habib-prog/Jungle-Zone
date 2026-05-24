@@ -1,0 +1,809 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import {
+  FiShare2,
+  FiHeart,
+  FiMapPin,
+  FiBriefcase,
+  FiCalendar,
+  FiCheckCircle,
+  FiAward,
+  FiBookOpen,
+  FiGlobe,
+  FiTruck,
+  FiSmile,
+  FiHome,
+  FiUser,
+  FiClock,
+} from "react-icons/fi";
+import gsap from "gsap";
+import { useParams } from "next/navigation";
+
+const Page = () => {
+  const [open, setOpen] = useState(false);
+  const sectionRef = useRef(null);
+  const params = useParams();
+  const id = params?.id;
+
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [availability, setAvailability] = useState([]);
+
+  const moreBabysitters = [];
+
+  const formatDate = (date) => {
+    if (!date) return "Unmentioned";
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+  };
+
+  const formatUpdatedDate = (date) => {
+    if (!date) return "Unmentioned";
+    return `Updated: ${new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })}`;
+  };
+
+  const buildAvailability = (dbAvailability = []) => {
+    if (!dbAvailability.length) return [];
+
+    const orderedDays = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+
+    const getDayData = (dayName) =>
+      dbAvailability.find((item) => item.day === dayName) || {};
+
+    return [
+      {
+        label: "Morning",
+        values: orderedDays.map((day) => !!getDayData(day)?.timeSlots?.morning),
+      },
+      {
+        label: "Afternoon",
+        values: orderedDays.map(
+          (day) => !!getDayData(day)?.timeSlots?.afternoon,
+        ),
+      },
+      {
+        label: "Evening",
+        values: orderedDays.map((day) => !!getDayData(day)?.timeSlots?.evening),
+      },
+      {
+        label: "Night",
+        values: orderedDays.map((day) => !!getDayData(day)?.timeSlots?.night),
+      },
+    ];
+  };
+
+  const textOrUnmentioned = (value) => {
+    if (value === null || value === undefined || value === "")
+      return "Unmentioned";
+    return value;
+  };
+
+  const arrayOrUnmentioned = (value) => {
+    if (!Array.isArray(value) || value.length === 0) return ["Unmentioned"];
+    return value;
+  };
+
+  useEffect(() => {
+    const fetchSitter = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch(`/api/babysitters/baby_sitter_info/${id}`);
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.error || "Failed to fetch babysitter");
+        }
+
+        const db = result.data;
+
+
+        // Show all available fields
+        const mergedProfile = {
+          name: textOrUnmentioned(db.fullName),
+          email: textOrUnmentioned(db.email),
+          phone: textOrUnmentioned(db.phoneNumber),
+          gender: textOrUnmentioned(db.gender),
+          role: db.location ? `Babysitter in ${db.location}` : "Unmentioned",
+          age: db.age ?? "Unmentioned",
+          zipCode: db.zipCode ?? "Unmentioned",
+          rate: db.hourlyRate ? `£ ${db.hourlyRate}/hr` : "Unmentioned",
+          image: textOrUnmentioned(db.profilePhoto),
+          activity: db.lastActivity
+            ? `Last activity: ${new Date(db.lastActivity).toLocaleDateString()}`
+            : "Recently active",
+          intro: textOrUnmentioned(db.description),
+          certifications: arrayOrUnmentioned(db.certifications),
+          characteristics: arrayOrUnmentioned(db.characteristics),
+          experience: db.yearsOfExperience
+            ? `${db.yearsOfExperience} years`
+            : "Unmentioned",
+          ages: arrayOrUnmentioned(db.comfortableWithAgeGroup),
+          educationLevel: textOrUnmentioned(db.educationLevel),
+          educationDetails: textOrUnmentioned(db.educationDetails),
+          superpowers: arrayOrUnmentioned(db.skills),
+          comfortableWith: arrayOrUnmentioned(db.comfortableWith),
+          location: textOrUnmentioned(db.location),
+          updated: formatUpdatedDate(db.updatedAt),
+          memberSince: formatDate(db.createdAt),
+          lastActivity: db.lastActivity
+            ? new Date(db.lastActivity).toLocaleDateString()
+            : "Unmentioned",
+          mapLink: textOrUnmentioned(db.mapLink),
+          preferredBabysittingLocation: textOrUnmentioned(db.preferredBabysittingLocation),
+          governmentIdVerified: db.governmentIdVerified,
+          emailVerified: db.emailVerified,
+          googleAccountVerified: db.googleAccountVerified,
+          isFavorite: db.isFavorite,
+          isApproved: db.isApproved,
+          subscription: textOrUnmentioned(db.subscription),
+          about: [
+            {
+              label: "Driver's license",
+              value:
+                db.driverLicense === null || db.driverLicense === undefined
+                  ? "Unmentioned"
+                  : db.driverLicense
+                    ? "Yes"
+                    : "No",
+              icon: <FiAward />,
+            },
+            {
+              label: "Car",
+              value:
+                db.hasCar === null || db.hasCar === undefined
+                  ? "Unmentioned"
+                  : db.hasCar
+                    ? "Yes"
+                    : "No",
+              icon: <FiTruck />,
+            },
+            {
+              label: "Has children",
+              value:
+                db.hasChildren === null || db.hasChildren === undefined
+                  ? "Unmentioned"
+                  : db.hasChildren
+                    ? "Yes"
+                    : "No",
+              icon: <FiSmile />,
+            },
+            {
+              label: "Smoker",
+              value:
+                db.isSmoker === null || db.isSmoker === undefined
+                  ? "Unmentioned"
+                  : db.isSmoker
+                    ? "Yes"
+                    : "No",
+              icon: <FiUser />,
+            },
+            {
+              label: "Preferred babysitting location",
+              value: textOrUnmentioned(db.preferredBabysittingLocation),
+              icon: <FiHome />,
+            },
+            {
+              label: "Languages",
+              value:
+                Array.isArray(db.languages) && db.languages.length > 0
+                  ? db.languages.join(", ")
+                  : "Unmentioned",
+              icon: <FiGlobe />,
+            },
+          ],
+          verifications: [
+            db.governmentIdVerified ? "Government ID" : null,
+            db.emailVerified ? "Email address" : null,
+            db.googleAccountVerified ? "Google account" : null,
+          ].filter(Boolean),
+        };
+
+        setProfile(mergedProfile);
+        setAvailability(buildAvailability(db.availability || []));
+      } catch (error) {
+        console.error(error);
+        setProfile(null);
+        setAvailability([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchSitter();
+  }, [id]);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".profile-hero-animate", {
+        y: 24,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power3.out",
+      });
+
+      gsap.from(".profile-card-animate", {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.08,
+        ease: "power3.out",
+        delay: 0.15,
+      });
+
+      gsap.from(".profile-side-animate", {
+        x: 24,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.08,
+        ease: "power3.out",
+        delay: 0.2,
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="min-h-screen bg-cyan-50 flex items-center justify-center">
+        <p className="text-lg text-gray-500">Loading...</p>
+      </section>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <section className="min-h-screen bg-cyan-50 flex items-center justify-center">
+        <p className="text-lg text-gray-500">No babysitter found</p>
+      </section>
+    );
+  }
+
+  const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
+  return (
+    <section ref={sectionRef} className="min-h-screen">
+      {/* =============================
+               top information 
+    =============================== */}
+      <div className="border-b border-brandColor/50 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="profile-hero-animate mb-6 text-xs text-gray-500 sm:text-sm">
+            Babysits / Babysitter wanted / Babysitter / {profile.name}
+          </div>
+
+          <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
+            <div className="profile-hero-animate flex flex-col items-center gap-5 md:flex-row">
+              <img
+                loading="lazy"
+                src={
+                  profile.image !== "Unmentioned"
+                    ? profile.image
+                    : "https://via.placeholder.com/300?text=No+Image"
+                }
+                alt={profile.name}
+                className="h-28 w-28 rounded-full object-cover shadow-sm sm:h-32 sm:w-32"
+              />
+
+              <div>
+                <div className="flex flex-col items-center gap-2 md:items-start">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">
+                      {profile.name}
+                    </h1>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brandColor text-xs text-white">
+                      ✓
+                    </span>
+                  </div>
+
+                  <p className="text-sm font-medium text-gray-500 sm:text-base">
+                    {profile.role}
+                  </p>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-6 md:justify-start">
+                  <div>
+                    <p className="text-xs text-gray-400 sm:text-sm">Age</p>
+                    <p className="mt-1 text-sm font-semibold text-gray-800 sm:text-base">
+                      {profile.age}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-400 sm:text-sm">
+                      Hourly rate
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-gray-800 sm:text-base">
+                      {profile.rate}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================
+          all details about baby stter 
+        ============================ */}
+      <div className="max-w-360 mx-auto">
+        <div className="mx-auto w-fit rounded-3xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+
+              <div className="profile-card-animate flex flex-col gap-5 border-b border-gray-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex-1">
+                  <p className="mb-4 flex items-center gap-2 text-sm text-gray-400">
+                    <FiClock />
+                    {profile.activity}
+                  </p>
+
+                  <p className="text-sm leading-7 text-gray-600 sm:text-base">
+                    {profile.intro}
+                  </p>
+
+                  <div className="mt-5">
+                    <p className="mb-3 text-sm font-semibold text-gray-500">
+                      Characteristics
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.characteristics.map((item, idx) => (
+                        <span
+                          key={item + idx}
+                          className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 sm:text-sm"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Show all extra fields */}
+                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="font-semibold text-gray-500">Gender:</span> {profile.gender}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-500">Certifications:</span> {profile.certifications}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-500">Subscription:</span> {profile.subscription}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-500">Is Approved:</span> {profile.isApproved ? "Yes" : "No"}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-500">Is Favorite:</span> {profile.isFavorite ? "Yes" : "No"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sm:w-56 flex flex-col gap-3">
+                  <button
+                    onClick={() => setOpen(true)}
+                    className="flex w-full items-center justify-center rounded-full bg-brandColor px-5 py-3 text-sm font-medium text-white transition hover:bg-brandColor/80 cursor-pointer"
+                  >
+                    Hire {profile.name}
+                  </button>
+                  <div className="rounded-2x p-4 mb-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-cyan-700">
+                      Phone Number
+                    </p>
+                    <p className="mt-2 text-base font-semibold text-gray-800 break-all">
+                      {profile.phone}
+                    </p>
+                  </div>
+                  <div className="rounded-2x p-4 mb-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-cyan-700">
+                      Email
+                    </p>
+                    <p className="mt-2 text-base font-semibold text-gray-800 break-all">
+                      {profile.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-card-animate space-y-5 border-b border-gray-200 py-6">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 text-cyan-600">
+                    <FiBriefcase />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600">
+                      Experience
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {profile.experience}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 text-cyan-600">
+                    <FiUser />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600">
+                      Experience with age(s)
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {profile.ages.join(" • ")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 text-rose-400">
+                    <FiCheckCircle />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600">
+                      Government ID
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {profile.verifications.includes("Government ID")
+                        ? `${profile.name} successfully provided a government ID.`
+                        : "Unmentioned"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-card-animate border-b border-gray-200 py-6">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Education and Certifications
+                </h3>
+
+                <div className="mt-5 space-y-3">
+                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <FiBookOpen className="text-gray-400" />
+                      <span className="text-sm font-medium text-gray-500">
+                        Education level
+                      </span>
+                    </div>
+
+                    <span className="text-sm font-medium text-gray-700">
+                      {profile.educationLevel}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <FiBookOpen className="text-gray-400" />
+                      <span className="text-sm font-medium text-gray-500">
+                        Education details
+                      </span>
+                    </div>
+
+                    <span className="text-sm font-medium text-gray-700">
+                      {profile.educationDetails}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <FiBookOpen className="text-gray-400" />
+                      <span className="text-sm font-medium text-gray-500">
+                        Certifications
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {profile.certifications.join(", ")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-card-animate border-b border-gray-200 py-6">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      My babysitting superpowers
+                    </h3>
+
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                      <div className="space-y-4">
+                        {profile.superpowers.map((item) => (
+                          <div
+                            key={item}
+                            className="flex items-center gap-3 text-sm font-medium text-gray-600"
+                          >
+                            <FiAward className="text-brandColor" />
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      I&apos;m comfortable with
+                    </h3>
+
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                      <div className="space-y-4">
+                        {profile.comfortableWith.map((item) => (
+                          <div
+                            key={item}
+                            className="flex items-center gap-3 text-sm font-medium text-gray-600"
+                          >
+                            <FiCheckCircle className="text-brandColor" />
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-card-animate border-b border-gray-200 py-6">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Location
+                </h3>
+                <p className="mt-3 text-sm text-gray-500 font-bold">
+                  <p className="mt-3 text-sm text-gray-500 font-medium">
+                    📍 {profile.location || "Unknown location"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    ZIP: {profile.zipCode || "N/A"}
+                  </p>
+                </p>
+
+                <div className="mt-5 overflow-hidden rounded-2xl border border-gray-200">
+                  {profile.mapLink !== "Unmentioned" ? (
+                    <iframe
+                      src={
+                        profile.mapLink
+                          .replace("/maps", "/maps/embed")
+                          .includes("output=embed")
+                          ? profile.mapLink
+                          : `${profile.mapLink}${profile.mapLink.includes("?") ? "&" : "?"}output=embed`
+                      }
+                      className="h-72 w-full border-0 sm:h-80"
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  ) : (
+                    <div className="flex h-72 items-center justify-center bg-gray-100 text-gray-400 sm:h-80">
+                      <div className="text-center">
+                        <FiMapPin className="mx-auto text-4xl" />
+                        <p className="mt-3 text-sm font-medium">Unmentioned</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="profile-card-animate border-b border-gray-200 py-6">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      Verifications
+                    </h3>
+
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                      <div className="space-y-4">
+                        {profile.verifications.length > 0 ? (
+                          profile.verifications.map((item) => (
+                            <div
+                              key={item}
+                              className="flex items-center justify-between"
+                            >
+                              <span className="text-sm font-medium text-gray-600">
+                                {item}
+                              </span>
+                              <FiCheckCircle className="text-cyan-600" />
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-600">Unmentioned</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      Activities
+                    </h3>
+
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">
+                            Member since
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {profile.memberSince}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">
+                            Last activity
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {profile.lastActivity}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-card-animate py-6">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Discover other options nearby
+                </h3>
+
+                {moreBabysitters.length > 0 ? (
+                  <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                    {moreBabysitters.map((item) => (
+                      <div
+                        key={item.name}
+                        className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                      >
+                        <img
+                          loading="lazy"
+                          src={item.image}
+                          alt={item.name}
+                          className="h-28 w-full object-cover"
+                        />
+
+                        <div className="p-3 text-center">
+                          <p className="text-sm font-semibold text-gray-700">
+                            {item.name}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-5 text-sm text-gray-500">Unmentioned</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="profile-side-animate lg:w-120 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Availability
+                </h3>
+
+                <div className="mt-4 sm:mt-5">
+                  {/* Mobile: Column-based (days as rows, time slots as columns) */}
+                  <div className="block sm:hidden">
+                    <div className="space-y-2">
+                      {/* Time slot headers */}
+                      <div className="grid grid-cols-5 gap-1">
+                        <div className="text-[10px] font-semibold text-gray-400">Day</div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">Morning</div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">Afternoon</div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">Evening</div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">Night</div>
+                      </div>
+
+                      {/* Each day as a row */}
+                      {days.map((day, dayIndex) => (
+                        <div key={day} className="grid grid-cols-5 gap-1 items-center">
+                          <span className="text-xs font-medium text-gray-600">{day}</span>
+                          {availability.map((row) => {
+                            const active = row.values[dayIndex];
+                            return (
+                              <div
+                                key={`${day}-${row.label}`}
+                                className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full ${active
+                                  ? "bg-brandColor"
+                                  : "border border-gray-300 bg-gray-100"
+                                  }`}
+                              />
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Desktop: Row-based (time slots as rows, days as columns) */}
+                  <div className="hidden sm:block">
+                    <div className="mb-4 grid grid-cols-8 items-center gap-2">
+                      <div className="max-w-20" />
+                      {days.map((day) => (
+                        <div
+                          key={day}
+                          className="text-center text-xs font-semibold text-gray-400"
+                        >
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-4">
+                      {availability.map((row) => (
+                        <div
+                          key={row.label}
+                          className="grid grid-cols-8 items-center gap-2"
+                        >
+                          <span className="w-20 text-sm font-medium text-gray-500">
+                            {row.label}
+                          </span>
+
+                          {row.values.map((active, index) => (
+                            <div
+                              key={`${row.label}-${index}`}
+                              className={`mx-auto h-3.5 w-3.5 rounded-full ${active
+                                ? "bg-brandColor"
+                                : "border border-gray-300 bg-gray-100"
+                                }`}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="mt-4 sm:mt-5 flex items-center gap-2 text-xs sm:text-sm text-gray-400">
+                    <FiCalendar />
+                    {profile.updated}
+                  </p>
+                </div>
+              </div>
+
+              <div className="profile-side-animate rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <h3 className="text-2xl font-semibold text-gray-800">
+                  About me
+                </h3>
+
+                <div className="mt-5 space-y-4">
+                  {profile.about.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-start justify-between gap-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 text-gray-400">{item.icon}</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          {item.label}
+                        </span>
+                      </div>
+
+                      <span className="max-w-28 text-right text-sm font-medium text-gray-700">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Page;
