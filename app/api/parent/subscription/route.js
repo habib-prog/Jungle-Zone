@@ -24,7 +24,6 @@ export async function GET() {
       .sort({ price: 1, duration: 1 });
     return NextResponse.json({ plans }, { status: 200 });
   } catch (error) {
-    console.error("SUBSCRIPTION GET ERROR:", error);
     return NextResponse.json({ error: error.message || "Server error" }, { status: 500 });
   }
 }

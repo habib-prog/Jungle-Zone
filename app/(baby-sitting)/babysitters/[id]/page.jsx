@@ -19,6 +19,7 @@ import {
 } from "react-icons/fi";
 import gsap from "gsap";
 import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 const Page = () => {
   const [open, setOpen] = useState(false);
@@ -217,7 +218,7 @@ const Page = () => {
         setProfile(mergedProfile);
         setAvailability(buildAvailability(db.availability || []));
       } catch (error) {
-        console.error(error);
+        toast.error(error.message || "Failed to load babysitter profile");
         setProfile(null);
         setAvailability([]);
       } finally {

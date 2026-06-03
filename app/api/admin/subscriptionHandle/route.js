@@ -10,7 +10,6 @@ export async function GET(req) {
     const subscriptions = await subscriptionPlans.find().sort({ createdAt: -1 });
     return Response.json(subscriptions);
   } catch (error) {
-    console.error("SUBSCRIPTION GET ERROR:", error);
     return Response.json(
       { error: error.message || "Server error" },
       {
@@ -82,7 +81,6 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("SUBSCRIPTION POST ERROR:", error);
     return Response.json(
       { error: error.message || "Server error" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }
@@ -165,7 +163,6 @@ export async function PUT(req) {
       data: updatedPlan,
     });
   } catch (error) {
-    console.error("SUBSCRIPTION PUT ERROR:", error);
     return Response.json(
       { error: error.message || "Server error" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }
@@ -196,7 +193,6 @@ export async function DELETE(req) {
       data: deletedPlan,
     });
   } catch (error) {
-    console.error("SUBSCRIPTION DELETE ERROR:", error);
     return Response.json(
       { error: error.message || "Server error" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }

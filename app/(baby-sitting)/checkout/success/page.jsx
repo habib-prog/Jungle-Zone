@@ -40,9 +40,8 @@ const CheckoutSuccessContent = () => {
           toast.info("Payment is being processed. Please check your account shortly.");
         }
       } catch (error) {
-        console.error(error);
         setStatus("error");
-        toast.error("Failed to verify payment");
+        toast.error(error.message || "Failed to verify payment");
       }
     };
 

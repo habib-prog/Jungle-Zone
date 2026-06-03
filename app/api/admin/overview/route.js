@@ -23,7 +23,6 @@ export async function GET(req) {
       totalRevenue,
     });
   } catch (error) {
-    console.error("OVERVIEW ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }

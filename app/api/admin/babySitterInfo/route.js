@@ -40,7 +40,6 @@ export async function GET(req) {
       },
     });
   } catch (error) {
-    console.error("BABYSITTER INFO ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }
@@ -67,7 +66,6 @@ export async function POST(req){
 
     return Response.json({ message: `Babysitter ${action}d`, babysitter: updated });
   } catch (error) {
-    console.error("UPDATE BABYSITTER ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }
@@ -91,7 +89,6 @@ export async function DELETE(req) {
 
     return Response.json({ message: "Babysitter deleted" });
   } catch (error) {
-    console.error("DELETE BABYSITTER ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }

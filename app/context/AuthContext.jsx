@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { toast } from "sonner";
 
 const AuthContext = createContext(null);
 
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       if (session) {
         // Google user — only allowed for parent role
         if (session.user.role !== "parent") {
-          console.error("Google sign-in only available for parents");
+          toast.error("Google sign-in only available for parents");
           await signOut({ callbackUrl: "/login" });
           return;
         }
@@ -71,7 +72,7 @@ export const AuthProvider = ({ children }) => {
         setLocalUser(userProfile);
       }
     } catch (err) {
-      console.error("refreshUser failed:", err);
+      toast.error(err.message || "Failed to refresh user data");
     }
   }, [session, update, localUser]);
 
@@ -115,7 +116,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await fetch("/api/logout", { method: "POST" });
     } catch (err) {
-      console.log("Logout API failed:", err);
+      toast.error(err.message || "Failed to log out");
     }
 
     router.push("/");

@@ -7,11 +7,8 @@ import ProfileDetailsStep from "@/app/components/register-babysitter/ProfileDeta
 import AvailabilityStep from "@/app/components/register-babysitter/AvailabilityStep";
 import VerificationStep from "@/app/components/register-babysitter/VerificationStep";
 import ReviewSubmitStep from "@/app/components/register-babysitter/ReviewSubmitStep";
-import BillingOffers from "@/app/components/common/BillingOffers";
-import { useRouter } from "next/navigation";
 
 const Page = () => {
-  const router = useRouter();
   const pageRef = useRef(null);
 
   // ========== step state ==========
@@ -41,36 +38,8 @@ const Page = () => {
     verificationDocs: []
   });
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const updateFormData = (data) => {
     setFormData((prev) => ({ ...prev, ...data }));
-  };
-
-  const handleSubmit = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/babysitters/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        router.push("/login");
-      } else {
-        alert(result.error || "Registration failed");
-      }
-    } catch (error) {
-      console.error("Submission error:", error);
-      alert("Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   // ========== step headings ==========
@@ -109,10 +78,7 @@ const Page = () => {
 
     return () => ctx.revert();
   }, []);
-
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
+  
   return (
     <section
       ref={pageRef}

@@ -31,7 +31,6 @@ const CheckoutForm = ({ planId, planDetails }) => {
       const { error } = await stripe.redirectToCheckout({ sessionId });
       if (error) toast.error(error.message);
     } catch (error) {
-      console.error(error);
       toast.error(error.message || "Payment failed");
     } finally {
       setLoading(false);
@@ -112,8 +111,7 @@ const CheckoutContent = () => {
           router.push("/pricing");
         }
       } catch (error) {
-        console.error(error);
-        toast.error("Failed to load plan details");
+        toast.error(error.message || "Failed to load plan details");
         router.push("/pricing");
       } finally {
         setLoading(false);

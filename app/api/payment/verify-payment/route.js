@@ -58,7 +58,6 @@ export async function POST(req) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("PAYMENT VERIFICATION ERROR:", error);
     return NextResponse.json(
       { error: error.message || "Server error" },
       { status: 500 }

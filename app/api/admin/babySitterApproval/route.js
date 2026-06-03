@@ -10,7 +10,6 @@ export async function GET(req) {
     const pending = await BabySitterRegistration.find({ isApproved: false }).select("-password").sort({ createdAt: -1 });
     return Response.json(pending);
   } catch (error) {
-    console.error("BABYSITTER APPROVAL ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }
@@ -49,7 +48,6 @@ export async function POST(req) {
 
     return Response.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
-    console.error("APPROVAL POST ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }

@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FiCheck, FiZap, FiStar, FiShield, FiDownload, FiClock, FiCheckCircle, FiXCircle } from "react-icons/fi";
-
-const iconMap = {
-  free: FiZap,
-  standard: FiStar,
-  premium: FiShield,
-};
-
-const defaultIcon = FiStar;
+import { FiClock, FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 // DEMO: Multiple billing records to simulate history
 const demoBillingHistory = [
@@ -97,7 +89,6 @@ const SubscriptionSection = ({ currentPlan = "free" }) => {
         const profileData = await profileRes.json();
         if (profileRes.ok && profileData.parent) setUserSubscription(profileData.parent);
       } catch (err) {
-        console.error("Failed to fetch subscription data:", err);
         setError("Failed to load data");
       } finally {
         setLoading(false);
@@ -105,10 +96,6 @@ const SubscriptionSection = ({ currentPlan = "free" }) => {
     };
     fetchData();
   }, []);
-
-  const handleUpgrade = async (planKey) => {
-    console.log("Upgrading to", planKey);
-  };
 
   const formatDate = (date) =>
     new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });

@@ -6,9 +6,6 @@ export async function GET(req, context) {
   try {
     const params = await context.params; // FIX
     const id = params.id;
-
-    console.log("ID:", id);
-
     // Validate ID
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return new Response(JSON.stringify({ error: "Invalid ID" }), {
@@ -34,8 +31,6 @@ export async function GET(req, context) {
       { status: 200 },
     );
   } catch (error) {
-    console.error(error);
-
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
     });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner"; 
 
 const OverView = () => {
     const [stats, setStats] = useState([]);
@@ -17,7 +18,7 @@ const OverView = () => {
                 ];
                 setStats(formattedStats);
             } catch (error) {
-                console.error("Failed to fetch overview stats:", error);
+                toast.error(error.message || "Failed to fetch overview stats:");
             } finally {
                 setLoading(false);
             }

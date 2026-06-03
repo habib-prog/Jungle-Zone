@@ -35,7 +35,6 @@ export async function GET(req) {
       },
     });
   } catch (error) {
-    console.error("PAYMENT GET ERROR:", error);
     return Response.json(
       { error: error.message || "Server error" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }
@@ -73,7 +72,6 @@ export async function POST(req) {
       data: payment,
     });
   } catch (error) {
-    console.error("PAYMENT UPDATE ERROR:", error);
     return Response.json(
       { error: error.message || "Server error" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }

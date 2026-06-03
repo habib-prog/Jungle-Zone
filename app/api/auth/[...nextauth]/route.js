@@ -31,7 +31,6 @@ export const authOptions = {
                     }
                 }
             } catch (error) {
-                console.error("Google save error:", err);
                 return false;
             }
             return true;

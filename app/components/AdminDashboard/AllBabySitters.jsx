@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { SquareArrowOutUpRight, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const AllBabySitters = () => {
     const [babysitters, setBabysitters] = useState([]);
@@ -38,7 +39,7 @@ const AllBabySitters = () => {
                 setBabysitters(data.babysitters || []);
                 setTotalPages(data.pagination?.totalPages || 1);
             } catch (error) {
-                console.error("Failed to fetch babysitters:", error);
+                toast.error(error.message || "Failed to fetch babysitters:");
             } finally {
                 setLoading(false);
             }
@@ -68,7 +69,7 @@ const AllBabySitters = () => {
                 setSelectedSitter((prev) => ({ ...prev, isApproved: approvalAction === "approve" }));
             }
         } catch (error) {
-            console.error("Failed to update status:", error);
+            toast.error(error.message || "Failed to update status:");
         } finally {
             setIsSubmitting(false);
         }

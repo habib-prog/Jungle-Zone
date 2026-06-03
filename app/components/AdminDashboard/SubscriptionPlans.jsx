@@ -41,7 +41,7 @@ const SubscriptionPlans = () => {
         setApiError(data.error || "Failed to fetch plans");
       }
     } catch (error) {
-      console.error("Failed to fetch plans:", error);
+      toast.error(error.message || "Failed to fetch plans");
       setApiError("Failed to fetch plans");
     } finally {
       setLoading(false);
@@ -180,8 +180,7 @@ const SubscriptionPlans = () => {
         setApiError(data.error || "Failed to save plan");
       }
     } catch (error) {
-      console.error("Submit error:", error);
-      setApiError("Failed to save plan");
+      toast.error(error.message || "Failed to save plan");
     } finally {
       setSubmitLoading(false);
     }

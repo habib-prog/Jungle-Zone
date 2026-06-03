@@ -18,8 +18,7 @@ const SubscriptionPage = () => {
                 const { plans } = await response.json();
                 setPlans(plans);
             } catch (error) {
-                console.error(error);
-                toast.error('Failed to load subscription plans');
+                toast.error(error.message || 'Failed to load subscription plans');
             } finally {
                 setLoading(false);
             }
@@ -62,7 +61,6 @@ const SubscriptionPage = () => {
                 toast.error(result.error.message);
             }
         } catch (error) {
-            console.error(error);
             toast.error(error.message || 'Failed to process checkout');
         } finally {
             setCheckoutLoading(false);

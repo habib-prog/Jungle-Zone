@@ -37,7 +37,6 @@ export async function GET(req) {
       },
     });
   } catch (error) {
-    console.error("PARENTS INFO ERROR:", error);
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
 }

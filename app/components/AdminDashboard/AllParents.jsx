@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const AllParents = () => {
     const [parents, setParents] = useState([]);
@@ -32,7 +33,7 @@ const AllParents = () => {
                 setParents(data.parents || []);
                 setTotalPages(data.pagination?.totalPages || 1);
             } catch (error) {
-                console.error("Failed to fetch parents:", error);
+                toast.error(error.message || "Failed to fetch parents:");
             } finally {
                 setLoading(false);
             }

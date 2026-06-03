@@ -15,6 +15,5 @@ export const connectDB = async () => {
     
     cached.conn = await cached.promise;
     (global).mongoose = cached;
-    console.log("Database Connected");
     return cached.conn;
 };

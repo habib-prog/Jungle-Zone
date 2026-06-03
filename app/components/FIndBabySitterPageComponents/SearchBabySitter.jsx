@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { TbCurrentLocation } from "react-icons/tb";
 import { Slider } from "antd";
+import { toast } from "sonner";
 
 const SearchBabySitter = () => {
   const [babysitters, setBabysitters] = useState([]);
@@ -48,10 +49,10 @@ const SearchBabySitter = () => {
         setTotal(result.total || 0);
         setCurrentPage(result.currentPage || 1);
       } else {
-        console.error(result.error);
+        toast.error(result.error || "Failed to fetch babysitters");
       }
     } catch (error) {
-      console.error("Fetch error:", error);
+      toast.error(error.message || "Failed to fetch babysitters");
     } finally {
       setLoading(false);
     }

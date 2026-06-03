@@ -6,7 +6,6 @@ import bcrypt from "bcrypt";
 export async function POST(req) {
   try {
     const body = await req.json();
-console.log(body)
     const {
       fullName,
       email,
@@ -108,8 +107,6 @@ console.log(body)
       { status: 201 },
     );
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
-
     return new Response(
       JSON.stringify({ error: error.message || "Server error" }),
       { status: 500 },
