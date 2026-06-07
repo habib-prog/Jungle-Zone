@@ -57,7 +57,7 @@ const Navbar = () => {
                     {user.image && (
                       <img
                         loading="lazy"
-                        src={user.image}
+                        src={`/api/${user.image}`}
                         alt={user.name}
                         className="w-full h-full object-cover"
                       />

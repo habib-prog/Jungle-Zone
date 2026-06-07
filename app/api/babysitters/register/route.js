@@ -2,16 +2,40 @@ import { connectDB } from "@/config/db";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 
 import bcrypt from "bcrypt";
+import { upload } from "@/app/lib/multer";
+import { runMiddleware } from "@/middleware/multerMiddleware";
+import { NextResponse } from "next/server";
+
+export const runtime = 'nodejs';
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const contentType = req.headers.get("content-type") || "";
+    const buffer = Buffer.from(await req.arrayBuffer());
+
+    const mockReq = Object.assign(
+      new (require("stream").Readable)(),
+      {
+        headers: { "content-type": contentType, "content-length": buffer.length, "upload-type": "sitter" },
+        method: "POST",
+      }
+    );
+    mockReq.push(buffer);
+    mockReq.push(null);
+
+    const mockRes = {};
+
+    await runMiddleware(mockReq, mockRes, upload.single("profilePhoto"));
+
+    if (!mockReq.file) {
+      return NextResponse.json({ error: "Profile photo is required" }, { status: 400 });
+    }
+
     const {
       fullName,
       email,
       phoneNumber,
       password,
-      profilePhoto,
       age,
       gender,
       location,
@@ -27,59 +51,48 @@ export async function POST(req) {
       skills = [],
       availability = [],
       verificationDocs
-    } = body;
+    } = mockReq.body;
 
-    // basic validation
     if (
       !fullName ||
       !email ||
       !phoneNumber ||
       !password ||
-      !profilePhoto ||
       !age ||
       !gender ||
       !location ||
       !zipCode
     ) {
-      return new Response(
-        JSON.stringify({ error: "All required fields must be provided" }),
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "All required fields must be provided" }, { status: 400 });
     }
 
-    // email regex test
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return new Response(JSON.stringify({ error: "Invalid email format" }), {
-        status: 400,
-      });
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
-    //  password min 6 test
     if (password.length < 6) {
-      return new Response(
-        JSON.stringify({ error: "Password must be at least 6 characters" }),
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
     await connectDB();
 
     const existingUser = await BabySitterRegistration.findOne({ email });
     if (existingUser) {
-      return new Response(JSON.stringify({ error: "Email already exists" }), {
-        status: 400,
-      });
+      return NextResponse.json({ error: "Email already exists" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Save picture path relative to /public (served as /uploads/...)
+    const picturePath = `/profilePicture/babySitterWebsite/sitter/${mockReq.file.filename}`;
 
     const newBabysitter = new BabySitterRegistration({
       fullName,
       email,
       phoneNumber: Number(phoneNumber),
       password: hashedPassword,
-      profilePhoto,
+      profilePhoto: picturePath,
       age: Number(age),
       gender,
       location,
@@ -88,28 +101,22 @@ export async function POST(req) {
       certifications,
       educationLevel,
       preferredBabysittingLocation,
-      languages,
+      languages: typeof languages === 'string' ? languages.split(',').map(l => l.trim()) : [],
       yearsOfExperience: Number(yearsOfExperience),
       hourlyRate: Number(hourlyRate),
       comfortableWithAgeGroup,
-      skills,
-      availability,
-      verificationDocs
+      skills: typeof skills === 'string' ? skills.split(',').map(s => s.trim()) : [],
+      availability: typeof availability === 'string' ? JSON.parse(availability || '[]') : [],
+      verificationDocs: typeof verificationDocs === 'string' ? verificationDocs.split(',').map(v => v.trim()) : []
     });
 
     const savedData = await newBabysitter.save();
 
-    return new Response(
-      JSON.stringify({
-        message: "Registration successful",
-        data: savedData,
-      }),
-      { status: 201 },
-    );
+    return NextResponse.json({
+      message: "Registration successful",
+      data: savedData,
+    }, { status: 201 });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message || "Server error" }),
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Server error" }, { status: 500 });
   }
 }

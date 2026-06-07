@@ -37,21 +37,21 @@ const ProfileSection = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    fullName: "", email: "", phoneNumber: "",
+    fullName: "", email: "", phone: "",
     postCode: "", houseNo: "", road: "",
     state: "", nationalId: "", moreInfo: "",
   });
   const fileInputRef = useRef(null);
-
   useEffect(() => {
     fetch("/api/parent/profile")
-      .then((r) => r.json())
-      .then((data) => {
+    .then((r) => r.json())
+    .then((data) => {
+        console.log(data)
         setUser(data.parent);
         setForm({
           fullName: data.parent.fullName || "",
           email: data.parent.email || "",
-          phoneNumber: data.parent.phoneNumber || "",
+          phone: data.parent.phone || "",
           postCode: data.parent.postCode || "",
           houseNo: data.parent.houseNo || "",
           road: data.parent.road || "",
@@ -164,7 +164,7 @@ const ProfileSection = () => {
           <div className="relative shrink-0">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-brandColor bg-gray-100">
               <img
-                src={user.picture || `https://ui-avatars.com/api/?name=${form.fullName}&background=random`}
+                src={ `/api/${user.picture}` || `https://ui-avatars.com/api/?name=${form.fullName}&background=random`}
                 alt="avatar"
                 className="w-full h-full object-cover"
               />
@@ -194,7 +194,7 @@ const ProfileSection = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field icon={FiUser} label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} editing={editing} />
             <Field icon={FiMail} label="Email" name="email" value={form.email} onChange={handleChange} editing={editing} disabled />
-            <Field icon={FiPhone} label="Phone Number" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} editing={editing} type="tel" />
+            <Field icon={FiPhone} label="Phone Number" name="phone" value={form.phone} onChange={handleChange} editing={editing} type="tel" />
             <Field icon={FiHash} label="National ID" name="nationalId" value={form.nationalId} onChange={handleChange} editing={editing} />
           </div>
         </div>

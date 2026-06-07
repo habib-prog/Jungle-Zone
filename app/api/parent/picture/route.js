@@ -52,13 +52,13 @@ export async function POST(req) {
 
     // Delete old picture from disk if it exists and isn't a Google URL
     const existing = await parentSchema.findById(userId).select("picture");
-    if (existing?.picture && existing.picture.startsWith("/uploads/")) {
+    if (existing?.picture && existing.picture.startsWith("/profilePicture/")) {
       const oldPath = path.join(process.cwd(), "public", existing.picture);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
 
     // Save new picture path (relative, served as static from /public)
-    const picturePath = `/uploads/babySitterWebsite/parent/${mockReq.file.filename}`;
+    const picturePath = `/api/profilePicture/babySitterWebsite/parent/${mockReq.file.filename}`;
 
     const updated = await parentSchema.findByIdAndUpdate(
       userId,

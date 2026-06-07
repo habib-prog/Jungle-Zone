@@ -182,7 +182,7 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
           </div>
 
           {/* ========== bottom action bar ========== */}
-          <div className="step-fade sticky bottom-0 mt-8 bg-cyan-50 px-4 py-4 sm:px-6">
+          <div className="step-fade sticky bottom-0 mt-8 bg-white px-4 py-4 sm:px-6">
             <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4">
               {/* ========== back button ========== */}
               <button
@@ -194,15 +194,14 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
               </button>
 
               {/* ========== next button ========== */}
-              <Button
-                type="primary"
-                size="large"
+              <button
                 onClick={onNext}
                 disabled={!isValid}
-                className="flex h-12 items-center gap-2 rounded-full px-6"
+                className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Next
-              </Button>
+                <FiArrowRight />
+              </button>
             </div>
           </div>
         </div>

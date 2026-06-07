@@ -70,7 +70,7 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const SubscriptionSection = ({ currentPlan = "free" }) => {
+const SubscriptionSection = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

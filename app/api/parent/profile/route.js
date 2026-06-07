@@ -40,7 +40,7 @@ export async function PATCH(req) {
 
         const body = await req.json();
 
-        const allowed = ["fullName", "phoneNumber", "postCode", "houseNo", "road", "state", "moreInfo", "nationalId"];
+        const allowed = ["fullName", "phone", "postCode", "houseNo", "road", "state", "moreInfo", "nationalId"];
         const updates = {};
         for (const key of allowed) {
             if (body[key] !== undefined) updates[key] = body[key];

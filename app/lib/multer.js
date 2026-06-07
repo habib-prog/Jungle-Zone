@@ -3,7 +3,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 
-const baseDir = path.join(process.cwd(), "public/uploads/babySitterWebsite");
+const baseDir = path.join(process.cwd(), "profilePicture/babySitterWebsite");
 
 const ensureDir = (dir) => {
   if (!fs.existsSync(dir)) {

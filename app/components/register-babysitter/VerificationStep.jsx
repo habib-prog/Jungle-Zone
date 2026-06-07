@@ -47,17 +47,17 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
       ? formData.verificationDocs
       : [];
 
-    const exists = currentDocs.some((d) => d.id === doc.id);
+    const exists = currentDocs.some((d) => d === doc.label);
 
     const newDocs = exists
-      ? currentDocs.filter((d) => d.id !== doc.id)
-      : [...currentDocs, doc];
+      ? currentDocs.filter((d) => d !== doc.label)
+      : [...currentDocs, doc.label];
 
     updateFormData({ verificationDocs: newDocs });
   };
 
-  const isSelected = (id) =>
-    selectedDocs.some((doc) => doc.id === id);
+  const isSelected = (label) =>
+    selectedDocs.some((doc) => doc === label);
 
   return (
     <section
@@ -107,7 +107,7 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
                 {verificationDocuments.map((doc) => (
                   <label
                     key={doc.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${isSelected(doc.id)
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${isSelected(doc.label)
                       ? "border-brandColor bg-brandColor/10"
                       : "border-gray-200 bg-white hover:border-brandColor"
                       }`}
@@ -115,18 +115,18 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
                     <div className="relative">
                       <input
                         type="checkbox"
-                        checked={isSelected(doc.id)}
+                        checked={isSelected(doc.label)}
                         onChange={() => toggleDocument(doc)}
                         className="peer sr-only"
                       />
 
                       <div
-                        className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border-2 transition-all duration-200 ${isSelected(doc.id)
+                        className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border-2 transition-all duration-200 ${isSelected(doc.label)
                           ? "border-brandColor bg-brandColor scale-90"
                           : "border-gray-300 bg-white"
                           }`}
                       >
-                        {isSelected(doc.id) && (
+                        {isSelected(doc.label) && (
                           <svg
                             className="h-3 w-3 text-white"
                             viewBox="0 0 24 24"

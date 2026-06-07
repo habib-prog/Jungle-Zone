@@ -1,7 +1,7 @@
 "use client";
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Accordion, AccordionItem } from "@szhsin/react-accordion";
 import Image from 'next/image';
 import gsap from 'gsap';
@@ -15,6 +15,9 @@ export default function JungleZone() {
     "/img/frontPageImg2.jpg",
     "/img/frontPageImg3.jpg"
   ];
+
+  const [latestBabysitters, setLatestBabysitters] = useState([]);
+  const [loadingLatestBabysitters, setLoadingLatestBabysitters] = useState(false);
 
   useEffect(() => {
     const container = document.querySelector('.hero-slider-container');
@@ -47,6 +50,27 @@ export default function JungleZone() {
     return () => tl.kill();
   }, []);
 
+  const fetchBabysitters = async (page = 1) => {
+    try {
+      setLoadingLatestBabysitters(true);
+      const res = await fetch(`/api/babysitters/findBabySitters?page=${page}&limit=3`);
+      const result = await res.json();
+
+      if (res.ok) {
+        setLatestBabysitters(result.data || []);
+      } else {
+        console.error(result.error || "Failed to fetch latest babysitters");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingLatestBabysitters(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBabysitters(1);
+  }, []);
 
   return (
     <>
@@ -119,12 +143,6 @@ export default function JungleZone() {
                 </button>
               </Link>
             </div>
-
-            {/* <div className="flex gap-6 lg:gap-10 flex-wrap">
-              <Stat num="2,400+" label="Verified sitters" />
-              <Stat num="98%" label="Parent satisfaction" />
-              <Stat num="50+" label="UK cities" />
-            </div> */}
           </div>
 
           {/* RIGHT SIDE CARDS */}
@@ -144,23 +162,28 @@ export default function JungleZone() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <Sitter name="Sarah R." loc="Hackney, London" rate="£12/hr" />
-              <Sitter name="James M." loc="Manchester" rate="£10/hr" />
-              <Sitter name="Amy L." loc="Bristol" rate="£11/hr" />
+              {loadingLatestBabysitters ? (
+                <div className="text-white">Loading latest sitters...</div>
+              ) : latestBabysitters.length > 0 ? (
+                latestBabysitters.map((item) => (
+                  console.log(item),
+                  <Sitter
+                    key={item._id}
+                    name={item.fullName}
+                    loc={item.zipCode ? `Zip ${item.zipCode}` : "UK"}
+                    rate={item.hourlyRate ? `£${item.hourlyRate}/hr` : "Contact"}
+                    img={item.profilePhoto}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-white">
+                  No Sitters Found. Try expanding your search or check back later for new sitters joining JungleZone.
+                </p>
+              )}
             </div>
           </div>
         </div>
       </section>
-
-      {/* TRUST BAR
-      <section className="py-10 lg:py-14 bg-brandColor/5">
-        <div className="container grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center">
-          <StatBig num="2,400+" label="Active babysitters" />
-          <StatBig num="12,000+" label="Happy families" />
-          <StatBig num="98%" label="Satisfaction rate" />
-          <StatBig num="50+" label="UK cities covered" />
-        </div>
-      </section> */}
 
       {/* VALUES */}
       <section className="py-16 lg:py-24">
@@ -364,14 +387,14 @@ function StatBig({ num, label }) {
   );
 }
 
-function Sitter({ name, loc, rate }) {
+function Sitter({ name, loc, rate, img }) {
   return (
     <div className=" backdrop-blur-2xl bg-black/20 border border-brandColor cursor-pointer rounded-xl p-3 lg:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm hover:shadow-lg hover:-translate-y-1 transition gap-3 sm:gap-0">
       <div className="flex items-center gap-3 lg:gap-4">
         <img
           loading='lazy'
           className="w-10 h-10 lg:w-12 lg:h-12 rounded-full overflow-hidden bg-white"
-          src="/img/user-placeholder.svg"
+          src={`/api/${img}` || "/img/user-placeholder.svg"}
           alt="image" />
         <div className='text-white'>
           <div className="font-medium text-sm lg:text-base">{name}</div>

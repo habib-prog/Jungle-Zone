@@ -117,7 +117,7 @@ const AllParents = () => {
                                     <td className="py-2">
                                         <img
                                             loading="lazy"
-                                            src={u.picture || u.image || "/default-avatar.png"}
+                                            src={`/api/${u.picture}` || u.image || "/default-avatar.png"}
                                             alt={u.fullName || u.name}
                                             className="w-12 h-12 object-cover rounded-full"
                                         />
@@ -181,7 +181,7 @@ const AllParents = () => {
                             <div className="flex flex-col items-center">
                                 <img
                                     loading="lazy"
-                                    src={selectedParent.picture || selectedParent.image || "/default-avatar.png"}
+                                    src={`/api/${selectedParent.picture}` || selectedParent.image || "/default-avatar.png"}
                                     alt={selectedParent.fullName || selectedParent.name}
                                     className="w-32 h-32 object-cover rounded-full border-4 border-brandColor"
                                 />

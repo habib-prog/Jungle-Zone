@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Button, Select } from "antd";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import gsap from "gsap";
 
 const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
   const sectionRef = useRef(null);
-  const [description, setDescription] = useState("");
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -269,27 +268,25 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
           </div>
 
           {/* ========== bottom action bar ========== */}
-          <div className="step-fade sticky bottom-0 mt-8 bg-cyan-50 px-4 py-4 sm:px-6">
+          <div className="step-fade sticky bottom-0 mt-8 bg-white px-4 py-4 sm:px-6">
             <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4">
               {/* ========== back button ========== */}
               <button
                 onClick={onBack}
-                className="flex items-center gap-2 text-lg font-medium text-cyan-700 underline underline-offset-4 transition hover:text-cyan-800"
+                className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 <FiArrowLeft />
                 Back
               </button>
 
               {/* ========== next button ========== */}
-              <Button
-                type="primary"
-                size="large"
+              <button
                 onClick={onNext}
-                className="flex h-12 items-center gap-2 rounded-full px-6"
+                className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Next
                 <FiArrowRight />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

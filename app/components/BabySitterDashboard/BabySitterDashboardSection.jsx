@@ -1,12 +1,9 @@
 "use client";
 import { Rate } from "antd";
 import { useEffect, useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 const BabySitterDashboardSection = () => {
   const [profile, setProfile] = useState(null);
-  const [ongoingDeals, setOngoingDeals] = useState([]);
-  const [dealHistory, setDealHistory] = useState([]);
 
   useEffect(() => {
     fetch("/api/babysitters/profile")
@@ -44,7 +41,7 @@ const BabySitterDashboardSection = () => {
                   <img
                     loading="lazy"
                     className="w-full h-full object-cover"
-                    src={avatarSrc}
+                    src={`/api/${avatarSrc}`}
                     alt="profile"
                   />
                 </div>

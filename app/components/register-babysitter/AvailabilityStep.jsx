@@ -159,7 +159,7 @@ const AvailabilityStep = ({ onNext, onBack, formData, updateFormData }) => {
                           type="checkbox"
                           checked={availability[day]?.includes(slot) || false}
                           onChange={() => toggleAvailability(day, slot)}
-                          className="h-5 w-5 rounded border-gray-300 accent-cyan-600"
+                          className="h-5 w-5 rounded border-gray-300 accent-brandColor"
                         />
                       </label>
                     ))}
@@ -178,7 +178,7 @@ const AvailabilityStep = ({ onNext, onBack, formData, updateFormData }) => {
                           type="checkbox"
                           checked={availability[day]?.includes(slot) || false}
                           onChange={() => toggleAvailability(day, slot)}
-                          className="h-5 w-5 rounded border-gray-300 accent-cyan-600"
+                          className="h-5 w-5 rounded border-gray-300 accent-brandColor"
                         />
                       </label>
                     ))}
@@ -195,25 +195,25 @@ const AvailabilityStep = ({ onNext, onBack, formData, updateFormData }) => {
             </div>
           </div>
 
-          <div className="step-fade sticky bottom-0 mt-8 bg-cyan-50 px-4 py-4 sm:px-6">
+          <div className="step-fade sticky bottom-0 mt-8 bg-white px-4 py-4 sm:px-6">
             <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4">
               <button
                 onClick={onBack}
-                className="flex items-center gap-2 text-lg font-medium text-cyan-700 underline underline-offset-4 transition hover:text-cyan-800"
+                className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 <FiArrowLeft />
                 Back
               </button>
 
-              <Button
+              <button
                 type="primary"
                 size="large"
                 onClick={handleNext}
-                className="flex h-12 items-center gap-2 rounded-full px-6"
+                className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Next
                 <FiArrowRight />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

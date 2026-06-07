@@ -160,7 +160,7 @@ const AllBabySitters = () => {
                                     <td className="py-2">
                                         <img
                                             loading="lazy"
-                                            src={s.profilePhoto || "/default-avatar.png"}
+                                            src={`/api/${s.profilePhoto}` || "/default-avatar.png"}
                                             alt={s.fullName}
                                             className="w-12 h-12 object-cover rounded-full"
                                         />
@@ -237,7 +237,7 @@ const AllBabySitters = () => {
                         <div className="flex justify-between gap-6 my-6">
                             <img
                                 loading="lazy"
-                                src={selectedSitter.profilePhoto || "/default-avatar.png"}
+                                src={`/api/${selectedSitter.profilePhoto}` || "/default-avatar.png"}
                                 alt={selectedSitter.fullName}
                                 className="w-32 h-32 object-cover rounded-full border-4 border-brandColor"
                             />

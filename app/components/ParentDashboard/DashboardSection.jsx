@@ -63,7 +63,7 @@ const DashboardSection = () => {
                             <div className="flex items-start gap-4 xl:gap-5">
                                 <div className="w-16 h-16 sm:w-18 sm:h-18 xl:w-20 xl:h-20 rounded-full overflow-hidden border-4 border-brandColor bg-gray-100 shrink-0">
                                     {profile ? (
-                                        <img className="w-full h-full object-cover" src={avatarSrc} alt="profile" />
+                                        <img className="w-full h-full object-cover" src={`/api/${avatarSrc}`} alt="profile" />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 animate-pulse" />
                                     )}
@@ -79,7 +79,7 @@ const DashboardSection = () => {
                                                 {profile.email}
                                             </p>
                                             <p className="text-sm xl:text-base text-gray-500 font-poppins">
-                                                {profile.phoneNumber || "—"}
+                                                {profile.phone || "—"}
                                             </p>
                                         </>
                                     ) : (

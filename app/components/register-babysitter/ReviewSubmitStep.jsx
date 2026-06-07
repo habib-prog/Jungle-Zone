@@ -49,28 +49,31 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
     try {
       setIsLoading(true);
 
-      let profilePhotoData = formData.profilePhoto;
-
-      if (formData.profilePhoto instanceof File) {
-        const reader = new FileReader();
-        profilePhotoData = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(formData.profilePhoto);
-        });
-      }
-
-      const payload = {
-        ...formData,
-        profilePhoto: profilePhotoData,
-      };
+      const payload = new FormData();
+      payload.append("profilePhoto", formData.profilePhoto);
+      payload.append("fullName", formData.fullName || "");
+      payload.append("email", formData.email || "");
+      payload.append("phoneNumber", formData.phoneNumber || "");
+      payload.append("password", formData.password || "");
+      payload.append("age", formData.age || "");
+      payload.append("gender", formData.gender || "");
+      payload.append("location", formData.location || "");
+      payload.append("zipCode", formData.zipCode || "");
+      payload.append("description", formData.description || "");
+      payload.append("certifications", formData.certifications || "");
+      payload.append("educationLevel", formData.educationLevel || "");
+      payload.append("preferredBabysittingLocation", formData.preferredBabysittingLocation || "");
+      payload.append("languages", formData.languages?.join(",") || "");
+      payload.append("yearsOfExperience", formData.yearsOfExperience || "");
+      payload.append("hourlyRate", formData.hourlyRate || "");
+      payload.append("comfortableWithAgeGroup", formData.comfortableWithAgeGroup?.join(",") || "");
+      payload.append("skills", formData.skills?.join(",") || "");
+      payload.append("availability", JSON.stringify(formData.availability || []));
+      payload.append("verificationDocs", formData.verificationDocs?.join(",") || "");
 
       const response = await fetch("/api/babysitters/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
       const result = await response.json();
@@ -336,14 +339,14 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  {formData.verificationDocs.map((doc) => (
-                    <div key={doc.id} className="flex items-center gap-2">
-                      <FiCheckCircle className="text-green-500" />
-                      <p className="text-base text-gray-800">{doc.label}</p>
-                    </div>
-                  ))}
-                </div>
+<div className="space-y-3">
+                   {formData.verificationDocs.map((doc, index) => (
+                     <div key={index} className="flex items-center gap-2">
+                       <FiCheckCircle className="text-green-500" />
+                       <p className="text-base text-gray-800">{doc}</p>
+                     </div>
+                   ))}
+                 </div>
               </div>
             )}
 
