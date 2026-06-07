@@ -19,7 +19,7 @@ import {
 } from "react-icons/fi";
 import gsap from "gsap";
 import { useParams } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const Page = () => {
   const [open, setOpen] = useState(false);
