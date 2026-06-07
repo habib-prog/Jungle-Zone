@@ -32,16 +32,16 @@ export default function JungleZone() {
     gsap.set(container, { x: 0 });
 
     // Wait on first image, then slide through each subsequent image with wait
-    tl.to({}, { duration: 1 }); // wait 2.5s on image 1
+    tl.to({}, { duration: 2 });
 
     for (let i = 1; i < totalSlides; i++) {
       tl.to(container, {
         x: `-${i * 100}%`,
-        duration: 2,
+        duration: 3,
         ease: 'none',
       });
       if (i < totalSlides - 1) {
-        tl.to({}, { duration: 1 }); // wait 2.5s on subsequent images
+        tl.to({}, { duration: 2 }); 
       }
     }
 
@@ -113,11 +113,6 @@ export default function JungleZone() {
 
         <div className="container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10">
           <div>
-            {/* <div className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-white bg-brandColor rounded-full mb-4 lg:mb-6 shadow">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-              2,400+ verified sitters across the UK
-            </div> */}
-
             <h1 className="text-4xl lg:text-6xl leading-tight mb-4 lg:mb-6 text-white">
               Trusted Childcare,
               <br />
