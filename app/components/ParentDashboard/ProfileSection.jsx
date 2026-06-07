@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { FiEdit2, FiSave, FiX, FiUser, FiMail, FiPhone, FiMapPin, FiHash, FiCamera } from "react-icons/fi";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
+import { getImageUrl } from "@/app/lib/imageUtils";
 
 // ✅ Outside the component — never recreated on re-render
 const Field = ({ icon: Icon, label, name, value, onChange, editing, disabled = false, type = "text" }) => (
@@ -110,6 +111,8 @@ const ProfileSection = () => {
     }
   };
 
+  const avatarUrl = getImageUrl(user?.picture) ?? `https://ui-avatars.com/api/?name=${form.fullName}&background=random`;
+
   if (!user) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 border-4 border-brandColor border-t-transparent rounded-full animate-spin" />
@@ -164,7 +167,7 @@ const ProfileSection = () => {
           <div className="relative shrink-0">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-brandColor bg-gray-100">
               <img
-                src={ `/api/${user.picture}` || `https://ui-avatars.com/api/?name=${form.fullName}&background=random`}
+                src={avatarUrl}
                 alt="avatar"
                 className="w-full h-full object-cover"
               />

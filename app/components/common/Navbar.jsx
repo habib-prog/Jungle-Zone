@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MdLogout } from "react-icons/md";
 import { useAuth } from "@/app/context/AuthContext";
+import { getImageUrl } from "@/app/lib/imageUtils";
 import Res_Navbar from "./Res_Navbar";
 import { navItems } from "../api/fakeApi";
 
@@ -57,7 +58,7 @@ const Navbar = () => {
                     {user.image && (
                       <img
                         loading="lazy"
-                        src={`/api/${user.image}`}
+                        src={getImageUrl(user.image) ?? "/img/user-placeholder.svg"}
                         alt={user.name}
                         className="w-full h-full object-cover"
                       />

@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { getImageUrl } from "@/app/lib/imageUtils";
 
 const AllParents = () => {
     const [parents, setParents] = useState([]);
@@ -117,7 +118,7 @@ const AllParents = () => {
                                     <td className="py-2">
                                         <img
                                             loading="lazy"
-                                            src={`/api/${u.picture}` || u.image || "/default-avatar.png"}
+                                            src={getImageUrl(u.picture) ?? u.image ?? "/default-avatar.png"}
                                             alt={u.fullName || u.name}
                                             className="w-12 h-12 object-cover rounded-full"
                                         />
@@ -181,7 +182,7 @@ const AllParents = () => {
                             <div className="flex flex-col items-center">
                                 <img
                                     loading="lazy"
-                                    src={`/api/${selectedParent.picture}` || selectedParent.image || "/default-avatar.png"}
+                                    src={getImageUrl(selectedParent.picture) ?? selectedParent.image ?? "/default-avatar.png"}
                                     alt={selectedParent.fullName || selectedParent.name}
                                     className="w-32 h-32 object-cover rounded-full border-4 border-brandColor"
                                 />

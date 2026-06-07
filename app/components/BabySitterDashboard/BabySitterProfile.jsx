@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { FiEdit2, FiSave, FiX, FiUser, FiPhone, FiMapPin, FiHash, FiCamera, FiDollarSign, FiClock, FiAward, FiBook, FiGlobe, FiBriefcase, FiTag, FiCalendar, FiCheck, FiPlus, FiTrash2 } from "react-icons/fi";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
+import { getImageUrl } from "@/app/lib/imageUtils";
 
 const Field = ({ icon: Icon, label, name, value, onChange, editing, disabled = false, type = "text" }) => (
   <div className="flex flex-col gap-1">
@@ -318,7 +319,7 @@ const BabySitterProfile = () => {
     </div>
   );
 
-  const avatarSrc = sitter?.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.fullName || "S")}&background=random`;
+  const avatarSrc = getImageUrl(sitter?.profilePhoto) ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(form.fullName || "S")}&background=random`;
 
   return (
     <>

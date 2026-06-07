@@ -1,6 +1,7 @@
 "use client";
 import { Rate } from "antd";
 import { useEffect, useState } from "react";
+import { getImageUrl } from "@/app/lib/imageUtils";
 
 const BabySitterDashboardSection = () => {
   const [profile, setProfile] = useState(null);
@@ -13,8 +14,7 @@ const BabySitterDashboardSection = () => {
       });
   }, []);
 
-  const avatarSrc =
-    profile?.profilePhoto ||
+  const avatarSrc = getImageUrl(profile?.profilePhoto) ??
     `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || "S")}&background=random`;
   return (
     <div className="min-h-screen">
@@ -41,7 +41,7 @@ const BabySitterDashboardSection = () => {
                   <img
                     loading="lazy"
                     className="w-full h-full object-cover"
-                    src={`/api/${avatarSrc}`}
+                    src={avatarSrc}
                     alt="profile"
                   />
                 </div>

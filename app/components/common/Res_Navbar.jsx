@@ -5,6 +5,7 @@ import { List, X } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/app/context/AuthContext";
 import { MdLogout } from "react-icons/md";
+import { getImageUrl } from "@/app/lib/imageUtils";
 
 const Res_Navbar = ({ navItems }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -84,7 +85,7 @@ const Res_Navbar = ({ navItems }) => {
                                         {user.image && (
                                             <img
                                                 loading="lazy"
-                                                src={`/api/${user.image}`}
+                                                src={getImageUrl(user.image) ?? "/img/user-placeholder.svg"}
                                                 alt={user.name}
                                                 className="w-full h-full object-cover"
                                             />

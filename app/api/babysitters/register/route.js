@@ -84,8 +84,8 @@ export async function POST(req) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save picture path relative to /public (served as /uploads/...)
-    const picturePath = `/profilePicture/babySitterWebsite/sitter/${mockReq.file.filename}`;
+    // Save picture path using the API image proxy route
+    const picturePath = `/api/profilePicture/babySitterWebsite/sitter/${mockReq.file.filename}`;
 
     const newBabysitter = new BabySitterRegistration({
       fullName,

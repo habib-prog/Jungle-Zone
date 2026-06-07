@@ -2,6 +2,7 @@
 import { useAuth } from '@/app/context/AuthContext';
 import { Rate, Tag } from 'antd';
 import { useEffect, useState } from 'react';
+import { getImageUrl } from '@/app/lib/imageUtils';
 
 const DashboardSection = () => { 
     const { user: authUser } = useAuth();
@@ -33,9 +34,7 @@ const DashboardSection = () => {
     const getStatusText = (status) =>
         status.charAt(0).toUpperCase() + status.slice(1);
 
-    const avatarSrc =
-        profile?.picture ||
-        authUser?.image  ||
+    const avatarSrc = getImageUrl(profile?.picture || authUser?.image) ||
         `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || authUser?.name || "U")}&background=random`;
 
     return (
@@ -63,7 +62,7 @@ const DashboardSection = () => {
                             <div className="flex items-start gap-4 xl:gap-5">
                                 <div className="w-16 h-16 sm:w-18 sm:h-18 xl:w-20 xl:h-20 rounded-full overflow-hidden border-4 border-brandColor bg-gray-100 shrink-0">
                                     {profile ? (
-                                        <img className="w-full h-full object-cover" src={`/api/${avatarSrc}`} alt="profile" />
+                                        <img className="w-full h-full object-cover" src={avatarSrc} alt="profile" />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 animate-pulse" />
                                     )}

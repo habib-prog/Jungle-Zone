@@ -7,6 +7,7 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import Footer from './components/common/Footer';
 import Navbar from './components/common/Navbar';
+import { getImageUrl } from '@/app/lib/imageUtils';
 import { faqData } from './components/api/fakeApi';
 
 export default function JungleZone() {
@@ -394,7 +395,7 @@ function Sitter({ name, loc, rate, img }) {
         <img
           loading='lazy'
           className="w-10 h-10 lg:w-12 lg:h-12 rounded-full overflow-hidden bg-white"
-          src={`/api/${img}` || "/img/user-placeholder.svg"}
+          src={getImageUrl(img) ?? "/img/user-placeholder.svg"}
           alt="image" />
         <div className='text-white'>
           <div className="font-medium text-sm lg:text-base">{name}</div>
