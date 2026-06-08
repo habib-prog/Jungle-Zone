@@ -1,6 +1,8 @@
 import { connectDB } from "@/config/db";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 
+await connectDB();
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -12,8 +14,6 @@ export async function GET(req) {
     const availabilityDays = searchParams.get("availabilityDays");
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 9;
-
-    await connectDB();
 
     const filter = { isApproved: true };
 
@@ -30,8 +30,8 @@ export async function GET(req) {
       filter.hourlyRate = {};
       const min = Number(minRate);
       const max = Number(maxRate);
-      if (!isNaN(min)) filter.hourlyRate.$gte = min;
-      if (!isNaN(max)) filter.hourlyRate.$lte = max;
+      if (!isNaN(min) && min > 0) filter.hourlyRate.$gte = min;
+      if (!isNaN(max) && max < 500) filter.hourlyRate.$lte = max;
       if (Object.keys(filter.hourlyRate).length === 0) delete filter.hourlyRate;
     }
 
@@ -44,13 +44,14 @@ export async function GET(req) {
 
     const skip = (page - 1) * limit;
 
-    const total = await BabySitterRegistration.countDocuments(filter);
-
-    const data = await BabySitterRegistration.find(filter)
-      .select("fullName profilePhoto zipCode hourlyRate availability")
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+    const [total, data] = await Promise.all([
+      BabySitterRegistration.countDocuments(filter),
+      BabySitterRegistration.find(filter)
+        .select("fullName profilePhoto zipCode hourlyRate availability")
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+    ]);
 
     return new Response(
       JSON.stringify({

@@ -177,7 +177,6 @@ const SearchBabySitter = () => {
             </button>
           </aside>
 
-
           <div className="flex-1">
 
             {loading ? (
@@ -193,7 +192,7 @@ const SearchBabySitter = () => {
                       <Link href={`/babysitters/${item._id}`}>
                         <div className="mb-5 max-h-60 w-full overflow-hidden rounded-sm bg-gray-200">
                           <img
-                            className="w-full"
+                            // className="w-full"
                             src={item.profilePhoto || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX6_emL9rSVs9Xi5QL9v71No8e2twojNljgw&s"}
                             alt={item.fullName}
                           />

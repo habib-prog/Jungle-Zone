@@ -69,6 +69,11 @@ const BabySitterRegistrationSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+BabySitterRegistrationSchema.index({ isApproved: 1, createdAt: -1 });
+BabySitterRegistrationSchema.index({ isApproved: 1, zipCode: 1 });
+BabySitterRegistrationSchema.index({ isApproved: 1, hourlyRate: 1 });
+BabySitterRegistrationSchema.index({ "availability.day": 1 });
+
 const BabySitterRegistration =
   mongoose.models["baby-sitter-auth"] ||
   mongoose.model("baby-sitter-auth", BabySitterRegistrationSchema);
