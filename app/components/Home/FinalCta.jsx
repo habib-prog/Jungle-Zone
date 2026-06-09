@@ -12,7 +12,7 @@ export default function FinalCta() {
           </h2>
 
           <p className="mt-4 font-poppis text-base font-light leading-8 text-[#555555]">
-            Search by zip code and book in minutes—safe, simple, and stress-free.
+            Search by Post code and book in minutes—safe, simple, and stress-free.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">

@@ -318,7 +318,7 @@ const AllBabySitters = () => {
                                 <span>{selectedSitter.location}</span>
                             </div>
                             <div className="flex justify-between py-2 border-b">
-                                <span className="font-medium text-gray-600">Zip Code:</span>
+                                <span className="font-medium text-gray-600">Post Code:</span>
                                 <span>{selectedSitter.zipCode}</span>
                             </div>
                         </div>

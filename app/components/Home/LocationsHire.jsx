@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function LocationsHire() {
   const cards = [
     {
-      title: "Find by Zip Code",
+      title: "Find by Post Code",
       desc: "Search trusted babysitters near you and compare profiles in minutes.",
       img: "/img/location.jpg",
       alt: "Neighborhood playground location",

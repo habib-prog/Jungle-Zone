@@ -1,7 +1,3 @@
-"use client";
-
-import React from "react";
-
 const Page = () => {
   return (
     <section className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 sm:py-10">

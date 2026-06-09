@@ -216,7 +216,7 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
 
                 <div>
                   <label className="text-lg font-semibold text-gray-400">
-                    Zip Code
+                    Post Code
                   </label>
                   <p className="mt-2 border-b-2 border-gray-300 pb-3 text-base text-gray-800">
                     {formData.zipCode || "-"}

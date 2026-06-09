@@ -107,11 +107,11 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
 
                 <div className="step-fade">
                   <label className="mb-2 block text-lg font-semibold text-gray-400">
-                    Zip Code
+                    Post Code
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter your zip code"
+                    placeholder="Enter your post code"
                     value={formData.zipCode}
                     onChange={(e) =>
                       updateFormData({ zipCode: e.target.value })

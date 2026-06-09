@@ -166,7 +166,7 @@ export default function JungleZone() {
                   <Sitter
                     key={item._id}
                     name={item.fullName}
-                    loc={item.zipCode ? `Zip ${item.zipCode}` : "UK"}
+                    loc={item.zipCode ? `PostCode ${item.zipCode}` : "UK"}
                     rate={item.hourlyRate ? `£${item.hourlyRate}/hr` : "Contact"}
                     img={item.profilePhoto}
                   />

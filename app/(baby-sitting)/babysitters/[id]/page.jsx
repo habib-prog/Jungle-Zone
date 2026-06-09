@@ -568,7 +568,7 @@ const Page = () => {
                     📍 {profile.location || "Unknown location"}
                   </p>
                   <p className="text-xs text-gray-400">
-                    ZIP: {profile.zipCode || "N/A"}
+                    Post Code: {profile.zipCode || "N/A"}
                   </p>
                 </p>
 

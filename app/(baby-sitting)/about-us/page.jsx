@@ -42,7 +42,7 @@ const page = () => {
                                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                                     </svg>
                                 </div>
-                                <div className="absolute -bottom-6 -right-6 bg-brandColor text-white px-6 py-4 rounded-xl shadow-lg">
+                                <div className="absolute -bottom-6 right-0 sm:-right-6 bg-brandColor text-white px-6 py-4 rounded-xl shadow-lg">
                                     <p className="font-poppins font-semibold text-sm">Founded in 2020</p>
                                     <p className="font-nunito text-xs">London, UK</p>
                                 </div>

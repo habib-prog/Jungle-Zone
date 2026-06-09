@@ -116,7 +116,7 @@ const SearchBabySitter = () => {
               </h4>
               <input
                 type="text"
-                placeholder="Enter zip code"
+                placeholder="Enter post code"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full outline-none border-2 border-gray-300 rounded-[35px] px-4 py-2"
@@ -182,12 +182,12 @@ const SearchBabySitter = () => {
             {loading ? (
               <p className="text-gray-500">Loading...</p>
             ) : (
-              <div className="mb-5 flex flex-wrap gap-5">
+              <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-between gap-5">
                 {babysitters.length > 0 ? (
                   babysitters.map((item) => (
                     <div
                       key={item._id}
-                      className="w-75 rounded-sm border-2 border-gray-200 p-2 duration-500 hover:scale-[1.01]"
+                      className="w-full md:max-w-75 rounded-sm border-2 border-gray-200 p-2 duration-500"
                     >
                       <Link href={`/babysitters/${item._id}`}>
                         <div className="mb-5 max-h-60 w-full overflow-hidden rounded-sm bg-gray-200">
@@ -208,7 +208,7 @@ const SearchBabySitter = () => {
                       <div className="mt-5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <TbCurrentLocation />
-                          <p>zip: {item.zipCode}</p>
+                          <p>Post Code: {item.zipCode}</p>
                         </div>
 
                         {item.hourlyRate && (

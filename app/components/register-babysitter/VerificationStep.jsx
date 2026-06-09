@@ -88,13 +88,13 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
             {/* Legal Documents List */}
             <div className="step-fade mb-8 text-left text-sm text-gray-500 sm:text-base">
               <ul className="list-disc pl-5">
-                <li>Valid Work Visa (e.g., H-2B, J-1, etc.)</li>
-                <li>Social Security Number (SSN)</li>
-                <li>Criminal Background Check</li>
-                <li>Work Authorization Document (if applicable)</li>
-                <li>Proof of Identification (Passport, National ID)</li>
-                <li>Optional Childcare Certifications (e.g., CPR, First Aid)</li>
-                <li>Proof of Legal Residency (if applicable)</li>
+                <li>Valid Passport or UK Photo ID</li>
+                <li>Right to Work in the UK (if applicable)</li>
+                <li>Enhanced DBS Certificate (recommended)</li>
+                <li>Proof of Address (utility bill or bank statement)</li>
+                <li>National Insurance Number (if applicable)</li>
+                <li>UK Visa / BRP (for non-UK citizens)</li>
+                <li>Paediatric First Aid or Childcare Qualifications (optional)</li>
               </ul>
             </div>
 

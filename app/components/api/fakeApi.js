@@ -168,7 +168,8 @@ export const FooterItems = [
         items: [
             { name: "Cookies Policy", link: "/cookies-policy" },
             { name: "Privacy Policy", link: "/privacy-policy" },
-            { name: "Terms of Service", link: "/terms-of-service" }
+            { name: "Terms of Service", link: "/terms-of-service" },
+            { name: "Terms & Conditions", link: "/terms-conditions" },
         ],
     }
 ];
@@ -204,41 +205,6 @@ export const fakeUsers = [
     { id: 3, name: "Daniel Lee", email: "daniel@mail.com", role: "Parent", image: "https://img.freepik.com/free-photo/modern-man-bench_23-2147961432.jpg?semt=ais_hybrid&w=740&q=80" },
     { id: 4, name: "Ava Khan", email: "ava@mail.com", role: "Parent", image: "https://img.freepik.com/free-photo/clueless-confused-charming-woman-with-curly-hair-eyewear-raising-hand-questioned-gesture-sitting-table_176420-24660.jpg?semt=ais_hybrid&w=740&q=80" },
 ]
-
-export const fakeSitters = [
-    {
-        name: 'Emma Johnson',
-        place: "Babysitter in London",
-        email: "fake@gmail.com",
-        zipCode: "SW1A 1AA",
-        image: 'https://img.freepik.com/free-photo/selfie-portrait-videocall_23-2149186122.jpg?semt=ais_hybrid&w=740&q=80',
-        info: 'Experienced babysitter with 5 years in childcare. Qualified in first aid and DBS checked. Loves outdoor activities and crafts. Available evenings and weekends in London area...',
-    },
-    {
-        name: 'Michael Smith',
-        place: "Babysitter in Manchester",
-        email: "fake@gmail.com",
-        zipCode: "M1 1AA",
-        image: 'https://img.freepik.com/free-photo/outdoor-shot-young-caucasian-man-with-beard-relaxing-open-air-surrounded-by-beautiful-mountain-setting-rainforest_273609-1855.jpg?semt=ais_hybrid&w=740&q=80',
-        info: 'Reliable childminder specializing in toddlers. Ofsted registered with excellent reviews. Focuses on educational play and healthy routines. Flexible hours in Manchester...',
-    },
-    {
-        name: 'Sophia Williams',
-        place: "Babysitter in Birmingham",
-        email: "fake@gmail.com",
-        zipCode: "B1 1AA",
-        image: 'https://img.freepik.com/free-photo/indoor-portrait-gorgeous-young-caucasian-female-student-with-perfect-healthy-skin_273609-9035.jpg?semt=ais_hybrid&w=740&q=80',
-        info: 'Friendly nanny with NVQ Level 3 in childcare. Experienced with newborns and special needs. Provides references and clean driving license. Based in Birmingham...',
-    },
-    {
-        name: 'James Brown',
-        place: "Babysitter in Edinburgh",
-        email: "fake@gmail.com",
-        zipCode: "EH1 1AA",
-        image: 'https://img.freepik.com/free-photo/curly-man-with-broad-smile-shows-perfect-teeth-being-amused-by-interesting-talk-has-bushy-curly-dark-hair-stands-indoor-against-white-blank-wall_273609-17092.jpg?semt=ais_hybrid&w=740&q=80',
-        info: 'Dedicated babysitter with 7+ years experience. Skilled in homework help and meal prep. DBS certified and pediatric CPR trained. Available full-time in Edinburgh...',
-    },
-];
 
 export const faqData = {
     parentFaqs: [

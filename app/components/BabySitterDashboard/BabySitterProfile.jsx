@@ -397,7 +397,7 @@ const BabySitterProfile = () => {
             <Field icon={FiPhone} label="Phone Number" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} editing={editing} type="tel" />
             <Field icon={FiHash} label="Age" name="age" value={form.age} onChange={handleChange} editing={editing} type="number" />
             <Field icon={FiMapPin} label="Location" name="location" value={form.location} onChange={handleChange} editing={editing} />
-            <Field icon={FiHash} label="Zip Code" name="zipCode" value={form.zipCode} onChange={handleChange} editing={editing} />
+            <Field icon={FiHash} label="Post Code" name="zipCode" value={form.zipCode} onChange={handleChange} editing={editing} />
             <Field icon={FiBriefcase} label="Years of Experience" name="yearsOfExperience" value={form.yearsOfExperience} onChange={handleChange} editing={editing} type="number" />
             <Field icon={FiDollarSign} label="Hourly Rate ($)" name="hourlyRate" value={form.hourlyRate} onChange={handleChange} editing={editing} type="number" step="0.01" />
             <Field icon={FiBook} label="Education Level" name="educationLevel" value={form.educationLevel} onChange={handleChange} editing={editing} />
