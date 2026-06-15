@@ -22,7 +22,6 @@ const DashboardSection = () => {
         totalDeals:    profile?.totalDeals    ?? 0,
         totalSpent:    profile?.totalSpent    ?? 0,
         ongoingDeals:  ongoingDeals.length,
-        wallet:        profile?.wallet        ?? 0,
     };
 
     const getStatusColor = (status) => {
@@ -118,14 +117,6 @@ const DashboardSection = () => {
                                         ${stats.totalSpent.toLocaleString()}
                                     </p>
                                     <span className="text-xs xl:text-sm text-gray-400 font-poppins">lifetime</span>
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-sm xl:text-base text-gray-500 font-poppins">Wallet</p>
-                                <div className="mt-3">
-                                    <p className="text-2xl xl:text-3xl font-semibold font-poppins text-gray-800">
-                                        ${stats.wallet.toLocaleString()}
-                                    </p>
                                 </div>
                             </div>
                         </div>

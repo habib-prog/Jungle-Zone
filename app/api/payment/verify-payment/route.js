@@ -37,16 +37,16 @@ export async function POST(req) {
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const payment = await Payment.findOne({ stripeSessionId: sessionId });
+    const subscription = await Subscription.findOne({ userId: user.id })
+      .select("endDate startDate plan billingCycle paymentStatus");
 
     if (session.payment_status === "paid") {
-      const subscription = await Subscription.findOne({
-        userId: user.id,
-      }).select("+endDate +startDate +plan");
-
       return NextResponse.json(
         {
           status: "success",
           subscription,
+          payment: payment || null,
           message: "Payment successful",
         },
         { status: 200 }
@@ -54,9 +54,15 @@ export async function POST(req) {
     }
 
     return NextResponse.json(
-      { status: session.payment_status, message: "Payment not completed yet" },
+      {
+        status: session.payment_status,
+        subscription,
+        payment: payment || null,
+        message: "Payment not completed yet",
+      },
       { status: 200 }
     );
+
   } catch (error) {
     return NextResponse.json(
       { error: error.message || "Server error" },

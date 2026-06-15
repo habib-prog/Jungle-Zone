@@ -11,7 +11,10 @@ const subscriptionPlansSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     isPopular: { type: Boolean, default: false },
     isDiscounted: { type: Boolean, default: false },
-    discountPercentage: { type: Number, default: 0 }
+    discountPercentage: { type: Number, default: 0 },
+    stripeProductId: { type: String, default: null },
+    stripeMonthlyPriceId: { type: String, default: null },
+    stripeYearlyPriceId: { type: String, default: null }
 }, { timestamps: true });
 
 subscriptionPlansSchema.index({ category: 1 });

@@ -238,7 +238,6 @@ const ProfileSection = () => {
             {[
               { label: "Total Deals", value: user.totalDeals ?? 0 },
               { label: "Total Spent", value: `$${user.totalSpent ?? 0}` },
-              { label: "Wallet Balance", value: `$${user.wallet ?? 0}` },
             ].map((s) => (
               <div key={s.label} className="rounded-md bg-gray-50 border border-gray-200 p-4">
                 <p className="text-xs text-gray-500 font-poppins">{s.label}</p>

@@ -18,18 +18,27 @@ import {
   FiClock,
 } from "react-icons/fi";
 import gsap from "gsap";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 
 const Page = () => {
-  const [open, setOpen] = useState(false);
   const sectionRef = useRef(null);
   const params = useParams();
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
   const id = params?.id;
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [availability, setAvailability] = useState([]);
+  const [viewer, setViewer] = useState({
+    isLoggedIn: false,
+    role: null,
+    hasActiveSubscription: false,
+    canSeeContact: false,
+  });
+  const [contactRevealed, setContactRevealed] = useState(false);
 
   const moreBabysitters = [];
 
@@ -112,7 +121,15 @@ const Page = () => {
         }
 
         const db = result.data;
+        const viewerData = result.viewer || {
+          isLoggedIn: false,
+          role: null,
+          hasActiveSubscription: false,
+          canSeeContact: false,
+        };
 
+        setViewer(viewerData);
+        setContactRevealed(viewerData.canSeeContact);
 
         // Show all available fields
         const mergedProfile = {
@@ -398,27 +415,48 @@ const Page = () => {
                 </div>
 
                 <div className="sm:w-56 flex flex-col gap-3">
-                  <button
-                    onClick={() => setOpen(true)}
-                    className="flex w-full items-center justify-center rounded-full bg-brandColor px-5 py-3 text-sm font-medium text-white transition hover:bg-brandColor/80 cursor-pointer"
-                  >
-                    Hire {profile.name}
-                  </button>
                   <div className="rounded-2x p-4 mb-2">
                     <p className="text-xs font-medium uppercase tracking-wide text-cyan-700">
-                      Phone Number
+                      Contact Information
                     </p>
                     <p className="mt-2 text-base font-semibold text-gray-800 break-all">
-                      {profile.phone}
+                      {contactRevealed ? `${profile.phone} • ${profile.email}` : "Hidden"}
                     </p>
-                  </div>
-                  <div className="rounded-2x p-4 mb-2">
-                    <p className="text-xs font-medium uppercase tracking-wide text-cyan-700">
-                      Email
-                    </p>
-                    <p className="mt-2 text-base font-semibold text-gray-800 break-all">
-                      {profile.email}
-                    </p>
+                    {!contactRevealed && (
+                      <div className="mt-3 space-y-2 text-sm text-gray-500">
+                        <p>
+                          {!viewer.isLoggedIn
+                            ? "Please register or log in to reveal contact details."
+                            : viewer.hasActiveSubscription
+                              ? "Click the button to reveal the babysitter's contact details."
+                              : "Subscribe to reveal this babysitter's contact details."
+                          }
+                        </p>
+                        <button
+                          onClick={() => {
+                            if (!isLoggedIn) {
+                              router.push("/register-parent");
+                              return;
+                            }
+
+                            if (!viewer.hasActiveSubscription) {
+                              router.push("/pricing");
+                              return;
+                            }
+
+                            setContactRevealed(true);
+                          }}
+                          className="w-full cursor-pointer rounded-full bg-brandColor px-4 py-3 text-sm font-medium text-white transition hover:bg-brandColor/80"
+                        >
+                          {!isLoggedIn
+                            ? "Register to Reveal"
+                            : viewer.hasActiveSubscription
+                              ? "Click to Reveal"
+                              : "Subscribe to Reveal"
+                          }
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

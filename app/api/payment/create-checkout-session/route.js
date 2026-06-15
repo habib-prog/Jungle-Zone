@@ -75,37 +75,100 @@ export async function POST(req) {
       );
     }
 
-    let amount = plan.price;
-    if (plan.isDiscounted && plan.discountPercentage) {
-      amount = plan.price * (1 - plan.discountPercentage / 100);
+    const getStripeProductId = async () => {
+      if (plan.stripeProductId) return plan.stripeProductId;
+
+      const product = await stripe.products.create({
+        name: plan.name,
+        description: plan.description || "",
+        metadata: {
+          planId: plan._id.toString(),
+          category: plan.category,
+        },
+      });
+
+      await subscriptionPlans.findByIdAndUpdate(plan._id, {
+        stripeProductId: product.id,
+      });
+
+      return product.id;
+    };
+
+    const getPriceAmount = () => {
+      let amount = plan.price;
+      if (plan.isDiscounted && plan.discountPercentage) {
+        amount = plan.price * (1 - plan.discountPercentage / 100);
+      }
+      return Math.round(amount * 100);
+    };
+
+    const createStripePrice = async (productId, cycle) => {
+      const unitAmount = getPriceAmount();
+      const recurringAmount = cycle === "yearly"
+        ? Math.round(unitAmount * 12 * 0.75)
+        : unitAmount;
+
+      const price = await stripe.prices.create({
+        product: productId,
+        unit_amount: recurringAmount,
+        currency: "gbp",
+        recurring: { interval: cycle === "yearly" ? "year" : "month" },
+        metadata: {
+          planId: plan._id.toString(),
+          billingCycle: cycle,
+        },
+      });
+
+      const priceField = cycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId";
+      await subscriptionPlans.findByIdAndUpdate(plan._id, {
+        [priceField]: price.id,
+        stripeProductId: productId,
+      });
+
+      return price.id;
+    };
+
+    const productId = await getStripeProductId();
+    const priceField = billingCycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId";
+    let priceId = plan[priceField];
+    if (!priceId) {
+      priceId = await createStripePrice(productId, billingCycle);
     }
 
-    const finalAmount = billingCycle === "yearly" ? amount * 12 * 0.75 : amount;
-    const amountInCents = Math.round(finalAmount * 100);
+    const finalAmount = billingCycle === "yearly"
+      ? Math.round(getPriceAmount() * 12 * 0.75) / 100
+      : getPriceAmount() / 100;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
-          price_data: {
-            currency: "gbp",
-            product_data: {
-              name: plan.name,
-              description: plan.description || "",
-              metadata: {
-                planId: plan._id.toString(),
-                features: JSON.stringify(plan.features),
-              },
-            },
-            unit_amount: amountInCents,
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: "subscription",
       success_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout/success?sessionId={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout?planId=${planId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout?planId=${planId}&billingCycle=${billingCycle}`,
       customer_email: userDoc.email,
+      payment_intent_data: {
+        metadata: {
+          userId: user.id,
+          planId: plan._id.toString(),
+          planName: plan.name,
+          category: user.role,
+          billingCycle,
+        },
+      },
+      subscription_data: {
+        metadata: {
+          userId: user.id,
+          planId: plan._id.toString(),
+          planName: plan.name,
+          category: user.role,
+          billingCycle,
+        },
+      },
       metadata: {
         userId: user.id,
         planId: plan._id.toString(),
@@ -125,6 +188,7 @@ export async function POST(req) {
       stripeSessionId: session.id,
       status: "pending",
       billingCycle,
+      stripePriceId: priceId,
     });
 
     return NextResponse.json(

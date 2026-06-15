@@ -214,10 +214,6 @@ const AllParents = () => {
                                     <span>${selectedParent.totalSpent || 0}</span>
                                 </div>
                                 <div className="flex justify-between py-2 border-b">
-                                    <span className="font-medium text-gray-600">Wallet:</span>
-                                    <span>${selectedParent.wallet || 0}</span>
-                                </div>
-                                <div className="flex justify-between py-2 border-b">
                                     <span className="font-medium text-gray-600">Provider:</span>
                                     <span className="capitalize">{selectedParent.provider}</span>
                                 </div>

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Check, Loader } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 const SubscriptionPage = () => {
@@ -13,8 +13,9 @@ const SubscriptionPage = () => {
 
     useEffect(() => {
         const fetchPlans = async () => {
+            setLoading(true);
             try {
-                const response = await fetch('/api/parent/subscription');
+                const response = await fetch(`/api/parent/subscription?role=${selectedRole}`);
                 const { plans } = await response.json();
                 setPlans(plans);
             } catch (error) {
@@ -25,13 +26,14 @@ const SubscriptionPage = () => {
         };
 
         fetchPlans();
-    }, []);
+    }, [selectedRole]);
 
-    const handleSelectPlan = async (planId) => {
+    const handleSelectPlan = async (planId, billingCycle) => {
         try {
-            // Check if user is authenticated
+            // Check if user is authenticated as parent or babysitter
             const authResponse = await fetch('/api/parent/profile');
-            if (!authResponse.ok) {
+            const authResponseSitter = !authResponse.ok ? await fetch('/api/babysitters/profile') : authResponse;
+            if (!authResponse.ok && !authResponseSitter.ok) {
                 toast.error('Please login to checkout');
                 router.push('/login');
                 return;
@@ -44,7 +46,7 @@ const SubscriptionPage = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     planId,
-                    billingCycle: 'monthly',
+                    billingCycle,
                 }),
             });
 
@@ -160,7 +162,7 @@ const SubscriptionPage = () => {
                                 ))}
                             </ul>
                             <button
-                                onClick={() => handleSelectPlan(parentPlans[0]?._id)}
+                                onClick={() => handleSelectPlan(parentPlans[0]?._id, 'monthly')}
                                 disabled={checkoutLoading || !parentPlans[0]}
                                 className="w-full bg-brandColor text-white py-4 rounded-xl font-semibold text-lg hover:bg-[#558b2f] transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
@@ -209,7 +211,7 @@ const SubscriptionPage = () => {
                                 ))}
                             </ul>
                             <button
-                                onClick={() => handleSelectPlan(parentPlans[0]?._id)}
+                                onClick={() => handleSelectPlan(parentPlans[0]?._id, 'yearly')}
                                 disabled={checkoutLoading || !parentPlans[0]}
                                 className="w-full bg-[#ff9800] text-white py-4 rounded-xl font-semibold text-lg hover:bg-[#f57c00] transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >

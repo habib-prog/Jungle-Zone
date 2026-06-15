@@ -16,12 +16,25 @@ const getUserId = async () => {
   }
 };
 
-// GET — fetch all active subscription plans (for parents)
-export async function GET() {
+// GET — fetch all active subscription plans, optionally filtered by role
+export async function GET(req) {
   try {
     await connectDB();
-    const plans = await subscriptionPlans.find({ isActive: true, category: { $in: ["parent", "both"] } })
-      .sort({ price: 1, duration: 1 });
+    const { searchParams } = new URL(req.url);
+    const role = searchParams.get("role");
+    let categoryFilter = ["parent", "babysitter", "both"];
+
+    if (role === "parent") {
+      categoryFilter = ["parent", "both"];
+    } else if (role === "babysitter") {
+      categoryFilter = ["babysitter", "both"];
+    }
+
+    const plans = await subscriptionPlans.find({
+      isActive: true,
+      category: { $in: categoryFilter },
+    }).sort({ price: 1, duration: 1 });
+
     return NextResponse.json({ plans }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error.message || "Server error" }, { status: 500 });

@@ -100,7 +100,7 @@ const handleCustomerSubscriptionDeleted = async (subscription) => {
   await connectDB();
 
   await Subscription.updateOne(
-    { userId: metadata?.userId },
+    { stripeSubscriptionId },
     {
       $set: {
         isActive: false,
@@ -108,6 +108,41 @@ const handleCustomerSubscriptionDeleted = async (subscription) => {
       },
     }
   );
+
+  if (metadata?.userId) {
+    const userModel = metadata.category === "babysitter" ? BabySitterRegistration : Parent;
+    await userModel.findByIdAndUpdate(metadata.userId, {
+      subscriptionId: null,
+      subscription: "free",
+      subscriptionStart: null,
+      subscriptionExpiry: null,
+    });
+  }
+};
+
+const handleInvoicePaymentSucceeded = async (invoice) => {
+  const { subscription: stripeSubscriptionId, customer, metadata, id: invoiceId, hosted_invoice_url } = invoice;
+
+  await connectDB();
+
+  const payment = await Payment.findOne({ stripeSubscriptionId }) || await Payment.findOne({ stripeSessionId: metadata?.checkout_session });
+  if (payment) {
+    await Payment.findByIdAndUpdate(payment._id, {
+      status: "completed",
+      stripeCustomerId: customer,
+      invoiceId,
+      receiptUrl: hosted_invoice_url,
+      nextPaymentDate: invoice.next_payment_attempt || payment.nextPaymentDate,
+    });
+  }
+
+  const subscriptionRecord = await Subscription.findOne({ stripeSubscriptionId });
+  if (subscriptionRecord) {
+    await Subscription.findByIdAndUpdate(subscriptionRecord._id, {
+      paymentStatus: "active",
+      nextPaymentDate: invoice.next_payment_attempt,
+    });
+  }
 };
 
 export async function POST(req) {
@@ -133,6 +168,9 @@ export async function POST(req) {
     switch (event.type) {
       case "checkout.session.completed":
         await handleCheckoutSessionCompleted(event.data.object);
+        break;
+      case "invoice.payment_succeeded":
+        await handleInvoicePaymentSucceeded(event.data.object);
         break;
       case "payment_intent.payment_failed":
         await handlePaymentIntentFailed(event.data.object);

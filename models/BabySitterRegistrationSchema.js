@@ -65,6 +65,8 @@ const BabySitterRegistrationSchema = new mongoose.Schema(
     isApproved: { type: Boolean, default: false },
     subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlans', default: null },
     subscription: { type: String, default: "free" },
+    subscriptionStart: { type: Date, default: null },
+    subscriptionExpiry: { type: Date, default: null },
   },
   { timestamps: true },
 );

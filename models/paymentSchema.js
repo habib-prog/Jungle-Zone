@@ -11,6 +11,7 @@ const paymentSchema = new mongoose.Schema({
   stripeSessionId: { type: String, unique: true },
   stripeCustomerId: { type: String },
   stripeSubscriptionId: { type: String },
+  stripePriceId: { type: String },
   status: {
     type: String,
     enum: ["pending", "completed", "failed", "cancelled", "refunded"],
