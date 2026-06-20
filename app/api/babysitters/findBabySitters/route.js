@@ -18,8 +18,14 @@ export async function GET(req) {
     const filter = { isApproved: true };
 
     if (zipCode) {
-      const zipNum = Number(zipCode);
-      if (!isNaN(zipNum)) filter.zipCode = zipNum;
+      const normalizedZipCode = zipCode.replace(/\s+/g, "");
+      const zipNum = Number(normalizedZipCode);
+
+      if (!normalizedZipCode || isNaN(zipNum)) {
+        return new Response(JSON.stringify({ error: "Postcode must be numeric" }), { status: 400 });
+      }
+
+      filter.zipCode = zipNum;
     }
 
     if (name) {

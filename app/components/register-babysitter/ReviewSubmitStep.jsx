@@ -60,16 +60,17 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
       payload.append("location", formData.location || "");
       payload.append("zipCode", formData.zipCode || "");
       payload.append("description", formData.description || "");
-      payload.append("certifications", formData.certifications || "");
-      payload.append("educationLevel", formData.educationLevel || "");
+payload.append("certifications", Array.isArray(formData.certifications) ? formData.certifications.join(",") : (formData.certifications || ""));
+       payload.append("educationLevel", formData.educationLevel || "");
       payload.append("preferredBabysittingLocation", formData.preferredBabysittingLocation || "");
       payload.append("languages", formData.languages?.join(",") || "");
       payload.append("yearsOfExperience", formData.yearsOfExperience || "");
       payload.append("hourlyRate", formData.hourlyRate || "");
       payload.append("comfortableWithAgeGroup", formData.comfortableWithAgeGroup?.join(",") || "");
-      payload.append("skills", formData.skills?.join(",") || "");
-      payload.append("availability", JSON.stringify(formData.availability || []));
-      payload.append("verificationDocs", formData.verificationDocs?.join(",") || "");
+payload.append("skills", formData.skills?.join(",") || "");
+       payload.append("availability", JSON.stringify(formData.availability || []));
+       payload.append("verificationDocs", formData.verificationDocs?.join(",") || "");
+       payload.append("preferences", formData.preferences?.join(",") || "");
 
       const response = await fetch("/api/babysitters/register", {
         method: "POST",

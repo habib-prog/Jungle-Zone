@@ -1,7 +1,7 @@
 "use client";
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Accordion, AccordionItem } from "@szhsin/react-accordion";
 import Image from 'next/image';
 import gsap from 'gsap';
@@ -19,6 +19,8 @@ export default function JungleZone() {
 
   const [latestBabysitters, setLatestBabysitters] = useState([]);
   const [loadingLatestBabysitters, setLoadingLatestBabysitters] = useState(false);
+  const [postcode, setPostcode] = useState("");
+  const [postcodeError, setPostcodeError] = useState("");
 
   useEffect(() => {
     const container = document.querySelector('.hero-slider-container');
@@ -51,27 +53,51 @@ export default function JungleZone() {
     return () => tl.kill();
   }, []);
 
-  const fetchBabysitters = async (page = 1) => {
+  const fetchBabysitters = useCallback(async (page = 1, searchPostcode = "") => {
     try {
       setLoadingLatestBabysitters(true);
-      const res = await fetch(`/api/babysitters/findBabySitters?page=${page}&limit=3`);
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: "3",
+      });
+
+      if (searchPostcode.trim()) {
+        params.set("zipCode", searchPostcode.trim());
+      }
+
+      const res = await fetch(`/api/babysitters/findBabySitters?${params.toString()}`);
       const result = await res.json();
 
       if (res.ok) {
         setLatestBabysitters(result.data || []);
+        setPostcodeError("");
       } else {
-        console.error(result.error || "Failed to fetch latest babysitters");
+        setPostcodeError(result.error || "Failed to fetch latest babysitters");
+        setLatestBabysitters([]);
       }
     } catch (error) {
-      console.error(error);
+      setPostcodeError(error.message || "Failed to fetch latest babysitters");
+      setLatestBabysitters([]);
     } finally {
       setLoadingLatestBabysitters(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBabysitters(1);
-  }, []);
+  }, [fetchBabysitters]);
+
+  const handleSearch = () => {
+    const normalizedPostcode = postcode.trim();
+
+    if (!normalizedPostcode) {
+      setPostcodeError("Please enter a postcode.");
+      return;
+    }
+
+    setPostcodeError("");
+    fetchBabysitters(1, normalizedPostcode);
+  };
 
   return (
     <>
@@ -147,22 +173,31 @@ export default function JungleZone() {
               Find a sitter near you
             </div>
 
-            <div className="flex items-stretch gap-2 mb-4 lg:mb-6">
-              <input
-                placeholder="Enter postcode..."
-                className="w-full px-4 py-2 lg:py-2 border border-white rounded-lg focus:outline-none text-white text-sm lg:text-base"
-              />
-              <button className="px-4 lg:px-5 py-2 text-white bg-brandColor rounded-lg shadow hover:scale-105 transition whitespace-nowrap">
-                Search
-              </button>
-            </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+              <div className="flex items-stretch gap-2 mb-2 lg:mb-3">
+                <input
+                  type="text"
+                  placeholder="Enter postcode..."
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  className="w-full px-4 py-2 lg:py-2 border border-white rounded-lg focus:outline-none text-white text-sm lg:text-base"
+                />
+                <button type="submit" className="px-4 lg:px-5 py-2 text-white bg-brandColor rounded-lg shadow hover:scale-105 transition whitespace-nowrap">
+                  Search
+                </button>
+              </div>
+              {postcodeError && (
+                <p className="text-red-200 text-xs mb-3">
+                  {postcodeError}
+                </p>
+              )}
+            </form>
 
             <div className="flex flex-col gap-3">
               {loadingLatestBabysitters ? (
                 <div className="text-white">Loading latest sitters...</div>
               ) : latestBabysitters.length > 0 ? (
                 latestBabysitters.map((item) => (
-                  console.log(item),
                   <Sitter
                     key={item._id}
                     name={item.fullName}

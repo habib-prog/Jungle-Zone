@@ -50,7 +50,8 @@ export async function POST(req) {
       comfortableWithAgeGroup,
       skills = [],
       availability = [],
-      verificationDocs
+      verificationDocs,
+      preferences = []
     } = mockReq.body;
 
     if (
@@ -90,7 +91,7 @@ export async function POST(req) {
     const newBabysitter = new BabySitterRegistration({
       fullName,
       email,
-      phoneNumber: Number(phoneNumber),
+      phoneNumber,
       password: hashedPassword,
       profilePhoto: picturePath,
       age: Number(age),
@@ -98,16 +99,17 @@ export async function POST(req) {
       location,
       zipCode: Number(zipCode),
       description,
-      certifications,
+      certifications: Array.isArray(certifications) ? certifications : (typeof certifications === 'string' ? certifications.split(',').map(c => c.trim()).filter(Boolean) : []),
       educationLevel,
       preferredBabysittingLocation,
-      languages: typeof languages === 'string' ? languages.split(',').map(l => l.trim()) : [],
-      yearsOfExperience: Number(yearsOfExperience),
-      hourlyRate: Number(hourlyRate),
-      comfortableWithAgeGroup,
-      skills: typeof skills === 'string' ? skills.split(',').map(s => s.trim()) : [],
+      languages: Array.isArray(languages) ? languages : (typeof languages === 'string' ? languages.split(',').map(l => l.trim()).filter(Boolean) : []),
+      yearsOfExperience: Number(yearsOfExperience) || null,
+      hourlyRate: Number(hourlyRate) || null,
+      comfortableWithAgeGroup: Array.isArray(comfortableWithAgeGroup) ? comfortableWithAgeGroup : (typeof comfortableWithAgeGroup === 'string' ? comfortableWithAgeGroup.split(',').map(a => a.trim()).filter(Boolean) : []),
+      skills: Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',').map(s => s.trim()).filter(Boolean) : []),
       availability: typeof availability === 'string' ? JSON.parse(availability || '[]') : [],
-      verificationDocs: typeof verificationDocs === 'string' ? verificationDocs.split(',').map(v => v.trim()) : []
+      verificationDocs: Array.isArray(verificationDocs) ? verificationDocs : (typeof verificationDocs === 'string' ? verificationDocs.split(',').map(v => v.trim()).filter(Boolean) : []),
+      preferences: Array.isArray(preferences) ? preferences : (typeof preferences === 'string' ? preferences.split(',').map(p => p.trim()).filter(Boolean) : [])
     });
 
     const savedData = await newBabysitter.save();

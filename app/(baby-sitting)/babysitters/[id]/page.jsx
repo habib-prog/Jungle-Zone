@@ -44,7 +44,8 @@ const Page = () => {
 
   const formatDate = (date) => {
     if (!date) return "Unmentioned";
-    return new Date(date).toLocaleDateString("en-US", {
+    const dateValue = date?.$date ? new Date(date.$date) : new Date(date);
+    return dateValue.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
     });
@@ -52,7 +53,8 @@ const Page = () => {
 
   const formatUpdatedDate = (date) => {
     if (!date) return "Unmentioned";
-    return `Updated: ${new Date(date).toLocaleDateString("en-US", {
+    const dateValue = date?.$date ? new Date(date.$date) : new Date(date);
+    return `Updated: ${dateValue.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -141,9 +143,9 @@ const Page = () => {
           age: db.age ?? "Unmentioned",
           zipCode: db.zipCode ?? "Unmentioned",
           rate: db.hourlyRate ? `£ ${db.hourlyRate}/hr` : "Unmentioned",
-          image: textOrUnmentioned(db.profilePhoto),
-          activity: db.lastActivity
-            ? `Last activity: ${new Date(db.lastActivity).toLocaleDateString()}`
+          image: db.profilePhoto ? db.profilePhoto : "Unmentioned",
+          activity: db.lastActivity?.$date || db.lastActivity
+            ? `Last activity: ${new Date(db.lastActivity?.$date || db.lastActivity).toLocaleDateString()}`
             : "Recently active",
           intro: textOrUnmentioned(db.description),
           certifications: arrayOrUnmentioned(db.certifications),
@@ -155,12 +157,12 @@ const Page = () => {
           educationLevel: textOrUnmentioned(db.educationLevel),
           educationDetails: textOrUnmentioned(db.educationDetails),
           superpowers: arrayOrUnmentioned(db.skills),
-          comfortableWith: arrayOrUnmentioned(db.comfortableWith),
+          comfortableWith: arrayOrUnmentioned(db.comfortableWithAgeGroup),
           location: textOrUnmentioned(db.location),
           updated: formatUpdatedDate(db.updatedAt),
           memberSince: formatDate(db.createdAt),
-          lastActivity: db.lastActivity
-            ? new Date(db.lastActivity).toLocaleDateString()
+          lastActivity: db.lastActivity?.$date || db.lastActivity
+            ? new Date(db.lastActivity?.$date || db.lastActivity).toLocaleDateString()
             : "Unmentioned",
           mapLink: textOrUnmentioned(db.mapLink),
           preferredBabysittingLocation: textOrUnmentioned(db.preferredBabysittingLocation),
@@ -224,6 +226,13 @@ const Page = () => {
                   : "Unmentioned",
               icon: <FiGlobe />,
             },
+            ...(Array.isArray(db.verificationDocs)
+              ? db.verificationDocs.map((doc, i) => ({
+                label: `Verification Doc ${i + 1}`,
+                value: doc,
+                icon: <FiAward className="text-brandColor" />,
+              }))
+              : []),
           ],
           verifications: [
             db.governmentIdVerified ? "Government ID" : null,
@@ -601,14 +610,14 @@ const Page = () => {
                 <h3 className="text-xl font-semibold text-gray-800">
                   Location
                 </h3>
-                <p className="mt-3 text-sm text-gray-500 font-bold">
+                <div className="mt-3 text-sm text-gray-500 font-bold">
                   <p className="mt-3 text-sm text-gray-500 font-medium">
                     📍 {profile.location || "Unknown location"}
                   </p>
                   <p className="text-xs text-gray-400">
                     Post Code: {profile.zipCode || "N/A"}
                   </p>
-                </p>
+                </div>
 
                 <div className="mt-5 overflow-hidden rounded-2xl border border-gray-200">
                   {profile.mapLink !== "Unmentioned" ? (

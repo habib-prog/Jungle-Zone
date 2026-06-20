@@ -78,7 +78,7 @@ const Page = () => {
 
     return () => ctx.revert();
   }, []);
-  
+  console.log(formData)
   return (
     <section
       ref={pageRef}
