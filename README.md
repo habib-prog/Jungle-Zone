@@ -10,7 +10,7 @@
 >
 > I have taken over the maintenance responsibility of this project. All ongoing bug fixes, feature additions, security patches, and code improvements are handled by me. For any issues, suggestions, or contributions, please open an issue or contact me directly.
 >
-> _Maintenance started: June 2025_
+> _Maintenance started: June 22 / 2026_
 
 ---
 
