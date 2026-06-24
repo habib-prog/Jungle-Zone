@@ -148,47 +148,9 @@ jungleZone/
 
 ---
 
-## ⚙️ Environment Variables
+## ⚙️ Environment Setup
 
-Create a `.env.local` file in the root of your project and add the following:
-
-```env
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-NEXT_PUBLIC_API_URL=http://localhost:3000
-
-# Node Mailer
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_app_password
-
-# Next Auth
-NEXTAUTH_URL=http://localhost:3000
-AUTH_SECRET=your_nextauth_secret
-AUTH_GOOGLE_ID=your_google_client_id
-AUTH_GOOGLE_SECRET=your_google_client_secret
-
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-```
-
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB connection string |
-| `JWT_SECRET` | Secret key for JWT token signing (`openssl rand -base64 32`) |
-| `NEXT_PUBLIC_API_URL` | Public base URL of the application |
-| `EMAIL_USER` | Gmail address for Nodemailer |
-| `EMAIL_PASS` | Gmail App Password for Nodemailer |
-| `NEXTAUTH_URL` | Base URL for NextAuth.js |
-| `AUTH_SECRET` | NextAuth encryption secret |
-| `AUTH_GOOGLE_ID` | Google OAuth Client ID |
-| `AUTH_GOOGLE_SECRET` | Google OAuth Client Secret |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (client-side) |
-| `STRIPE_SECRET_KEY` | Stripe secret key (server-side) |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-
-> ⚠️ **Do not commit `.env.local` to version control.**
+This project depends on environment-specific secrets and service credentials. Configure them in your local runtime or deployment platform as needed.
 
 ---
 
