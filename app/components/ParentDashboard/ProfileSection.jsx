@@ -30,7 +30,7 @@ const Field = ({ icon: Icon, label, name, value, onChange, editing, disabled = f
 );
 
 const ProfileSection = () => {
-  const { refreshUser } = useAuth();
+  const { refreshUser, user: authUser } = useAuth();
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,20 +48,25 @@ const ProfileSection = () => {
     .then((r) => r.json())
     .then((data) => {
         console.log(data)
-        setUser(data.parent);
-        setForm({
-          fullName: data.parent.fullName || "",
-          email: data.parent.email || "",
-          phone: data.parent.phone || "",
-          postCode: data.parent.postCode || "",
-          houseNo: data.parent.houseNo || "",
-          road: data.parent.road || "",
-          state: data.parent.state || "",
-          nationalId: data.parent.nationalId || "",
-          moreInfo: data.parent.moreInfo || "",
-        });
+        if (data.parent) {
+          setUser({
+            ...data.parent,
+            picture: data.parent.picture || authUser?.image || "",
+          });
+          setForm({
+            fullName: data.parent.fullName || authUser?.name || "",
+            email: data.parent.email || authUser?.email || "",
+            phone: data.parent.phone || "",
+            postCode: data.parent.postCode || "",
+            houseNo: data.parent.houseNo || "",
+            road: data.parent.road || "",
+            state: data.parent.state || "",
+            nationalId: data.parent.nationalId || "",
+            moreInfo: data.parent.moreInfo || "",
+          });
+        }
       });
-  }, []);
+  }, [authUser?.email, authUser?.image, authUser?.name]);
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -111,7 +116,7 @@ const ProfileSection = () => {
     }
   };
 
-  const avatarUrl = getImageUrl(user?.picture) ?? `https://ui-avatars.com/api/?name=${form.fullName}&background=random`;
+  const avatarUrl = getImageUrl(user?.picture || authUser?.image) ?? `https://ui-avatars.com/api/?name=${form.fullName || authUser?.name || "U"}&background=random`;
 
   if (!user) return (
     <div className="flex items-center justify-center h-64">

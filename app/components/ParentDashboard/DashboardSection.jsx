@@ -14,9 +14,15 @@ const DashboardSection = () => {
         fetch("/api/parent/profile")
             .then(r => r.json())
             .then(data => {
-                if (data.parent) setProfile(data.parent);
+                if (data.parent) {
+                    setProfile((prev) => ({
+                        ...prev,
+                        ...data.parent,
+                        picture: data.parent.picture || authUser?.image || prev?.picture || "",
+                    }));
+                }
             });
-    }, []);
+    }, [authUser?.image]);
 
     const stats = {
         totalDeals:    profile?.totalDeals    ?? 0,
@@ -60,7 +66,7 @@ const DashboardSection = () => {
                         <div className="p-5 sm:p-6 xl:p-8 xl:min-h-80">
                             <div className="flex items-start gap-4 xl:gap-5">
                                 <div className="w-16 h-16 sm:w-18 sm:h-18 xl:w-20 xl:h-20 rounded-full overflow-hidden border-4 border-brandColor bg-gray-100 shrink-0">
-                                    {profile ? (
+                                    {avatarSrc ? (
                                         <img className="w-full h-full object-cover" src={avatarSrc} alt="profile" />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 animate-pulse" />

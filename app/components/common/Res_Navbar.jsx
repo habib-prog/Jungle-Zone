@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/app/context/AuthContext";
 import { MdLogout } from "react-icons/md";
 import { getImageUrl } from "@/app/lib/imageUtils";
+import { normalizeRole } from "@/app/lib/roleUtils";
 
 const Res_Navbar = ({ navItems }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +18,7 @@ const Res_Navbar = ({ navItems }) => {
     const { user, isLoggedIn, isLoading, logout, loginLocal } = useAuth();
 
     const dashboardLink =
-        user?.role === "sitter" ? "/dashboard/babySitter" : "/dashboard/parent";
+        normalizeRole(user?.role) === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent";
 
     return (
         <nav className="lg:hidden backdrop-blur-2xl shadow-md py-4 px-6 flex justify-between items-center fixed w-full bg-white/80 z-999">

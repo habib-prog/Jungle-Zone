@@ -6,12 +6,13 @@ import { useAuth } from "@/app/context/AuthContext";
 import { getImageUrl } from "@/app/lib/imageUtils";
 import Res_Navbar from "./Res_Navbar";
 import { navItems } from "../api/fakeApi";
+import { normalizeRole } from "@/app/lib/roleUtils";
 
 const Navbar = () => {
   const { user, isLoggedIn, isLoading, logout, loginLocal } = useAuth();
 
   const dashboardLink =
-    user?.role === "sitter" ? "/dashboard/babySitter" : "/dashboard/parent";
+    normalizeRole(user?.role) === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent";
 
   return (
     <>

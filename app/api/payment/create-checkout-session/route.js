@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/config/db";
-import { verifyToken } from "@/middleware/auth";
+import { getAuthenticatedUser } from "@/middleware/auth";
 import { cookies } from "next/headers";
 import stripe from "@/config/stripe";
 import subscriptionPlans from "@/models/subscriptionPlans";
@@ -8,23 +8,12 @@ import Subscription from "@/models/subscriptionSchema";
 import Payment from "@/models/paymentSchema";
 import Parent from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
-
-const getUserFromToken = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  if (!token) return null;
-  try {
-    const decoded = verifyToken(token);
-    return decoded;
-  } catch {
-    return null;
-  }
-};
+import { normalizeRole } from "@/app/lib/roleUtils";
 
 export async function POST(req) {
   try {
     await connectDB();
-    const user = await getUserFromToken();
+    const user = await getAuthenticatedUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,14 +39,16 @@ export async function POST(req) {
     }
 
     // Verify plan is available for user's category
-    if (plan.category !== "both" && plan.category !== user.role) {
+    const normalizedRole = normalizeRole(user.role);
+
+    if (plan.category !== "both" && plan.category !== normalizedRole) {
       return NextResponse.json(
         { error: "This plan is not available for your account type" },
         { status: 403 }
       );
     }
 
-    const userModel = user.role === "babysitter" ? BabySitterRegistration : Parent;
+    const userModel = normalizedRole === "babysitter" ? BabySitterRegistration : Parent;
     const userDoc = await userModel.findById(user.id);
     if (!userDoc) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -151,21 +142,12 @@ export async function POST(req) {
       success_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout/success?sessionId={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout?planId=${planId}&billingCycle=${billingCycle}`,
       customer_email: userDoc.email,
-      payment_intent_data: {
-        metadata: {
-          userId: user.id,
-          planId: plan._id.toString(),
-          planName: plan.name,
-          category: user.role,
-          billingCycle,
-        },
-      },
       subscription_data: {
         metadata: {
           userId: user.id,
           planId: plan._id.toString(),
           planName: plan.name,
-          category: user.role,
+          category: normalizedRole,
           billingCycle,
         },
       },
@@ -173,14 +155,14 @@ export async function POST(req) {
         userId: user.id,
         planId: plan._id.toString(),
         planName: plan.name,
-        category: user.role,
+        category: normalizedRole,
         billingCycle,
       },
     });
 
     await Payment.create({
       userId: user.id,
-      category: user.role,
+      category: normalizedRole,
       subscriptionPlanId: plan._id,
       planName: plan.name,
       amount: finalAmount,

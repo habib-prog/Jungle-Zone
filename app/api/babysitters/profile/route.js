@@ -1,26 +1,14 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/config/db";
-import { verifyToken } from "@/middleware/auth";
-import { cookies } from "next/headers";
+import { getAuthenticatedUser } from "@/middleware/auth";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
-
-// Helper to get current user id from token
-const getUserId = async () => {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-    if (!token) return null;
-    try {
-        const decoded = verifyToken(token);
-        return decoded.id;
-    } catch {
-        return null;
-    }
-};
 
 // GET — fetch profile
 export async function GET() {
     try {
-        const id = await getUserId();
+        const user = await getAuthenticatedUser();
+        if (!user || !user.id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        const id = user.id;
         if (!id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         await connectDB();
@@ -35,8 +23,9 @@ export async function GET() {
 
 export async function PATCH(req) {
     try {
-        const id = await getUserId();
-        if (!id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        const user = await getAuthenticatedUser();
+        if (!user || !user.id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        const id = user.id;
 
         const body = await req.json();
 

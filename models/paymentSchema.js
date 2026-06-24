@@ -26,7 +26,6 @@ const paymentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 paymentSchema.index({ userId: 1, createdAt: -1 });
-paymentSchema.index({ stripeSessionId: 1 });
 paymentSchema.index({ status: 1 });
 
 export default mongoose.models.Payment || mongoose.model('Payment', paymentSchema);

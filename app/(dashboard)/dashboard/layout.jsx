@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { verifyTokenEdge } from "@/middleware/verifyEdge";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/authOptions";
 
 export default async function DashboardLayout({ children }) {
   const cookieStore = await cookies();
@@ -25,6 +25,8 @@ export default async function DashboardLayout({ children }) {
       user = {
         id: session.user.id,
         email: session.user.email,
+        name: session.user.name,
+        image: session.user.image,
         role: session.user.role,
       };
     }

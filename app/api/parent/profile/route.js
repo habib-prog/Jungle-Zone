@@ -1,30 +1,19 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
-import { verifyToken } from "@/middleware/auth";
-import { cookies } from "next/headers";
-
-// Helper to get current user id from token
-const getUserId = async () => {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-    if (!token) return null;
-    try {
-        const decoded = verifyToken(token);
-        return decoded.id;
-    } catch {
-        return null;
-    }
-};
+import { getAuthenticatedUser } from "@/middleware/auth";
 
 // GET — fetch profile
 export async function GET() {
     try {
-        const id = await getUserId();
-        if (!id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        const auth = await getAuthenticatedUser();
+        if (!auth) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         await connectDB();
-        const parent = await parentSchema.findById(id).select("-password");
+        const parent = auth.id
+            ? await parentSchema.findById(auth.id).select("-password")
+            : await parentSchema.findOne({ email: auth.email }).select("-password");
+
         if (!parent) return NextResponse.json({ message: "User not found" }, { status: 404 });
 
         return NextResponse.json({ parent }, { status: 200 });
@@ -35,8 +24,8 @@ export async function GET() {
 
 export async function PATCH(req) {
     try {
-        const id = await getUserId();
-        if (!id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        const auth = await getAuthenticatedUser();
+        if (!auth) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const body = await req.json();
 
@@ -47,11 +36,13 @@ export async function PATCH(req) {
         }
 
         await connectDB();
-        const account = await parentSchema.findByIdAndUpdate(
-            id,
-            { $set: updates },
-            { new: true }
-        ).select("-password");
+        const account = auth.id
+            ? await parentSchema.findByIdAndUpdate(auth.id, { $set: updates }, { new: true }).select("-password")
+            : await parentSchema.findOneAndUpdate(
+                { email: auth.email },
+                { $set: updates },
+                { new: true }
+            ).select("-password");
 
         return NextResponse.json({ success: true, message: "Profile updated successfully", account }, { status: 200 });
     } catch (err) {

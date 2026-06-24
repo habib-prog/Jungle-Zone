@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { verifyTokenEdge } from "@/middleware/verifyEdge";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/authOptions";
+import { normalizeRole } from "@/app/lib/roleUtils";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -13,6 +14,9 @@ export default async function DashboardPage() {
   if (token) {
     try {
       user = await verifyTokenEdge(token);
+      if (user?.role) {
+        user.role = normalizeRole(user.role);
+      }
     } catch {}
   }
 
@@ -21,7 +25,9 @@ export default async function DashboardPage() {
     if (session?.user) {
       user = {
         id: session.user.id,
-        role: session.user.role,
+        name: session.user.name,
+        image: session.user.image,
+        role: normalizeRole(session.user.role),
       };
     }
   }
@@ -30,7 +36,7 @@ export default async function DashboardPage() {
   // ROLE ROUTING
   if (user.role === "admin") redirect("/dashboard/admin");
 
-  if (user.role === "babySitter") redirect("/dashboard/babySitter");
+  if (user.role === "babysitter") redirect("/dashboard/babySitter");
 
   if (user.role === "parent") redirect("/dashboard/parent");
 

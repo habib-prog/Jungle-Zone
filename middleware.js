@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyTokenEdge } from "@/middleware/verifyEdge";
 import { getToken } from "next-auth/jwt";
+import { normalizeRole } from "@/app/lib/roleUtils";
 
 export async function middleware(req) {
   const { pathname } = req.nextUrl;
@@ -22,8 +23,12 @@ export async function middleware(req) {
     user = {
       id: nextAuthToken.sub,
       email: nextAuthToken.email,
-      role: nextAuthToken.role || "parent",
+      role: normalizeRole(nextAuthToken.role || "parent"),
     };
+  }
+
+  if (user?.role) {
+    user.role = normalizeRole(user.role);
   }
 
   if (!user) {
@@ -32,13 +37,13 @@ export async function middleware(req) {
 
   if (pathname.startsWith("/dashboard/admin")) {
     if (user.role !== "admin") {
-      const redirectUrl = user.role === "sitter" ? "/dashboard/babySitter" : "/dashboard/parent";
+      const redirectUrl = user.role === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent";
       return NextResponse.redirect(new URL(redirectUrl, req.url));
     }
   }
 
   if (pathname.startsWith("/dashboard/parent")) {
-    if (user.role === "sitter") {
+    if (user.role === "babysitter") {
       return NextResponse.redirect(new URL("/dashboard/babySitter", req.url));
     }
     if (user.role === "admin") {

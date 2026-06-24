@@ -10,6 +10,7 @@ const CheckoutSuccessContent = () => {
   const sessionId = searchParams.get("sessionId");
   const [status, setStatus] = useState("verifying");
   const [subscription, setSubscription] = useState(null);
+  const [redirectPath, setRedirectPath] = useState("/dashboard/parent");
 
   useEffect(() => {
     if (!sessionId) {
@@ -31,12 +32,14 @@ const CheckoutSuccessContent = () => {
         if (data.status === "success") {
           setStatus("success");
           setSubscription(data.subscription);
+          setRedirectPath(data.role === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent");
           toast.success("Payment successful! Your subscription is now active.");
           setTimeout(() => {
-            router.push("/dashboard/parent");
+            router.push(data.role === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent");
           }, 3000);
         } else {
           setStatus("pending");
+          setRedirectPath(data.role === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent");
           toast.info("Payment is being processed. Please check your account shortly.");
         }
       } catch (error) {
@@ -81,7 +84,7 @@ const CheckoutSuccessContent = () => {
             </div>
           )}
           <button
-            onClick={() => router.push("/dashboard/parent")}
+            onClick={() => router.push(redirectPath)}
             className="w-full bg-brandColor text-white py-3 rounded-lg font-semibold hover:bg-[#558b2f]"
           >
             Go to Dashboard
@@ -96,7 +99,7 @@ const CheckoutSuccessContent = () => {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
         <p className="text-lg text-gray-600">Payment verification in progress...</p>
         <button
-          onClick={() => router.push("/dashboard/parent")}
+          onClick={() => router.push(redirectPath)}
           className="w-full mt-6 bg-brandColor text-white py-3 rounded-lg font-semibold hover:bg-[#558b2f]"
         >
           Go to Dashboard

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
-import { verifyToken } from "@/middleware/auth";
+import { getAuthenticatedUser } from "@/middleware/auth";
 import { runMiddleware } from "@/middleware/multerMiddleware";
 import { cookies } from "next/headers";
 import fs from "fs";
@@ -13,17 +13,10 @@ export const runtime = 'nodejs';
 export async function POST(req) {
   try {
     // Auth check
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const user = await getAuthenticatedUser();
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    let userId;
-    try {
-      const decoded = verifyToken(token);
-      userId = decoded.id;
-    } catch {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
+    const userId = user.id;
 
     // Convert Next.js request to Node-compatible format for multer
     const contentType = req.headers.get("content-type") || "";

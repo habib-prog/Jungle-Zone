@@ -5,6 +5,7 @@ import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import parentSchema from "@/models/parentSchema";
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
+import { normalizeRole } from "@/app/lib/roleUtils";
 
 export async function POST(req) {
   try {
@@ -20,7 +21,7 @@ export async function POST(req) {
     ]);
 
     let account = parent || sitter || admin;
-    let role = admin ? "admin" : (sitter ? "sitter" : "parent");
+    let role = normalizeRole(account?.role || (admin ? "admin" : (sitter ? "sitter" : "parent")));
 
     if (!account) return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
 
@@ -35,10 +36,11 @@ export async function POST(req) {
 
     if (!ok) return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
 
-    const token = signToken({ id: account._id, email: account.email, role });
-
     account = account.toObject();
+    account.role = role;
     delete account.password;
+
+    const token = signToken({ id: account._id, email: account.email, role });
 
     // Store token in httpOnly cookie (secure way)
     const res = NextResponse.json({ success: true, message: "Login success", account }, { status: 200 });

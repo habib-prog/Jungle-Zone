@@ -1,27 +1,17 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/config/db";
-import { verifyToken } from "@/middleware/auth";
+import { getAuthenticatedUser } from "@/middleware/auth";
 import { cookies } from "next/headers";
 import stripe from "@/config/stripe";
 import Payment from "@/models/paymentSchema";
 import Subscription from "@/models/subscriptionSchema";
-
-const getUserFromToken = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  if (!token) return null;
-  try {
-    const decoded = verifyToken(token);
-    return decoded;
-  } catch {
-    return null;
-  }
-};
+import { normalizeRole } from "@/app/lib/roleUtils";
+import { fulfillSubscription } from "@/app/lib/stripeUtils";
 
 export async function POST(req) {
   try {
     await connectDB();
-    const user = await getUserFromToken();
+    const user = await getAuthenticatedUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -37,9 +27,21 @@ export async function POST(req) {
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status === "paid") {
+      await fulfillSubscription({
+        stripeSubscriptionId: session.subscription,
+        stripeCustomerId: session.customer,
+        paymentIntentId: session.payment_intent,
+        stripeSessionId: session.id,
+        metadata: session.metadata,
+      });
+    }
+
     const payment = await Payment.findOne({ stripeSessionId: sessionId });
     const subscription = await Subscription.findOne({ userId: user.id })
       .select("endDate startDate plan billingCycle paymentStatus");
+    const role = normalizeRole(user.role || payment?.category || subscription?.category);
 
     if (session.payment_status === "paid") {
       return NextResponse.json(
@@ -47,6 +49,7 @@ export async function POST(req) {
           status: "success",
           subscription,
           payment: payment || null,
+          role,
           message: "Payment successful",
         },
         { status: 200 }
@@ -58,6 +61,7 @@ export async function POST(req) {
         status: session.payment_status,
         subscription,
         payment: payment || null,
+        role,
         message: "Payment not completed yet",
       },
       { status: 200 }

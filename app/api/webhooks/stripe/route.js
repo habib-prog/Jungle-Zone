@@ -5,83 +5,21 @@ import Payment from "@/models/paymentSchema";
 import Subscription from "@/models/subscriptionSchema";
 import Parent from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
+import { normalizeRole } from "@/app/lib/roleUtils";
+import { fulfillSubscription } from "@/app/lib/stripeUtils";
 
 const handleCheckoutSessionCompleted = async (session) => {
-  const { metadata, id: sessionId, customer_email } = session;
-
-  await connectDB();
-
-  const payment = await Payment.findOne({ stripeSessionId: sessionId });
-  if (!payment) {
-    console.log("Payment record not found for session:", sessionId);
-    return;
-  }
-
-  if (payment.status === "completed") {
-    console.log("Payment already processed:", sessionId);
-    return;
-  }
-
-  const plan = await require("@/models/subscriptionPlans").default.findById(metadata.planId);
-  if (!plan) {
-    console.log("Plan not found:", metadata.planId);
-    return;
-  }
-
-  const startDate = new Date();
-  let endDate = new Date();
-
-  if (metadata.billingCycle === "yearly") {
-    endDate.setFullYear(endDate.getFullYear() + 1);
-  } else {
-    endDate.setMonth(endDate.getMonth() + 1);
-  }
-
-  await Subscription.updateOne(
-    { userId: metadata.userId, category: metadata.category },
-    {
-      $set: {
-        userId: metadata.userId,
-        category: metadata.category,
-        subscriptionId: metadata.planId,
-        plan: metadata.planName,
-        startDate,
-        endDate,
-        isActive: true,
-        paymentMethod: "stripe",
-        transactionId: session.payment_intent,
-        stripeSessionId: sessionId,
-        stripeCustomerId: session.customer,
-        paymentStatus: "active",
-        nextPaymentDate: endDate,
-        billingCycle: metadata.billingCycle,
-        lastPaymentId: payment._id,
-      },
-    },
-    { upsert: true }
-  );
-
-  const userModel =
-    metadata.category === "babysitter" ? BabySitterRegistration : Parent;
-  await userModel.findByIdAndUpdate(metadata.userId, {
-    subscriptionId: metadata.planId,
-    subscription: metadata.planName,
-    subscriptionStart: startDate,
-    subscriptionExpiry: endDate,
-  });
-
-  await Payment.findByIdAndUpdate(payment._id, {
-    status: "completed",
-    stripePaymentIntentId: session.payment_intent,
-    stripeSessionId: sessionId,
-    stripeCustomerId: session.customer,
+  await fulfillSubscription({
     stripeSubscriptionId: session.subscription,
-    nextPaymentDate: endDate,
+    stripeCustomerId: session.customer,
+    paymentIntentId: session.payment_intent,
+    stripeSessionId: session.id,
+    metadata: session.metadata,
   });
 };
 
 const handlePaymentIntentFailed = async (paymentIntent) => {
-  const { id: paymentIntentId, metadata } = paymentIntent;
+  const { id: paymentIntentId } = paymentIntent;
 
   await connectDB();
 
@@ -99,50 +37,61 @@ const handleCustomerSubscriptionDeleted = async (subscription) => {
 
   await connectDB();
 
-  await Subscription.updateOne(
+  const subscriptionRecord = await Subscription.findOneAndUpdate(
     { stripeSubscriptionId },
     {
       $set: {
         isActive: false,
         paymentStatus: "cancelled",
       },
-    }
+    },
+    { new: true }
   );
 
-  if (metadata?.userId) {
-    const userModel = metadata.category === "babysitter" ? BabySitterRegistration : Parent;
-    await userModel.findByIdAndUpdate(metadata.userId, {
+  const userId = metadata?.userId || subscriptionRecord?.userId;
+  const category = metadata?.category || subscriptionRecord?.category;
+  const normalizedCategory = normalizeRole(category);
+
+  if (userId) {
+    const userModel = normalizedCategory === "babysitter" ? BabySitterRegistration : Parent;
+    await userModel.findByIdAndUpdate(userId, {
       subscriptionId: null,
       subscription: "free",
       subscriptionStart: null,
       subscriptionExpiry: null,
     });
+    console.log("[Webhook] Successfully downgraded user to free:", userId);
+  } else {
+    console.warn("[Webhook] Could not downgrade user on subscription deletion: userId not found", {
+      stripeSubscriptionId,
+      metadata
+    });
   }
 };
 
 const handleInvoicePaymentSucceeded = async (invoice) => {
-  const { subscription: stripeSubscriptionId, customer, metadata, id: invoiceId, hosted_invoice_url } = invoice;
+  const stripeSubscriptionId = invoice.subscription;
+  let metadata = invoice.metadata;
 
-  await connectDB();
-
-  const payment = await Payment.findOne({ stripeSubscriptionId }) || await Payment.findOne({ stripeSessionId: metadata?.checkout_session });
-  if (payment) {
-    await Payment.findByIdAndUpdate(payment._id, {
-      status: "completed",
-      stripeCustomerId: customer,
-      invoiceId,
-      receiptUrl: hosted_invoice_url,
-      nextPaymentDate: invoice.next_payment_attempt || payment.nextPaymentDate,
-    });
+  if (stripeSubscriptionId) {
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      if (stripeSub && stripeSub.metadata) {
+        metadata = { ...metadata, ...stripeSub.metadata };
+      }
+    } catch (err) {
+      console.error("Error retrieving Stripe subscription metadata in webhook:", err);
+    }
   }
 
-  const subscriptionRecord = await Subscription.findOne({ stripeSubscriptionId });
-  if (subscriptionRecord) {
-    await Subscription.findByIdAndUpdate(subscriptionRecord._id, {
-      paymentStatus: "active",
-      nextPaymentDate: invoice.next_payment_attempt,
-    });
-  }
+  await fulfillSubscription({
+    stripeSubscriptionId: invoice.subscription,
+    stripeCustomerId: invoice.customer,
+    paymentIntentId: invoice.payment_intent,
+    invoiceId: invoice.id,
+    receiptUrl: invoice.hosted_invoice_url,
+    metadata,
+  });
 };
 
 export async function POST(req) {
