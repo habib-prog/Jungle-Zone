@@ -88,6 +88,10 @@ export async function POST(req) {
     // Save picture path using the API image proxy route
     const picturePath = `/api/profilePicture/babySitterWebsite/sitter/${mockReq.file.filename}`;
 
+    const startDate = new Date();
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + 2);
+
     const newBabysitter = new BabySitterRegistration({
       fullName,
       email,
@@ -109,7 +113,10 @@ export async function POST(req) {
       skills: Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',').map(s => s.trim()).filter(Boolean) : []),
       availability: typeof availability === 'string' ? JSON.parse(availability || '[]') : [],
       verificationDocs: Array.isArray(verificationDocs) ? verificationDocs : (typeof verificationDocs === 'string' ? verificationDocs.split(',').map(v => v.trim()).filter(Boolean) : []),
-      preferences: Array.isArray(preferences) ? preferences : (typeof preferences === 'string' ? preferences.split(',').map(p => p.trim()).filter(Boolean) : [])
+      preferences: Array.isArray(preferences) ? preferences : (typeof preferences === 'string' ? preferences.split(',').map(p => p.trim()).filter(Boolean) : []),
+      subscription: "trial",
+      subscriptionStart: startDate,
+      subscriptionExpiry: expiryDate
     });
 
     const savedData = await newBabysitter.save();

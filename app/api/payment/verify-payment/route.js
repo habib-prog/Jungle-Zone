@@ -28,7 +28,9 @@ export async function POST(req) {
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (session.payment_status === "paid") {
+    const isSuccessful = session.payment_status === "paid" || session.payment_status === "no_payment_required";
+
+    if (isSuccessful) {
       await fulfillSubscription({
         stripeSubscriptionId: session.subscription,
         stripeCustomerId: session.customer,
@@ -43,7 +45,7 @@ export async function POST(req) {
       .select("endDate startDate plan billingCycle paymentStatus");
     const role = normalizeRole(user.role || payment?.category || subscription?.category);
 
-    if (session.payment_status === "paid") {
+    if (isSuccessful) {
       return NextResponse.json(
         {
           status: "success",

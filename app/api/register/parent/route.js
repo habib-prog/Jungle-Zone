@@ -6,21 +6,33 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   try {
     const { fullName, email, password, postCode } = await req.json();
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    if (!fullName || !email || !password || !postCode) return NextResponse.json({ message: "All fields required" }, { status: 400 });
+    if (!fullName || !normalizedEmail || !password || !postCode) {
+      return NextResponse.json({ message: "All fields required" }, { status: 400 });
+    }
 
     await connectDB();
 
-    const existing = await parentSchema.findOne({ email });
-    if (existing) return NextResponse.json({ message: "Email already exists" }, { status: 400 });
+    const existing = await parentSchema.findOne({ email: normalizedEmail });
+    if (existing) {
+      return NextResponse.json({ message: "Email already exists" }, { status: 400 });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
 
+    const startDate = new Date();
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + 1);
+
     const newUser = new parentSchema({
-      fullName,
-      email,
+      fullName: fullName.trim(),
+      email: normalizedEmail,
       password: hashed,
-      postCode
+      postCode: postCode.trim(),
+      subscription: "trial",
+      subscriptionStart: startDate,
+      subscriptionExpiry: expiryDate
     });
 
     await newUser.save();

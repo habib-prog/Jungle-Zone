@@ -25,6 +25,10 @@ export const authOptions = {
                     ]);
 
                     if (!existingParent && !existingSitter) {
+                        const startDate = new Date();
+                        const expiryDate = new Date();
+                        expiryDate.setMonth(expiryDate.getMonth() + 1);
+
                         await parentSchema.create({
                             fullName: user.name,
                             email: user.email,
@@ -32,6 +36,9 @@ export const authOptions = {
                             password: "",
                             provider: "google",
                             role: "parent",
+                            subscription: "trial",
+                            subscriptionStart: startDate,
+                            subscriptionExpiry: expiryDate
                         });
                     }
                 }

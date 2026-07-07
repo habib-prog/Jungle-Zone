@@ -22,6 +22,7 @@ const Page = () => {
 
   // ========== terms state ==========
   const [agree, setAgree] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -77,17 +78,31 @@ const Page = () => {
   const onSubmit = async (e) => {
     try {
       e.preventDefault();
+      setSubmitError("");
       if (!isFormValid) return;
+
+      const payload = {
+        fullName: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
+        postCode: form.postCode.trim(),
+        password: form.password,
+      };
 
       const res = await fetch("/api/register/parent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-      if(res.ok){
-        router.push("/login")
+      const data = await res.json();
+
+      if (res.ok) {
+        router.push("/login");
+        return;
       }
+
+      setSubmitError(data?.message || "Registration failed");
     } catch (error) {
+      setSubmitError("Something went wrong. Please try again.");
     }
   };
 
@@ -204,13 +219,16 @@ const Page = () => {
                 >
                   Continue
                 </button>
+                {submitError && (
+                  <p className="mt-3 text-sm text-red-500">{submitError}</p>
+                )}
               </div>
               <h2 className="text-center text-base font-bold  font-poppins text-black">Or</h2>
 
               {/* ========== google Register button ========== */}
 
               <button
-                type="submit"
+                type="button"
                 className={`h-12 w-full rounded-full text-white font-medium transition bg-black flex justify-center items-center gap-3 cursor-pointer`}
                 onClick={() => signIn("google", { callbackUrl: "/" })}
               >

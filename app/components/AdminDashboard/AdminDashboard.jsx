@@ -7,6 +7,7 @@ import AllParents from "./AllParents";
 import Link from "next/link";
 import logo from "../../../public/img/logo.png";
 import SubscriptionPlans from "./SubscriptionPlans";
+import PaymentHistory from "./PaymentHistory";
 
 const AdminDashboard = () => {
 
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
                     <AdminSidebarButton label="Parents" active={activeTab === "parents"} onClick={() => setActiveTab("parents")} />
                     <AdminSidebarButton label="Babysitters" active={activeTab === "sitters"} onClick={() => setActiveTab("sitters")} />
                     <AdminSidebarButton label="Subscription Plans" active={activeTab === "subscription"} onClick={() => setActiveTab("subscription")} />
+                    <AdminSidebarButton label="Payments" active={activeTab === "payments"} onClick={() => setActiveTab("payments")} />
                     <AdminSidebarButton label="Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
                 </nav>
             </aside>
@@ -58,8 +60,13 @@ const AdminDashboard = () => {
                     <SubscriptionPlans />
                 )}
 
+                {/* Payment History */}
+                {activeTab === "payments" && (
+                    <PaymentHistory />
+                )}
+
                 {/* Placeholder for other tabs */}
-                {!["sitters", "parents", "overview", "subscription"].includes(activeTab) && (
+                {!["sitters", "parents", "overview", "subscription", "payments"].includes(activeTab) && (
                     <div className="bg-white p-10 rounded-xl border text-center text-gray-500">
                         <p className="text-lg">{activeTab} section UI is ready for your real data.</p>
                         <p className="text-sm mt-2">Connect this to your backend API and you're golden 🚀</p>

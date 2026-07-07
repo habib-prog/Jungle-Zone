@@ -5,6 +5,7 @@ import Parent from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import subscriptionPlans from "@/models/subscriptionPlans";
 import { normalizeRole } from "@/app/lib/roleUtils";
+import stripe from "@/config/stripe";
 
 /**
  * Idempotently fulfills a subscription payment.
@@ -87,7 +88,7 @@ export const fulfillSubscription = async ({
   }
 
   // 4. Calculate start & expiry dates
-  const startDate = new Date();
+  let startDate = new Date();
   let endDate = new Date();
   if (finalBillingCycle === "yearly") {
     endDate.setFullYear(endDate.getFullYear() + 1);
@@ -95,9 +96,47 @@ export const fulfillSubscription = async ({
     endDate.setMonth(endDate.getMonth() + 1);
   }
 
-  // 5. Update/Upsert Subscription model
+  const newStripeSubId = stripeSubscriptionId || payment?.stripeSubscriptionId;
+
+  if (newStripeSubId) {
+    try {
+      const stripeSubscriptionObj = await stripe.subscriptions.retrieve(newStripeSubId);
+      if (stripeSubscriptionObj) {
+        startDate = new Date(stripeSubscriptionObj.current_period_start * 1000);
+        endDate = new Date(stripeSubscriptionObj.current_period_end * 1000);
+        console.log("[Fulfillment] Set dates from Stripe Subscription:", { startDate, endDate });
+      }
+    } catch (err) {
+      console.error("[Fulfillment] Failed to retrieve stripe subscription for dates:", err.message);
+    }
+  }
+
+  const oldSubscriptions = await Subscription.find({
+    userId: finalUserId,
+    isActive: true,
+    ...(newStripeSubId ? { stripeSubscriptionId: { $ne: newStripeSubId } } : {}),
+  });
+
+  for (const oldSub of oldSubscriptions) {
+    if (oldSub.stripeSubscriptionId && oldSub.stripeSubscriptionId !== newStripeSubId) {
+      try {
+        await stripe.subscriptions.cancel(oldSub.stripeSubscriptionId);
+        console.log("[Fulfillment] Cancelled old Stripe subscription:", oldSub.stripeSubscriptionId);
+      } catch (stripeErr) {
+        // Already cancelled on Stripe side — safe to continue
+        console.warn("[Fulfillment] Old Stripe sub cancel warning:", stripeErr.message);
+      }
+    }
+    await Subscription.findByIdAndUpdate(oldSub._id, {
+      isActive: false,
+      paymentStatus: "cancelled",
+    });
+    console.log("[Fulfillment] Marked old DB subscription as cancelled:", oldSub._id);
+  }
+
+  // 6. Upsert the new active Subscription record
   await Subscription.updateOne(
-    { userId: finalUserId, category: finalCategory },
+    { userId: finalUserId, category: finalCategory, stripeSubscriptionId: newStripeSubId },
     {
       $set: {
         userId: finalUserId,
@@ -111,7 +150,7 @@ export const fulfillSubscription = async ({
         transactionId: paymentIntentId || payment?.stripePaymentIntentId,
         stripeSessionId: stripeSessionId || payment?.stripeSessionId,
         stripeCustomerId: stripeCustomerId || payment?.stripeCustomerId,
-        stripeSubscriptionId: stripeSubscriptionId || payment?.stripeSubscriptionId,
+        stripeSubscriptionId: newStripeSubId,
         paymentStatus: "active",
         nextPaymentDate: endDate,
         billingCycle: finalBillingCycle,
@@ -120,7 +159,7 @@ export const fulfillSubscription = async ({
     { upsert: true }
   );
 
-  // 6. Update User document (Parent or BabySitter)
+  // 7. Update User document (Parent or BabySitter)
   const userModel = finalCategory === "babysitter" ? BabySitterRegistration : Parent;
   await userModel.findByIdAndUpdate(finalUserId, {
     subscriptionId: finalPlanId,
@@ -129,7 +168,7 @@ export const fulfillSubscription = async ({
     subscriptionExpiry: endDate,
   });
 
-  // 7. Update/Create Payment history record
+  // 8. Update/Create Payment history record
   if (payment) {
     // Update existing payment record to completed
     await Payment.findByIdAndUpdate(payment._id, {

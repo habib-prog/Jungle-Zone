@@ -54,29 +54,21 @@ export async function POST(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if user already has active subscription
-    const existingSubscription = await Subscription.findOne({
-      userId: user.id,
-      isActive: true,
-    });
-    if (existingSubscription) {
-      return NextResponse.json(
-        { error: "You already have an active subscription. Please cancel it first to upgrade/downgrade." },
-        { status: 400 }
-      );
-    }
 
     const getStripeProductId = async () => {
       if (plan.stripeProductId) return plan.stripeProductId;
 
-      const product = await stripe.products.create({
+      const productData = {
         name: plan.name,
-        description: plan.description || "",
         metadata: {
           planId: plan._id.toString(),
           category: plan.category,
         },
-      });
+      };
+      if (plan.description && plan.description.trim()) {
+        productData.description = plan.description.trim();
+      }
+      const product = await stripe.products.create(productData);
 
       await subscriptionPlans.findByIdAndUpdate(plan._id, {
         stripeProductId: product.id,
@@ -130,7 +122,18 @@ export async function POST(req) {
       ? Math.round(getPriceAmount() * 12 * 0.75) / 100
       : getPriceAmount() / 100;
 
-    const session = await stripe.checkout.sessions.create({
+    const hasActiveTrial = userDoc.subscription === "trial" && userDoc.subscriptionExpiry && new Date(userDoc.subscriptionExpiry) > new Date();
+    const hasNeverHadTrial = userDoc.subscription === "free" && !userDoc.subscriptionStart;
+
+    let trialDays = 0;
+    if (hasActiveTrial) {
+      const diffTime = new Date(userDoc.subscriptionExpiry).getTime() - Date.now();
+      trialDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } else if (hasNeverHadTrial) {
+      trialDays = normalizedRole === "babysitter" ? 60 : 30;
+    }
+
+    const sessionOptions = {
       payment_method_types: ["card"],
       line_items: [
         {
@@ -158,7 +161,13 @@ export async function POST(req) {
         category: normalizedRole,
         billingCycle,
       },
-    });
+    };
+
+    if (isTrial && trialDays > 0) {
+      sessionOptions.subscription_data.trial_period_days = trialDays;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     await Payment.create({
       userId: user.id,
@@ -178,6 +187,7 @@ export async function POST(req) {
       { status: 200 }
     );
   } catch (error) {
+    console.error("Create Checkout Session Error:", error);
     return NextResponse.json(
       { error: error.message || "Server error" },
       { status: 500 }
