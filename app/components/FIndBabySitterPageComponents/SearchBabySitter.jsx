@@ -1,13 +1,16 @@
 "use client";
 
 import { Pagination, Rate } from "antd";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { TbCurrentLocation } from "react-icons/tb";
 import { Slider } from "antd";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 
 const SearchBabySitter = () => {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
   const [babysitters, setBabysitters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -29,11 +32,12 @@ const SearchBabySitter = () => {
     const params = new URLSearchParams();
     if (location) params.append("zipCode", location);
     if (hourlyRate[0] > 0) params.append("minRate", hourlyRate[0]);
-    if (hourlyRate[1] < 100) params.append("maxRate", hourlyRate[1]);
+    if (hourlyRate[1] < 500) params.append("maxRate", hourlyRate[1]);
     const selectedDays = Object.entries(availability)
       .filter(([_, checked]) => checked)
       .map(([day]) => day);
-    if (selectedDays.length > 0) params.append("availabilityDays", selectedDays.join(","));
+    if (selectedDays.length > 0)
+      params.append("availabilityDays", selectedDays.join(","));
     return params.toString();
   };
 
@@ -41,7 +45,8 @@ const SearchBabySitter = () => {
     try {
       setLoading(true);
       const query = buildQueryParams();
-      const res = await fetch(`/api/babysitters/findBabySitters?page=${page}&${query}`);
+      const url = `/api/babysitters/findBabySitters?page=${page}${query ? "&" + query : ""}`;
+      const res = await fetch(url);
       const result = await res.json();
 
       if (res.ok) {
@@ -79,7 +84,7 @@ const SearchBabySitter = () => {
 
   const resetFilters = () => {
     setLocation("");
-    setHourlyRate([0, 100]);
+    setHourlyRate([0, 500]);
     setAvailability({
       Monday: false,
       Tuesday: false,
@@ -94,6 +99,15 @@ const SearchBabySitter = () => {
 
   const handlePageChange = (page) => {
     fetchBabysitters(page);
+  };
+
+  const handleBabysitterClick = (id) => {
+    if (!isLoggedIn) {
+      toast.error("Please login to view babysitter details");
+      router.push("/login");
+      return;
+    }
+    router.push(`/babysitters/${id}`);
   };
 
   return (
@@ -134,7 +148,7 @@ const SearchBabySitter = () => {
                 step={1}
                 value={hourlyRate}
                 onChange={handleHourlyRateChange}
-                onAfterChange={handleSearch}
+                onChangeComplete={handleSearch}
                 className="mb-2"
               />
               <div className="flex justify-between text-sm text-gray-600">
@@ -149,14 +163,21 @@ const SearchBabySitter = () => {
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(availability).map(([day, isChecked]) => (
-                  <label key={day} className="flex items-center gap-2 cursor-pointer">
+                  <label
+                    key={day}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={(e) => handleAvailabilityChange(day, e.target.checked)}
+                      onChange={(e) =>
+                        handleAvailabilityChange(day, e.target.checked)
+                      }
                       className="w-4 h-4 text-brandColor rounded focus:ring-brandColor"
                     />
-                    <span className="text-gray-700 capitalize text-sm">{day}</span>
+                    <span className="text-gray-700 capitalize text-sm">
+                      {day}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -178,7 +199,6 @@ const SearchBabySitter = () => {
           </aside>
 
           <div className="flex-1">
-
             {loading ? (
               <p className="text-gray-500">Loading...</p>
             ) : (
@@ -187,23 +207,24 @@ const SearchBabySitter = () => {
                   babysitters.map((item) => (
                     <div
                       key={item._id}
-                      className="w-full md:max-w-75 rounded-sm border-2 border-gray-200 p-2 duration-500"
+                      onClick={() => handleBabysitterClick(item._id)}
+                      className="w-full md:max-w-75 rounded-sm border-2 border-gray-200 p-2 duration-500 cursor-pointer hover:border-brandColor hover:shadow-lg transition"
                     >
-                      <Link href={`/babysitters/${item._id}`}>
-                        <div className="mb-5 max-h-60 w-full overflow-hidden rounded-sm bg-gray-200">
-                          <img
-                            // className="w-full"
-                            src={item.profilePhoto || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX6_emL9rSVs9Xi5QL9v71No8e2twojNljgw&s"}
-                            alt={item.fullName}
-                          />
-                        </div>
+                      <div className="mb-5 max-h-60 w-full overflow-hidden rounded-sm bg-gray-200">
+                        <img
+                          src={
+                            item.profilePhoto ||
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX6_emL9rSVs9Xi5QL9v71No8e2twojNljgw&s"
+                          }
+                          alt={item.fullName}
+                        />
+                      </div>
 
-                        <Rate allowHalf defaultValue={5} />
+                      <Rate allowHalf defaultValue={5} />
 
-                        <h2 className="select-none font-poppins text-lg font-semibold text-gray-500">
-                          {item.fullName}
-                        </h2>
-                      </Link>
+                      <h2 className="select-none font-poppins text-lg font-semibold text-gray-500">
+                        {item.fullName}
+                      </h2>
 
                       <div className="mt-5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -212,7 +233,9 @@ const SearchBabySitter = () => {
                         </div>
 
                         {item.hourlyRate && (
-                          <p className="text-brandColor font-semibold">£{item.hourlyRate}/hr</p>
+                          <p className="text-brandColor font-semibold">
+                            £{item.hourlyRate}/hr
+                          </p>
                         )}
                       </div>
                     </div>

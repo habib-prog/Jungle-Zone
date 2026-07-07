@@ -67,13 +67,56 @@ export async function POST(req) {
       return NextResponse.json({ error: "All required fields must be provided" }, { status: 400 });
     }
 
+    // Name should not contain numbers
+    if (/[0-9]/.test(fullName)) {
+      return NextResponse.json({ error: "Full name should not contain numbers" }, { status: 400 });
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
+    // Phone number digits validation
+    if (!/^\+?[0-9\s\-]+$/.test(phoneNumber)) {
+      return NextResponse.json({ error: "Phone number must contain digits only" }, { status: 400 });
+    }
+
     if (password.length < 6) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    }
+
+    // Age validation
+    const parsedAge = Number(age);
+    if (isNaN(parsedAge) || parsedAge < 18 || parsedAge > 100) {
+      return NextResponse.json({ error: "Age must be a number between 18 and 100" }, { status: 400 });
+    }
+
+    // Post code validation (must be positive number)
+    const parsedZip = Number(zipCode);
+    if (isNaN(parsedZip) || parsedZip <= 0) {
+      return NextResponse.json({ error: "Post code must be positive numbers only" }, { status: 400 });
+    }
+
+    // Hourly rate validation
+    if (hourlyRate) {
+      const parsedRate = Number(hourlyRate);
+      if (isNaN(parsedRate) || parsedRate <= 0) {
+        return NextResponse.json({ error: "Hourly rate must be a positive number" }, { status: 400 });
+      }
+    }
+
+    // Years of experience validation
+    if (yearsOfExperience) {
+      const parsedExp = Number(yearsOfExperience);
+      if (isNaN(parsedExp) || parsedExp < 0) {
+        return NextResponse.json({ error: "Years of experience must be a positive number" }, { status: 400 });
+      }
+    }
+
+    // Description validation
+    if (!description || description.length < 10) {
+      return NextResponse.json({ error: "Short bio must be at least 10 characters long" }, { status: 400 });
     }
 
     await connectDB();

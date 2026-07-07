@@ -8,11 +8,16 @@ import gsap from "gsap";
 const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
   const sectionRef = useRef(null);
   const [imageUrl, setImageUrl] = useState("");
+  const nameError = formData.fullName && !/^[a-zA-Z\s]+$/.test(formData.fullName) ? "Name should only contain letters" : "";
+  const emailError = formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) ? "Invalid email format" : "";
+  const phoneError = formData.phoneNumber && !/^\+?[0-9\s\-]+$/.test(formData.phoneNumber) ? "Phone number must be digits only" : "";
+  const passError = formData.password && formData.password.length < 6 ? "Password must be at least 6 characters" : "";
+
   const isValid =
-    formData.fullName &&
-    formData.email &&
-    formData.phoneNumber &&
-    formData.password &&
+    formData.fullName && !nameError &&
+    formData.email && !emailError &&
+    formData.phoneNumber && !phoneError &&
+    formData.password && !passError &&
     formData.profilePhoto;
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -80,6 +85,9 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
                   onChange={(e) => updateFormData({ fullName: e.target.value })}
                   className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                 />
+                {nameError && (
+                  <p className="mt-1 text-sm text-red-500 font-poppins">{nameError}</p>
+                )}
               </div>
 
               {/* ========== email address ========== */}
@@ -94,6 +102,9 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
                   onChange={(e) => updateFormData({ email: e.target.value })}
                   className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                 />
+                {emailError && (
+                  <p className="mt-1 text-sm text-red-500 font-poppins">{emailError}</p>
+                )}
               </div>
 
               {/* ========== phone number ========== */}
@@ -110,6 +121,9 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
                   }
                   className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                 />
+                {phoneError && (
+                  <p className="mt-1 text-sm text-red-500 font-poppins">{phoneError}</p>
+                )}
               </div>
 
               {/* ========== password ========== */}
@@ -124,6 +138,9 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
                   onChange={(e) => updateFormData({ password: e.target.value })}
                   className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                 />
+                {passError && (
+                  <p className="mt-1 text-sm text-red-500 font-poppins">{passError}</p>
+                )}
               </div>
 
               {/* ========== profile photo ========== */}

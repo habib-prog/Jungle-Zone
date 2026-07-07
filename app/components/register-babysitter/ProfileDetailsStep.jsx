@@ -8,6 +8,43 @@ import gsap from "gsap";
 const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
   const sectionRef = useRef(null);
 
+  const ageError = formData.age && (!/^\d+$/.test(formData.age) || Number(formData.age) < 18 || Number(formData.age) > 100)
+    ? "Age must be a number between 18 and 100"
+    : "";
+
+  const locationError = formData.location && !/^[a-zA-Z\s,]+$/.test(formData.location)
+    ? "Location should contain letters only"
+    : "";
+
+  const zipError = formData.zipCode && !/^\d+$/.test(formData.zipCode)
+    ? "Post code must be positive numbers only"
+    : "";
+
+  const expError = formData.yearsOfExperience && (!/^\d+$/.test(formData.yearsOfExperience) || Number(formData.yearsOfExperience) < 0)
+    ? "Experience must be a positive number of years"
+    : "";
+
+  const rateError = formData.hourlyRate && (isNaN(Number(formData.hourlyRate)) || Number(formData.hourlyRate) <= 0)
+    ? "Hourly rate must be a positive number"
+    : "";
+
+  const bioError = formData.description && formData.description.length < 10
+    ? "Bio should be at least 10 characters"
+    : "";
+
+  const isValid =
+    formData.age && !ageError &&
+    formData.gender &&
+    formData.location && !locationError &&
+    formData.zipCode && !zipError &&
+    formData.languages?.length > 0 &&
+    formData.yearsOfExperience !== "" && !expError &&
+    formData.hourlyRate !== "" && !rateError &&
+    formData.comfortableWithAgeGroup?.length > 0 &&
+    formData.skills?.length > 0 &&
+    formData.preferences?.length > 0 &&
+    formData.description && !bioError;
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".step-fade", {
@@ -67,6 +104,9 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                     onChange={(e) => updateFormData({ age: e.target.value })}
                     className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                   />
+                  {ageError && (
+                    <p className="mt-1 text-sm text-red-500 font-poppins">{ageError}</p>
+                  )}
                 </div>
 
                 <div className="step-fade">
@@ -103,6 +143,9 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                     }
                     className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                   />
+                  {locationError && (
+                    <p className="mt-1 text-sm text-red-500 font-poppins">{locationError}</p>
+                  )}
                 </div>
 
                 <div className="step-fade">
@@ -118,6 +161,9 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                     }
                     className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                   />
+                  {zipError && (
+                    <p className="mt-1 text-sm text-red-500 font-poppins">{zipError}</p>
+                  )}
                 </div>
               </div>
 
@@ -147,15 +193,18 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                 <label className="mb-2 block text-lg font-semibold text-gray-400">
                   Years of experience
                 </label>
-                <input
-                  type="text"
-                  placeholder="Enter your experience"
-                  value={formData.yearsOfExperience}
-                  onChange={(e) =>
-                    updateFormData({ yearsOfExperience: e.target.value })
-                  }
-                  className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
-                />
+                  <input
+                    type="text"
+                    placeholder="Enter your experience"
+                    value={formData.yearsOfExperience}
+                    onChange={(e) =>
+                      updateFormData({ yearsOfExperience: e.target.value })
+                    }
+                    className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
+                  />
+                  {expError && (
+                    <p className="mt-1 text-sm text-red-500 font-poppins">{expError}</p>
+                  )}
               </div>
 
               {/* ========== hourly rate ========== */}
@@ -163,15 +212,18 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                 <label className="mb-2 block text-lg font-semibold text-gray-400">
                   Hourly rate
                 </label>
-                <input
-                  type="number"
-                  placeholder="Enter your hourly rate"
-                  value={formData.hourlyRate}
-                  onChange={(e) =>
-                    updateFormData({ hourlyRate: e.target.value })
-                  }
-                  className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
-                />
+                  <input
+                    type="number"
+                    placeholder="Enter your hourly rate"
+                    value={formData.hourlyRate}
+                    onChange={(e) =>
+                      updateFormData({ hourlyRate: e.target.value })
+                    }
+                    className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
+                  />
+                  {rateError && (
+                    <p className="mt-1 text-sm text-red-500 font-poppins">{rateError}</p>
+                  )}
               </div>
 
               {/* ========== kids age group ========== */}
@@ -255,6 +307,9 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                   }
                   className="w-full resize-none border-b-2 border-gray-400 bg-transparent py-3 text-base text-gray-800 outline-none placeholder:text-gray-400"
                 />
+                {bioError && (
+                  <p className="mt-1 text-sm text-red-500 font-poppins">{bioError}</p>
+                )}
               </div>
 
               {/* ========== helper text ========== */}
@@ -282,6 +337,7 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
               {/* ========== next button ========== */}
               <button
                 onClick={onNext}
+                disabled={!isValid}
                 className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Next

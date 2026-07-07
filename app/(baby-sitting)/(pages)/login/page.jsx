@@ -53,7 +53,20 @@ const page = () => {
         const data = await res.json();
         loginLocal(data);
         refreshUser();
-        router.push("/");
+
+        // Redirect based on user role
+        const role = data.account?.role;
+        let redirectUrl = "/";
+
+        if (role === "sitter" || role === "babysitter") {
+          redirectUrl = "/dashboard/babySitter";
+        } else if (role === "admin") {
+          redirectUrl = "/dashboard/admin";
+        } else if (role === "parent") {
+          redirectUrl = "/dashboard/parent";
+        }
+
+        router.push(redirectUrl);
         router.refresh();
       } else {
         const data = await res.json();
@@ -62,17 +75,14 @@ const page = () => {
     } catch (error) {
       toast.error(error.message || "Something went wrong. Please try again.");
     }
-  }
+  };
 
   return (
     <section
       id="login"
       className="min-h-screen bg-white p-5 flex justify-center items-center"
     >
-      <div
-        className="overflow-hidden mt-20 lg:mt-0"
-        data-aos="zoom-in"
-      >
+      <div className="overflow-hidden mt-20 lg:mt-0" data-aos="zoom-in">
         <Link href="#" className="logo inline-flex" data-aos="fade-down">
           <Image className="w-50 h-auto" src={logo} alt="junglezone" priority />
         </Link>
@@ -112,7 +122,11 @@ const page = () => {
               Sign in to your account
             </h2>
 
-            <form onSubmit={handleLogin} data-aos="fade-up" data-aos-delay="140">
+            <form
+              onSubmit={handleLogin}
+              data-aos="fade-up"
+              data-aos-delay="140"
+            >
               {/* email field */}
               <h2 className="text-sm font-bold font-poppins text-gray-600 mt-5 mb-2">
                 Email
@@ -155,26 +169,35 @@ const page = () => {
                 type="submit"
                 disabled={!isFormValid}
                 className={`py-2 w-full lg:w-100 mt-7 rounded-[5px] text-white text-lg font-semibold font-poppins transition 
-                    ${isFormValid
-                    ? "bg-brandColor cursor-pointer"
-                    : "bg-brandColor/50 cursor-not-allowed opacity-60"
-                  }`}
-
+                    ${
+                      isFormValid
+                        ? "bg-brandColor cursor-pointer"
+                        : "bg-brandColor/50 cursor-not-allowed opacity-60"
+                    }`}
               >
                 Login
               </button>
             </form>
 
-            <h2 className="text-center text-base font-bold  font-poppins text-black my-3">Or</h2>
+            <h2 className="text-center text-base font-bold  font-poppins text-black my-3">
+              Or
+            </h2>
 
             {/* ========== google Register button ========== */}
 
             <button
               type="button"
               className={`h-12 w-full rounded-full text-white font-medium transition bg-black hover:bg-black/70 duration-200 flex justify-center items-center gap-3 cursor-pointer`}
-              onClick={() => signIn("google", { callbackUrl: "/" })}
+              onClick={() =>
+                signIn("google", { callbackUrl: "/dashboard/parent" })
+              }
             >
-              <Image width={30} height={30} src={"/img/googlelogo.png"} alt="google image" />{" "}
+              <Image
+                width={30}
+                height={30}
+                src={"/img/googlelogo.png"}
+                alt="google image"
+              />{" "}
               Sign in With Google
             </button>
 
@@ -185,7 +208,10 @@ const page = () => {
             >
               {" "}
               Don't have an account?{" "}
-              <Link className="font-semibold text-brandColor" href={"/register"}>
+              <Link
+                className="font-semibold text-brandColor"
+                href={"/register"}
+              >
                 Register
               </Link>
             </p>

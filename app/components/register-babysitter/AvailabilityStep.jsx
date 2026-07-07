@@ -48,7 +48,10 @@ const AvailabilityStep = ({ onNext, onBack, formData, updateFormData }) => {
     });
   };
 
+  const hasSelectedAvailability = Object.values(availability).some((slots) => slots && slots.length > 0);
+
   const handleNext = () => {
+    if (!hasSelectedAvailability) return;
     const availabilityArray = Object.entries(availability).map(
       ([day, slots]) => ({
         day,
@@ -209,6 +212,7 @@ const AvailabilityStep = ({ onNext, onBack, formData, updateFormData }) => {
                 type="primary"
                 size="large"
                 onClick={handleNext}
+                disabled={!hasSelectedAvailability}
                 className="flex items-center gap-2 rounded py-2 px-6 hover:bg-brandColor hover:text-white duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Next

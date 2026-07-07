@@ -22,7 +22,10 @@ export async function GET(req) {
       const zipNum = Number(normalizedZipCode);
 
       if (!normalizedZipCode || isNaN(zipNum)) {
-        return new Response(JSON.stringify({ error: "Postcode must be numeric" }), { status: 400 });
+        return new Response(
+          JSON.stringify({ error: "Postcode must be numeric" }),
+          { status: 400 },
+        );
       }
 
       filter.zipCode = zipNum;
@@ -34,15 +37,22 @@ export async function GET(req) {
 
     if (minRate || maxRate) {
       filter.hourlyRate = {};
-      const min = Number(minRate);
-      const max = Number(maxRate);
-      if (!isNaN(min) && min > 0) filter.hourlyRate.$gte = min;
-      if (!isNaN(max) && max < 500) filter.hourlyRate.$lte = max;
+      if (minRate) {
+        const min = Number(minRate);
+        if (!isNaN(min) && min > 0) filter.hourlyRate.$gte = min;
+      }
+      if (maxRate) {
+        const max = Number(maxRate);
+        if (!isNaN(max) && max < 500) filter.hourlyRate.$lte = max;
+      }
       if (Object.keys(filter.hourlyRate).length === 0) delete filter.hourlyRate;
     }
 
     if (availabilityDays) {
-      const days = availabilityDays.split(",").map((d) => d.trim()).filter(Boolean);
+      const days = availabilityDays
+        .split(",")
+        .map((d) => d.trim())
+        .filter(Boolean);
       if (days.length > 0) {
         filter["availability.day"] = { $in: days };
       }
@@ -68,7 +78,7 @@ export async function GET(req) {
         limit,
         data,
       }),
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {

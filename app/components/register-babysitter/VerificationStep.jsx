@@ -174,7 +174,8 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
                 type="primary"
                 size="large"
                 onClick={onNext}
-                className="flex items-center gap-2 rounded px-6 py-2 bg-brandColor text-white cursor-pointer duration-200 hover:bg-brandColor/80"
+                disabled={selectedDocs.length === 0}
+                className="flex items-center gap-2 rounded px-6 py-2 bg-brandColor text-white cursor-pointer duration-200 hover:bg-brandColor/80 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Next
                 <FiArrowRight />
