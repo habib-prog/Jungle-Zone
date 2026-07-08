@@ -5,6 +5,7 @@ import { getImageUrl } from "@/app/lib/imageUtils";
 
 const BabySitterDashboardSection = () => {
   const [profile, setProfile] = useState(null);
+  const [activeSub, setActiveSub] = useState(null);
 
   useEffect(() => {
     fetch("/api/babysitters/profile")
@@ -12,7 +13,27 @@ const BabySitterDashboardSection = () => {
       .then(data => {
         if (data.sitter) setProfile(data.sitter);
       });
+
+    fetch("/api/payment/subscription")
+      .then(r => r.json())
+      .then(data => {
+        if (data.subscription) setActiveSub(data.subscription);
+      })
+      .catch(() => {});
   }, []);
+
+  const renderPlanBadge = () => {
+    if (activeSub) {
+      return `Active: ${activeSub.plan} (${activeSub.billingCycle})`;
+    }
+    if (profile?.subscription === 'trial') {
+      const remaining = profile.subscriptionExpiry 
+        ? Math.ceil((new Date(profile.subscriptionExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) 
+        : 0;
+      return `Free Trial ${remaining > 0 ? '(' + remaining + ' days left)' : '(Expired)'}`;
+    }
+    return `Free Plan`;
+  };
 
   const avatarSrc = getImageUrl(profile?.profilePhoto) ??
     `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || "S")}&background=random`;
@@ -56,6 +77,15 @@ const BabySitterDashboardSection = () => {
                   <p className="text-sm xl:text-base text-gray-500 font-poppins">
                     {profile?.phoneNumber}
                   </p>
+                  
+                  {profile && (
+                    <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandColor/10 border border-brandColor/20">
+                        <div className="w-2 h-2 rounded-full bg-brandColor" />
+                        <span className="text-xs font-medium text-brandColor font-poppins">
+                            Plan: {renderPlanBadge()}
+                        </span>
+                    </div>
+                  )}
 
                   <div className="mt-3 xl:mt-4 flex items-center gap-3">
                     <Rate disabled defaultValue={profile?.rating} />

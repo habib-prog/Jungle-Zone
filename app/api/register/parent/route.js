@@ -9,21 +9,23 @@ export async function POST(req) {
     const normalizedEmail = email?.trim().toLowerCase();
 
     if (!fullName || !normalizedEmail || !password || !postCode) {
-      return NextResponse.json({ message: "All fields required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "All fields required" },
+        { status: 400 },
+      );
     }
 
     await connectDB();
 
     const existing = await parentSchema.findOne({ email: normalizedEmail });
     if (existing) {
-      return NextResponse.json({ message: "Email already exists" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Email already exists" },
+        { status: 400 },
+      );
     }
 
     const hashed = await bcrypt.hash(password, 10);
-
-    const startDate = new Date();
-    const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + 1);
 
     const newUser = new parentSchema({
       fullName: fullName.trim(),
@@ -31,13 +33,19 @@ export async function POST(req) {
       password: hashed,
       postCode: postCode.trim(),
       subscription: "trial",
-      subscriptionStart: startDate,
-      subscriptionExpiry: expiryDate
+      subscriptionStart: new Date(),
+      subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
     await newUser.save();
-    return NextResponse.json({ message: "User registered successfully" }, { status: 201 });
+    return NextResponse.json(
+      { message: "User registered successfully" },
+      { status: 201 },
+    );
   } catch (err) {
-    return NextResponse.json({ message: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: err.message || "Server error" },
+      { status: 500 },
+    );
   }
 }

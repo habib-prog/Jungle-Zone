@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { FiClock, FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 const demoBillingHistory = [
@@ -69,13 +70,35 @@ const StatusBadge = ({ status }) => {
 };
 
 const SubscriptionSection = () => {
+  const [userSubscription, setUserSubscription] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/babysitters/profile")
+      .then(r => r.json())
+      .then(data => {
+        if (data.sitter) setUserSubscription(data.sitter);
+      })
+      .catch(() => {});
+  }, []);
+
   const formatDate = (date) =>
     new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
   const getDaysLeft = (endDate) =>
     Math.max(0, Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24)));
 
-  const activePlan = demoBillingHistory.find((b) => b.status === "active");
+  let activePlan = demoBillingHistory.find((b) => b.status === "active");
+  if (userSubscription && userSubscription.subscriptionExpiry) {
+    activePlan = {
+      plan: userSubscription.subscription === "trial" ? "Free Trial" : (userSubscription.subscription || "Free").toUpperCase(),
+      price: userSubscription.subscription === "trial" ? 0 : 2.99,
+      currency: "£",
+      startDate: userSubscription.subscriptionStart,
+      endDate: userSubscription.subscriptionExpiry,
+      status: "active",
+      paymentMethod: "—"
+    };
+  }
 
   return (
     <div>
@@ -98,7 +121,7 @@ const SubscriptionSection = () => {
               </h2>
               <StatusBadge status="active" />
             </div>
-            <div className="px-6 py-5 grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div className="px-6 py-5 grid grid-cols-2 sm:grid-cols-5 gap-6">
               <div>
                 <p className="text-xs text-gray-400 font-poppins mb-1">Plan</p>
                 <p className="text-sm font-semibold font-poppins text-gray-800">{activePlan.plan}</p>
@@ -106,11 +129,15 @@ const SubscriptionSection = () => {
               <div>
                 <p className="text-xs text-gray-400 font-poppins mb-1">Price</p>
                 <p className="text-sm font-semibold font-poppins text-gray-800">
-                  {activePlan.currency}{activePlan.price}/month
+                  {activePlan.price === 0 ? "Free" : `${activePlan.currency}${activePlan.price}/month`}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 font-poppins mb-1">Renews On</p>
+                <p className="text-xs text-gray-400 font-poppins mb-1">Start Date</p>
+                <p className="text-sm font-semibold font-poppins text-gray-800">{formatDate(activePlan.startDate)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 font-poppins mb-1">End Date</p>
                 <p className="text-sm font-semibold font-poppins text-gray-800">{formatDate(activePlan.endDate)}</p>
               </div>
               <div>

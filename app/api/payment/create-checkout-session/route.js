@@ -22,11 +22,17 @@ export async function POST(req) {
     const { planId, billingCycle = "monthly" } = await req.json();
 
     if (!planId) {
-      return NextResponse.json({ error: "Plan ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Plan ID is required" },
+        { status: 400 },
+      );
     }
 
     if (!["monthly", "yearly"].includes(billingCycle)) {
-      return NextResponse.json({ error: "Invalid billing cycle" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid billing cycle" },
+        { status: 400 },
+      );
     }
 
     const plan = await subscriptionPlans.findById(planId);
@@ -35,7 +41,10 @@ export async function POST(req) {
     }
 
     if (!plan.isActive) {
-      return NextResponse.json({ error: "This plan is no longer available" }, { status: 400 });
+      return NextResponse.json(
+        { error: "This plan is no longer available" },
+        { status: 400 },
+      );
     }
 
     // Verify plan is available for user's category
@@ -44,19 +53,22 @@ export async function POST(req) {
     if (plan.category !== "both" && plan.category !== normalizedRole) {
       return NextResponse.json(
         { error: "This plan is not available for your account type" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
-    const userModel = normalizedRole === "babysitter" ? BabySitterRegistration : Parent;
+    const userModel =
+      normalizedRole === "babysitter" ? BabySitterRegistration : Parent;
     const userDoc = await userModel.findById(user.id);
     if (!userDoc) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const isTestMode = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith("sk_test_");
 
     const getStripeProductId = async () => {
-      if (plan.stripeProductId) return plan.stripeProductId;
+      const productField = isTestMode ? "stripeTestProductId" : "stripeProductId";
+      if (plan[productField]) return plan[productField];
 
       const productData = {
         name: plan.name,
@@ -71,7 +83,7 @@ export async function POST(req) {
       const product = await stripe.products.create(productData);
 
       await subscriptionPlans.findByIdAndUpdate(plan._id, {
-        stripeProductId: product.id,
+        [productField]: product.id,
       });
 
       return product.id;
@@ -87,9 +99,8 @@ export async function POST(req) {
 
     const createStripePrice = async (productId, cycle) => {
       const unitAmount = getPriceAmount();
-      const recurringAmount = cycle === "yearly"
-        ? Math.round(unitAmount * 12 * 0.75)
-        : unitAmount;
+      const recurringAmount =
+        cycle === "yearly" ? Math.round(unitAmount * 12 * 0.75) : unitAmount;
 
       const price = await stripe.prices.create({
         product: productId,
@@ -102,32 +113,45 @@ export async function POST(req) {
         },
       });
 
-      const priceField = cycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId";
+      const priceField = isTestMode
+        ? (cycle === "yearly" ? "stripeTestYearlyPriceId" : "stripeTestMonthlyPriceId")
+        : (cycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId");
+      const productField = isTestMode ? "stripeTestProductId" : "stripeProductId";
+
       await subscriptionPlans.findByIdAndUpdate(plan._id, {
         [priceField]: price.id,
-        stripeProductId: productId,
+        [productField]: productId,
       });
 
       return price.id;
     };
 
     const productId = await getStripeProductId();
-    const priceField = billingCycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId";
+    const priceField = isTestMode
+      ? (billingCycle === "yearly" ? "stripeTestYearlyPriceId" : "stripeTestMonthlyPriceId")
+      : (billingCycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId");
+    
     let priceId = plan[priceField];
     if (!priceId) {
       priceId = await createStripePrice(productId, billingCycle);
     }
 
-    const finalAmount = billingCycle === "yearly"
-      ? Math.round(getPriceAmount() * 12 * 0.75) / 100
-      : getPriceAmount() / 100;
+    const finalAmount =
+      billingCycle === "yearly"
+        ? Math.round(getPriceAmount() * 12 * 0.75) / 100
+        : getPriceAmount() / 100;
 
-    const hasActiveTrial = userDoc.subscription === "trial" && userDoc.subscriptionExpiry && new Date(userDoc.subscriptionExpiry) > new Date();
-    const hasNeverHadTrial = userDoc.subscription === "free" && !userDoc.subscriptionStart;
+    const hasActiveTrial =
+      userDoc.subscription === "trial" &&
+      userDoc.subscriptionExpiry &&
+      new Date(userDoc.subscriptionExpiry) > new Date();
+    const hasNeverHadTrial =
+      userDoc.subscription === "free" && !userDoc.subscriptionStart;
 
     let trialDays = 0;
     if (hasActiveTrial) {
-      const diffTime = new Date(userDoc.subscriptionExpiry).getTime() - Date.now();
+      const diffTime =
+        new Date(userDoc.subscriptionExpiry).getTime() - Date.now();
       trialDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     } else if (hasNeverHadTrial) {
       trialDays = normalizedRole === "babysitter" ? 60 : 30;
@@ -163,7 +187,8 @@ export async function POST(req) {
       },
     };
 
-    if (isTrial && trialDays > 0) {
+    if (trialDays > 0) {
+      sessionOptions.payment_method_collection = "always";
       sessionOptions.subscription_data.trial_period_days = trialDays;
     }
 
@@ -183,14 +208,14 @@ export async function POST(req) {
     });
 
     return NextResponse.json(
-      { sessionId: session.id, amount: finalAmount },
-      { status: 200 }
+      { sessionId: session.id, sessionUrl: session.url, amount: finalAmount },
+      { status: 200 },
     );
   } catch (error) {
     console.error("Create Checkout Session Error:", error);
     return NextResponse.json(
       { error: error.message || "Server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

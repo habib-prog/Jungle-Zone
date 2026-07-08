@@ -14,7 +14,10 @@ const subscriptionPlansSchema = new mongoose.Schema({
     discountPercentage: { type: Number, default: 0 },
     stripeProductId: { type: String, default: null },
     stripeMonthlyPriceId: { type: String, default: null },
-    stripeYearlyPriceId: { type: String, default: null }
+    stripeYearlyPriceId: { type: String, default: null },
+    stripeTestProductId: { type: String, default: null },
+    stripeTestMonthlyPriceId: { type: String, default: null },
+    stripeTestYearlyPriceId: { type: String, default: null }
 }, { timestamps: true });
 
 subscriptionPlansSchema.index({ category: 1 });

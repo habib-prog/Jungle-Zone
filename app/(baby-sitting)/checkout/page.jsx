@@ -1,13 +1,8 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
-import { loadStripe } from "@stripe/stripe-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-);
 
 const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
   const [loading, setLoading] = useState(false);
@@ -22,11 +17,9 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
         body: JSON.stringify({ planId, billingCycle }),
       });
       if (!response.ok) throw new Error("Failed to create checkout session");
-      const { sessionId } = await response.json();
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error("Stripe could not be initialized");
-      const { error } = await stripe.redirectToCheckout({ sessionId });
-      if (error) toast.error(error.message);
+      const { sessionUrl } = await response.json();
+      if (!sessionUrl) throw new Error("Checkout URL was not returned");
+      window.location.href = sessionUrl;
     } catch (error) {
       toast.error(error.message || "Payment failed");
     } finally {
@@ -41,7 +34,9 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
         <p className="text-2xl font-bold text-gray-800">
           £{planDetails?.price?.toFixed(2)}
         </p>
-        <p className="text-sm text-gray-500">Billing: {billingCycle === "yearly" ? "Yearly" : "Monthly"}</p>
+        <p className="text-sm text-gray-500">
+          Billing: {billingCycle === "yearly" ? "Yearly" : "Monthly"}
+        </p>
       </div>
       <button
         type="submit"
@@ -49,7 +44,7 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
         className="w-full bg-brandColor text-white py-3 rounded-lg font-semibold hover:bg-[#558b2f] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading && <Loader size={20} className="animate-spin" />}
-        {loading ? "Processing..." : "Pay with Stripe"}
+        {loading ? "Processing..." : "Continue to Stripe"}
       </button>
     </form>
   );
@@ -67,7 +62,9 @@ const CheckoutContent = () => {
     const checkAuthAndPlan = async () => {
       try {
         const authResponse = await fetch("/api/parent/profile");
-        const authSitterResponse = !authResponse.ok ? await fetch("/api/babysitters/profile") : authResponse;
+        const authSitterResponse = !authResponse.ok
+          ? await fetch("/api/babysitters/profile")
+          : authResponse;
         if (!authResponse.ok && !authSitterResponse.ok) {
           toast.error("Please login to checkout");
           router.push("/login");
@@ -122,7 +119,11 @@ const CheckoutContent = () => {
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
           Checkout
         </h1>
-        <CheckoutForm planId={planId} planDetails={planDetails} billingCycle={billingCycle} />
+        <CheckoutForm
+          planId={planId}
+          planDetails={planDetails}
+          billingCycle={billingCycle}
+        />
         <button
           onClick={() => router.push("/pricing")}
           className="w-full mt-4 text-center text-brandColor hover:underline py-2"
@@ -137,11 +138,13 @@ const CheckoutContent = () => {
 // ── Main export wrapped in Suspense ──
 const CheckoutPage = () => {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader size={40} className="animate-spin text-brandColor" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader size={40} className="animate-spin text-brandColor" />
+        </div>
+      }
+    >
       <CheckoutContent />
     </Suspense>
   );

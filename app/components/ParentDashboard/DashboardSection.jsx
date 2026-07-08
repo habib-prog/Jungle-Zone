@@ -9,6 +9,7 @@ const DashboardSection = () => {
     const [profile, setProfile] = useState(null);
     const [ongoingDeals, setOngoingDeals] = useState([]);
     const [dealHistory, setDealHistory] = useState([]);
+    const [activeSub, setActiveSub] = useState(null);
 
     useEffect(() => {
         fetch("/api/parent/profile")
@@ -22,7 +23,27 @@ const DashboardSection = () => {
                     }));
                 }
             });
+
+        fetch("/api/payment/subscription")
+            .then(r => r.json())
+            .then(data => {
+                if (data.subscription) setActiveSub(data.subscription);
+            })
+            .catch(() => {});
     }, [authUser?.image]);
+
+    const renderPlanBadge = () => {
+        if (activeSub) {
+            return `Active: ${activeSub.plan} (${activeSub.billingCycle})`;
+        }
+        if (profile?.subscription === 'trial') {
+            const remaining = profile.subscriptionExpiry 
+                ? Math.ceil((new Date(profile.subscriptionExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) 
+                : 0;
+            return `Free Trial ${remaining > 0 ? '(' + remaining + ' days left)' : '(Expired)'}`;
+        }
+        return `Free Plan`;
+    };
 
     const stats = {
         totalDeals:    profile?.totalDeals    ?? 0,
@@ -85,6 +106,12 @@ const DashboardSection = () => {
                                             <p className="text-sm xl:text-base text-gray-500 font-poppins">
                                                 {profile.phone || "—"}
                                             </p>
+                                            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandColor/10 border border-brandColor/20">
+                                                <div className="w-2 h-2 rounded-full bg-brandColor" />
+                                                <span className="text-xs font-medium text-brandColor font-poppins">
+                                                    Plan: {renderPlanBadge()}
+                                                </span>
+                                            </div>
                                         </>
                                     ) : (
                                         <div className="space-y-2 mt-1">
