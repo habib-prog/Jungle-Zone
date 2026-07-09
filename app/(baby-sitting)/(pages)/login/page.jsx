@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import logo from "../../../../public/img/logo.png";
 import loginImage from "../../../../public/img/loginImage.png";
 import Image from "next/image";
@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 
-const page = () => {
+const LoginContent = () => {
   const { loginLocal, refreshUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -250,4 +250,18 @@ const page = () => {
   );
 };
 
-export default page;
+const LoginPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <section className="min-h-screen bg-white flex items-center justify-center">
+          <p className="text-lg text-gray-500">Loading...</p>
+        </section>
+      }
+    >
+      <LoginContent />
+    </Suspense>
+  );
+};
+
+export default LoginPage;
