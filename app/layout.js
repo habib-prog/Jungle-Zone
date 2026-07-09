@@ -1,6 +1,6 @@
 import "./globals.css";
 import Providers from "./Providers";
-import { Toaster } from 'sonner';
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "jungleZone.uk",
@@ -9,15 +9,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <Providers>
-          {children}
-        </Providers>
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton />
+        <Providers>{children}</Providers>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

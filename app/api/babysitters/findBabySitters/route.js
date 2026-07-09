@@ -1,10 +1,38 @@
 import { connectDB } from "@/config/db";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
+import { getAuthenticatedUser } from "@/middleware/auth";
+import { getFacilityAccessForUser } from "@/app/lib/subscriptionAccess";
 
 await connectDB();
 
 export async function GET(req) {
   try {
+    const auth = await getAuthenticatedUser();
+    const access = await getFacilityAccessForUser(auth, {
+      allowedRoles: ["parent"],
+    });
+
+    if (!access.isLoggedIn) {
+      return new Response(
+        JSON.stringify({
+          error: "Please log in to use this facility",
+          reason: access.reason,
+        }),
+        { status: 401 },
+      );
+    }
+
+    if (!access.canUseFacilities) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Your free trial or subscription has expired. Please subscribe to use this facility.",
+          reason: access.reason,
+        }),
+        { status: 403 },
+      );
+    }
+
     const { searchParams } = new URL(req.url);
 
     const zipCode = searchParams.get("zipCode");

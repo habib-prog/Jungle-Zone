@@ -1,11 +1,17 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { normalizeRole } from "@/app/lib/roleUtils";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
 import { cookies } from "next/headers";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error(
+    "Missing JWT secret. Set JWT_SECRET or AUTH_SECRET in your environment.",
+  );
+}
 
 export { normalizeRole };
 

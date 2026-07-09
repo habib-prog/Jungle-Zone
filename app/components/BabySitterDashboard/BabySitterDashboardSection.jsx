@@ -9,14 +9,14 @@ const BabySitterDashboardSection = () => {
 
   useEffect(() => {
     fetch("/api/babysitters/profile")
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (data.sitter) setProfile(data.sitter);
       });
 
     fetch("/api/payment/subscription")
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (data.subscription) setActiveSub(data.subscription);
       })
       .catch(() => {});
@@ -26,16 +26,20 @@ const BabySitterDashboardSection = () => {
     if (activeSub) {
       return `Active: ${activeSub.plan} (${activeSub.billingCycle})`;
     }
-    if (profile?.subscription === 'trial') {
-      const remaining = profile.subscriptionExpiry 
-        ? Math.ceil((new Date(profile.subscriptionExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) 
+    if (profile?.subscription === "trial") {
+      const remaining = profile.subscriptionExpiry
+        ? Math.ceil(
+            (new Date(profile.subscriptionExpiry).getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24),
+          )
         : 0;
-      return `Free Trial ${remaining > 0 ? '(' + remaining + ' days left)' : '(Expired)'}`;
+      return `Free Trial ${remaining > 0 ? "(" + remaining + " days left)" : "(Expired)"}`;
     }
     return `Free Plan`;
   };
 
-  const avatarSrc = getImageUrl(profile?.profilePhoto) ??
+  const avatarSrc =
+    getImageUrl(profile?.profilePhoto) ??
     `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || "S")}&background=random`;
   return (
     <div className="min-h-screen">
@@ -52,6 +56,15 @@ const BabySitterDashboardSection = () => {
       </div>
 
       <div className="max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 xl:px-8 py-6 xl:py-10">
+        {profile?.role === "sitter" && profile?.isApproved === false && (
+          <div className="mb-6 rounded-2xl border border-yellow-300 bg-yellow-50 p-4 text-yellow-900">
+            <p className="font-semibold text-base">Waiting for verification</p>
+            <p className="text-sm text-yellow-800 mt-1">
+              Your babysitter account is pending approval. Please check back
+              within 72 hours.
+            </p>
+          </div>
+        )}
         {/* TOP GRID */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 xl:gap-7">
           {/* Profile Card */}
@@ -77,13 +90,13 @@ const BabySitterDashboardSection = () => {
                   <p className="text-sm xl:text-base text-gray-500 font-poppins">
                     {profile?.phoneNumber}
                   </p>
-                  
+
                   {profile && (
                     <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandColor/10 border border-brandColor/20">
-                        <div className="w-2 h-2 rounded-full bg-brandColor" />
-                        <span className="text-xs font-medium text-brandColor font-poppins">
-                            Plan: {renderPlanBadge()}
-                        </span>
+                      <div className="w-2 h-2 rounded-full bg-brandColor" />
+                      <span className="text-xs font-medium text-brandColor font-poppins">
+                        Plan: {renderPlanBadge()}
+                      </span>
                     </div>
                   )}
 
@@ -301,7 +314,7 @@ const BabySitterDashboardSection = () => {
         </section>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BabySitterDashboardSection
+export default BabySitterDashboardSection;

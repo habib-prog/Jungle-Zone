@@ -119,6 +119,21 @@ const Page = () => {
         const result = await res.json();
 
         if (!res.ok) {
+          if (res.status === 401) {
+            toast.error(result.error || "Please log in to use this facility");
+            router.push("/login");
+            return;
+          }
+
+          if (res.status === 403) {
+            toast.error(
+              result.error ||
+              "Your free trial or subscription has expired. Please subscribe to continue.",
+            );
+            router.push("/pricing");
+            return;
+          }
+
           throw new Error(result.error || "Failed to fetch babysitter");
         }
 
@@ -253,7 +268,7 @@ const Page = () => {
     };
 
     if (id) fetchSitter();
-  }, [id]);
+  }, [id, router]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -306,18 +321,18 @@ const Page = () => {
   const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
   return (
-    <section ref={sectionRef} className="min-h-screen">
+    <section ref={sectionRef} className="min-h-screen bg-gray-50">
       {/* =============================
                top information 
     =============================== */}
-      <div className="border-b border-brandColor/50 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
+      <div className="border-b border-brandColor/20 bg-white px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mx-auto max-w-7xl">
           <div className="profile-hero-animate mb-6 text-xs text-gray-500 sm:text-sm">
             Babysits / Babysitter wanted / Babysitter / {profile.name}
           </div>
 
           <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
-            <div className="profile-hero-animate flex flex-col items-center gap-5 md:flex-row">
+            <div className="profile-hero-animate flex w-full min-w-0 flex-col items-center gap-5 md:flex-row">
               <img
                 loading="lazy"
                 src={
@@ -326,21 +341,21 @@ const Page = () => {
                     : "https://via.placeholder.com/300?text=No+Image"
                 }
                 alt={profile.name}
-                className="h-28 w-28 rounded-full object-cover shadow-sm sm:h-32 sm:w-32"
+                className="h-28 w-28 flex-shrink-0 rounded-full object-cover shadow-sm ring-4 ring-brandColor/10 sm:h-32 sm:w-32"
               />
 
-              <div>
+              <div className="min-w-0">
                 <div className="flex flex-col items-center gap-2 md:items-start">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">
+                  <div className="flex max-w-full items-center gap-2">
+                    <h1 className="min-w-0 break-words text-2xl font-semibold text-gray-800 sm:text-3xl">
                       {profile.name}
                     </h1>
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brandColor text-xs text-white">
+                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brandColor text-xs text-white">
                       ✓
                     </span>
                   </div>
 
-                  <p className="text-sm font-medium text-gray-500 sm:text-base">
+                  <p className="break-words text-sm font-medium text-gray-500 sm:text-base">
                     {profile.role}
                   </p>
                 </div>
@@ -371,13 +386,13 @@ const Page = () => {
       {/* ============================
           all details about baby stter 
         ============================ */}
-      <div className="max-w-360 mx-auto">
-        <div className="mx-auto w-fit rounded-3xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="w-full rounded-3xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="min-w-0">
 
-              <div className="profile-card-animate flex flex-col gap-5 border-b border-gray-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex-1">
+              <div className="profile-card-animate flex flex-col gap-5 border-b border-gray-200 pb-6 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0 flex-1">
                   <p className="mb-4 flex items-center gap-2 text-sm text-gray-400">
                     <FiClock />
                     {profile.activity}
@@ -404,27 +419,27 @@ const Page = () => {
                   </div>
 
                   {/* Show all extra fields */}
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
+                  <div className="mt-5 grid grid-cols-1 gap-3 text-sm text-gray-700 sm:grid-cols-2">
+                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
                       <span className="font-semibold text-gray-500">Gender:</span> {profile.gender}
                     </div>
-                    <div>
+                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
                       <span className="font-semibold text-gray-500">Certifications:</span> {profile.certifications}
                     </div>
-                    <div>
+                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
                       <span className="font-semibold text-gray-500">Subscription:</span> {profile.subscription}
                     </div>
-                    <div>
+                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
                       <span className="font-semibold text-gray-500">Is Approved:</span> {profile.isApproved ? "Yes" : "No"}
                     </div>
-                    <div>
+                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3 sm:col-span-2">
                       <span className="font-semibold text-gray-500">Is Favorite:</span> {profile.isFavorite ? "Yes" : "No"}
                     </div>
                   </div>
                 </div>
 
-                <div className="sm:w-56 flex flex-col gap-3">
-                  <div className="rounded-2x p-4 mb-2">
+                <div className="flex w-full flex-col gap-3 xl:w-64">
+                  <div className="mb-2 rounded-2xl border border-gray-200 bg-gray-50 p-4">
                     <p className="text-xs font-medium uppercase tracking-wide text-cyan-700">
                       Contact Information
                     </p>
@@ -522,40 +537,40 @@ const Page = () => {
                 </h3>
 
                 <div className="mt-5 space-y-3">
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-3 rounded-2xl bg-gray-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
                       <FiBookOpen className="text-gray-400" />
                       <span className="text-sm font-medium text-gray-500">
                         Education level
                       </span>
                     </div>
 
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="break-words text-left text-sm font-medium text-gray-700 sm:text-right">
                       {profile.educationLevel}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-3 rounded-2xl bg-gray-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
                       <FiBookOpen className="text-gray-400" />
                       <span className="text-sm font-medium text-gray-500">
                         Education details
                       </span>
                     </div>
 
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="break-words text-left text-sm font-medium text-gray-700 sm:text-right">
                       {profile.educationDetails}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-3 rounded-2xl bg-gray-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
                       <FiBookOpen className="text-gray-400" />
                       <span className="text-sm font-medium text-gray-500">
                         Certifications
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="break-words text-left text-sm font-medium text-gray-700 sm:text-right">
                       {profile.certifications.join(", ")}
                     </span>
                   </div>
@@ -574,7 +589,7 @@ const Page = () => {
                         {profile.superpowers.map((item) => (
                           <div
                             key={item}
-                            className="flex items-center gap-3 text-sm font-medium text-gray-600"
+                            className="flex min-w-0 items-center gap-3 break-words text-sm font-medium text-gray-600"
                           >
                             <FiAward className="text-brandColor" />
                             {item}
@@ -594,7 +609,7 @@ const Page = () => {
                         {profile.comfortableWith.map((item) => (
                           <div
                             key={item}
-                            className="flex items-center gap-3 text-sm font-medium text-gray-600"
+                            className="flex min-w-0 items-center gap-3 break-words text-sm font-medium text-gray-600"
                           >
                             <FiCheckCircle className="text-brandColor" />
                             {item}
@@ -658,12 +673,12 @@ const Page = () => {
                           profile.verifications.map((item) => (
                             <div
                               key={item}
-                              className="flex items-center justify-between"
+                              className="flex items-center justify-between gap-4"
                             >
-                              <span className="text-sm font-medium text-gray-600">
+                              <span className="min-w-0 break-words text-sm font-medium text-gray-600">
                                 {item}
                               </span>
-                              <FiCheckCircle className="text-cyan-600" />
+                              <FiCheckCircle className="flex-shrink-0 text-cyan-600" />
                             </div>
                           ))
                         ) : (
@@ -680,20 +695,20 @@ const Page = () => {
 
                     <div className="mt-4 rounded-2xl bg-gray-50 p-4">
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-4">
                           <span className="text-sm font-medium text-gray-600">
                             Member since
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-right text-sm text-gray-500">
                             {profile.memberSince}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-4">
                           <span className="text-sm font-medium text-gray-600">
                             Last activity
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-right text-sm text-gray-500">
                             {profile.lastActivity}
                           </span>
                         </div>
@@ -736,8 +751,8 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="profile-side-animate lg:w-120 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <aside className="min-w-0 space-y-6 lg:sticky lg:top-24 lg:self-start">
+              <div className="profile-side-animate w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
                 <h3 className="text-xl font-semibold text-gray-800">
                   Availability
                 </h3>
@@ -745,7 +760,7 @@ const Page = () => {
                 <div className="mt-4 sm:mt-5">
                   {/* Mobile: Column-based (days as rows, time slots as columns) */}
                   <div className="block sm:hidden">
-                    <div className="space-y-2">
+                    <div className="space-y-2 overflow-x-auto pb-1">
                       {/* Time slot headers */}
                       <div className="grid grid-cols-5 gap-1">
                         <div className="text-[10px] font-semibold text-gray-400">Day</div>
@@ -757,7 +772,7 @@ const Page = () => {
 
                       {/* Each day as a row */}
                       {days.map((day, dayIndex) => (
-                        <div key={day} className="grid grid-cols-5 gap-1 items-center">
+                        <div key={day} className="grid min-w-72 grid-cols-5 gap-1 items-center">
                           <span className="text-xs font-medium text-gray-600">{day}</span>
                           {availability.map((row) => {
                             const active = row.values[dayIndex];
@@ -777,8 +792,8 @@ const Page = () => {
                   </div>
 
                   {/* Desktop: Row-based (time slots as rows, days as columns) */}
-                  <div className="hidden sm:block">
-                    <div className="mb-4 grid grid-cols-8 items-center gap-2">
+                  <div className="hidden overflow-x-auto sm:block">
+                    <div className="mb-4 grid min-w-80 grid-cols-8 items-center gap-2">
                       <div className="max-w-20" />
                       {days.map((day) => (
                         <div
@@ -794,7 +809,7 @@ const Page = () => {
                       {availability.map((row) => (
                         <div
                           key={row.label}
-                          className="grid grid-cols-8 items-center gap-2"
+                          className="grid min-w-80 grid-cols-8 items-center gap-2"
                         >
                           <span className="w-20 text-sm font-medium text-gray-500">
                             {row.label}
@@ -821,7 +836,7 @@ const Page = () => {
                 </div>
               </div>
 
-              <div className="profile-side-animate rounded-2xl border border-gray-200 bg-gray-50 p-5">
+              <div className="profile-side-animate rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5">
                 <h3 className="text-2xl font-semibold text-gray-800">
                   About me
                 </h3>
@@ -832,21 +847,21 @@ const Page = () => {
                       key={item.label}
                       className="flex items-start justify-between gap-4"
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex min-w-0 items-start gap-3">
                         <span className="mt-1 text-gray-400">{item.icon}</span>
-                        <span className="text-sm font-medium text-gray-500">
+                        <span className="min-w-0 break-words text-sm font-medium text-gray-500">
                           {item.label}
                         </span>
                       </div>
 
-                      <span className="max-w-28 text-right text-sm font-medium text-gray-700">
+                      <span className="max-w-[45%] break-words text-right text-sm font-medium text-gray-700">
                         {item.value}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </div>

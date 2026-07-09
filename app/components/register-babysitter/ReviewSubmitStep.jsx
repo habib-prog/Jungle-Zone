@@ -60,17 +60,34 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
       payload.append("location", formData.location || "");
       payload.append("zipCode", formData.zipCode || "");
       payload.append("description", formData.description || "");
-payload.append("certifications", Array.isArray(formData.certifications) ? formData.certifications.join(",") : (formData.certifications || ""));
-       payload.append("educationLevel", formData.educationLevel || "");
-      payload.append("preferredBabysittingLocation", formData.preferredBabysittingLocation || "");
+      payload.append(
+        "certifications",
+        Array.isArray(formData.certifications)
+          ? formData.certifications.join(",")
+          : formData.certifications || "",
+      );
+      payload.append("educationLevel", formData.educationLevel || "");
+      payload.append(
+        "preferredBabysittingLocation",
+        formData.preferredBabysittingLocation || "",
+      );
       payload.append("languages", formData.languages?.join(",") || "");
       payload.append("yearsOfExperience", formData.yearsOfExperience || "");
       payload.append("hourlyRate", formData.hourlyRate || "");
-      payload.append("comfortableWithAgeGroup", formData.comfortableWithAgeGroup?.join(",") || "");
-payload.append("skills", formData.skills?.join(",") || "");
-       payload.append("availability", JSON.stringify(formData.availability || []));
-       payload.append("verificationDocs", formData.verificationDocs?.join(",") || "");
-       payload.append("preferences", formData.preferences?.join(",") || "");
+      payload.append(
+        "comfortableWithAgeGroup",
+        formData.comfortableWithAgeGroup?.join(",") || "",
+      );
+      payload.append("skills", formData.skills?.join(",") || "");
+      payload.append(
+        "availability",
+        JSON.stringify(formData.availability || []),
+      );
+      payload.append(
+        "verificationDocs",
+        formData.verificationDocs?.join(",") || "",
+      );
+      payload.append("preferences", formData.preferences?.join(",") || "");
 
       const response = await fetch("/api/babysitters/register", {
         method: "POST",
@@ -82,9 +99,11 @@ payload.append("skills", formData.skills?.join(",") || "");
       if (!response.ok) {
         toast.error(result.error || "Registration failed");
       } else if (response.ok) {
-        router.push("/login");
+        toast.success(
+          "Registration successful. Your sitter account is pending approval and may take up to 72 hours.",
+        );
+        router.push("/login?pendingApproval=true");
       }
-
     } catch (error) {
       toast.error(error.message || "Something went wrong");
     } finally {
@@ -129,7 +148,8 @@ payload.append("skills", formData.skills?.join(",") || "");
                   src={
                     formData.profilePhoto instanceof File
                       ? URL.createObjectURL(formData.profilePhoto)
-                      : formData.profilePhoto || "https://via.placeholder.com/150"
+                      : formData.profilePhoto ||
+                        "https://via.placeholder.com/150"
                   }
                   alt="Profile"
                   className="h-16 w-16 rounded-full object-cover"
@@ -137,7 +157,9 @@ payload.append("skills", formData.skills?.join(",") || "");
                 <div>
                   <p className="text-sm text-gray-400">Profile photo</p>
                   <p className="mt-1 text-base text-gray-800">
-                    {formData.profilePhoto ? "Uploaded successfully" : "Not uploaded"}
+                    {formData.profilePhoto
+                      ? "Uploaded successfully"
+                      : "Not uploaded"}
                   </p>
                 </div>
               </div>
@@ -340,14 +362,14 @@ payload.append("skills", formData.skills?.join(",") || "");
                   </button>
                 </div>
 
-<div className="space-y-3">
-                   {formData.verificationDocs.map((doc, index) => (
-                     <div key={index} className="flex items-center gap-2">
-                       <FiCheckCircle className="text-green-500" />
-                       <p className="text-base text-gray-800">{doc}</p>
-                     </div>
-                   ))}
-                 </div>
+                <div className="space-y-3">
+                  {formData.verificationDocs.map((doc, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <FiCheckCircle className="text-green-500" />
+                      <p className="text-base text-gray-800">{doc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

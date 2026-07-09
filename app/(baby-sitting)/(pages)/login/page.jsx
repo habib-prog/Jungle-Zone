@@ -9,17 +9,19 @@ import { signIn } from "next-auth/react";
 
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 
 const page = () => {
   const { loginLocal, refreshUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   useEffect(() => {
     AOS.init({
@@ -28,7 +30,14 @@ const page = () => {
       once: true,
       offset: 80,
     });
-  }, []);
+
+    if (searchParams?.get("pendingApproval") === "true") {
+      setPendingApproval(true);
+      toast.info(
+        "Your sitter account is pending approval. Please wait up to 72 hours.",
+      );
+    }
+  }, [searchParams]);
 
   const isFormValid = useMemo(() => {
     return form.email.trim() !== "" && form.password.trim() !== "";
@@ -60,6 +69,11 @@ const page = () => {
 
         if (role === "sitter" || role === "babysitter") {
           redirectUrl = "/dashboard/babySitter";
+          if (data.pendingApproval) {
+            toast.info(
+              "Your sitter account is pending approval. Please wait up to 72 hours.",
+            );
+          }
         } else if (role === "admin") {
           redirectUrl = "/dashboard/admin";
         } else if (role === "parent") {
@@ -121,6 +135,20 @@ const page = () => {
             >
               Sign in to your account
             </h2>
+
+            {pendingApproval && (
+              <div
+                className="mt-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-yellow-900"
+                data-aos="fade-up"
+                data-aos-delay="100"
+              >
+                <p className="font-semibold">Pending approval</p>
+                <p className="text-sm mt-1">
+                  Your sitter account is pending approval. Please wait up to 72
+                  hours.
+                </p>
+              </div>
+            )}
 
             <form
               onSubmit={handleLogin}

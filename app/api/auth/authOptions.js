@@ -1,6 +1,7 @@
 import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
+import adminSchema from "@/models/adminSchema";
 import { normalizeRole } from "@/app/lib/roleUtils";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -19,12 +20,15 @@ export const authOptions = {
       try {
         if (account.provider === "google") {
           await connectDB();
-          const [existingParent, existingSitter] = await Promise.all([
-            parentSchema.findOne({ email: user.email }),
-            BabySitterRegistration.findOne({ email: user.email }),
-          ]);
+          const [existingParent, existingSitter, existingAdmin] =
+            await Promise.all([
+              parentSchema.findOne({ email: user.email }),
+              BabySitterRegistration.findOne({ email: user.email }),
+              adminSchema.findOne({ email: user.email }),
+            ]);
 
-          if (!existingParent && !existingSitter) {
+          // If there's already an admin account with this email, allow sign-in
+          if (!existingParent && !existingSitter && !existingAdmin) {
             await parentSchema.create({
               fullName: user.name,
               email: user.email,
@@ -34,7 +38,9 @@ export const authOptions = {
               role: "parent",
               subscription: "trial",
               subscriptionStart: new Date(),
-              subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              subscriptionExpiry: new Date(
+                Date.now() + 30 * 24 * 60 * 60 * 1000,
+              ),
             });
           }
         }
@@ -48,12 +54,15 @@ export const authOptions = {
     async jwt({ token, user, account }) {
       if (account && user) {
         await connectDB();
-        const [dbParent, dbSitter] = await Promise.all([
+        const [dbParent, dbSitter, dbAdmin] = await Promise.all([
           parentSchema.findOne({ email: token.email }),
           BabySitterRegistration.findOne({ email: token.email }),
+          adminSchema.findOne({ email: token.email }),
         ]);
-        const dbUser = dbParent || dbSitter;
-        token.role = normalizeRole(dbUser?.role || "parent");
+        const dbUser = dbParent || dbSitter || dbAdmin;
+        token.role = normalizeRole(
+          dbUser?.role || (dbAdmin ? "admin" : "parent"),
+        );
         token.id = dbUser?._id?.toString();
         token.name = dbUser?.fullName || token.name || user.name;
         token.picture = dbUser?.picture || token.picture || user.image;

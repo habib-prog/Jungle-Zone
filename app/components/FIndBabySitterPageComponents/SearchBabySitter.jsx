@@ -15,6 +15,7 @@ const SearchBabySitter = () => {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [accessError, setAccessError] = useState(null);
 
   const [location, setLocation] = useState("");
   const [hourlyRate, setHourlyRate] = useState([0, 500]);
@@ -50,10 +51,23 @@ const SearchBabySitter = () => {
       const result = await res.json();
 
       if (res.ok) {
+        setAccessError(null);
         setBabysitters(result.data || []);
         setTotal(result.total || 0);
         setCurrentPage(result.currentPage || 1);
       } else {
+        if (res.status === 401 || res.status === 403) {
+          setBabysitters([]);
+          setTotal(0);
+          setAccessError({
+            status: res.status,
+            message:
+              result.error ||
+              "Your free trial or subscription has expired. Please subscribe to continue.",
+          });
+          return;
+        }
+
         toast.error(result.error || "Failed to fetch babysitters");
       }
     } catch (error) {
@@ -201,6 +215,20 @@ const SearchBabySitter = () => {
           <div className="flex-1">
             {loading ? (
               <p className="text-gray-500">Loading...</p>
+            ) : accessError ? (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+                <p className="mb-4 text-sm font-medium text-gray-600">
+                  {accessError.message}
+                </p>
+                <button
+                  onClick={() =>
+                    router.push(accessError.status === 401 ? "/login" : "/pricing")
+                  }
+                  className="rounded-[35px] bg-brandColor px-5 py-2 text-sm font-semibold text-white"
+                >
+                  {accessError.status === 401 ? "Login" : "Subscribe"}
+                </button>
+              </div>
             ) : (
               <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-between gap-5">
                 {babysitters.length > 0 ? (
@@ -246,13 +274,15 @@ const SearchBabySitter = () => {
               </div>
             )}
 
-            <Pagination
-              align="end"
-              current={currentPage}
-              total={total}
-              pageSize={9}
-              onChange={handlePageChange}
-            />
+            {!accessError && (
+              <Pagination
+                align="end"
+                current={currentPage}
+                total={total}
+                pageSize={9}
+                onChange={handlePageChange}
+              />
+            )}
           </div>
         </div>
       </div>
