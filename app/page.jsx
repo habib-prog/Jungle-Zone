@@ -8,31 +8,32 @@ import {
   MapPin,
   Search,
   ShieldCheck,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { Accordion, AccordionItem } from "@szhsin/react-accordion";
-import Image from 'next/image';
-import gsap from 'gsap';
-import Footer from './components/common/Footer';
-import Navbar from './components/common/Navbar';
-import { getImageUrl } from '@/app/lib/imageUtils';
-import { faqData } from './components/api/fakeApi';
+import Image from "next/image";
+import gsap from "gsap";
+import Footer from "./components/common/Footer";
+import Navbar from "./components/common/Navbar";
+import { getImageUrl } from "@/app/lib/imageUtils";
+import { faqData } from "./components/api/fakeApi";
 
 export default function JungleZone() {
   const heroImages = [
     "/img/frontPageImg.jpg",
     "/img/frontPageImg2.jpg",
-    "/img/frontPageImg3.jpg"
+    "/img/frontPageImg3.jpg",
   ];
 
   const [latestBabysitters, setLatestBabysitters] = useState([]);
-  const [loadingLatestBabysitters, setLoadingLatestBabysitters] = useState(false);
+  const [loadingLatestBabysitters, setLoadingLatestBabysitters] =
+    useState(false);
   const [postcode, setPostcode] = useState("");
   const [postcodeError, setPostcodeError] = useState("");
 
   useEffect(() => {
-    const container = document.querySelector('.hero-slider-container');
+    const container = document.querySelector(".hero-slider-container");
     if (!container) return;
 
     const totalSlides = heroImages.length + 1; // including clone
@@ -58,10 +59,10 @@ export default function JungleZone() {
       tl.to(container, {
         x: `-${i * 100}%`,
         duration: 5,
-        ease: 'power2.inOut',
+        ease: "power2.inOut",
       });
       if (i < totalSlides - 1) {
-        tl.to({}, { duration: 4 }); 
+        tl.to({}, { duration: 4 });
       }
     }
 
@@ -74,35 +75,40 @@ export default function JungleZone() {
     };
   }, [heroImages.length]);
 
-  const fetchBabysitters = useCallback(async (page = 1, searchPostcode = "") => {
-    try {
-      setLoadingLatestBabysitters(true);
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "3",
-      });
+  const fetchBabysitters = useCallback(
+    async (page = 1, searchPostcode = "") => {
+      try {
+        setLoadingLatestBabysitters(true);
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: "3",
+        });
 
-      if (searchPostcode.trim()) {
-        params.set("zipCode", searchPostcode.trim());
-      }
+        if (searchPostcode.trim()) {
+          params.set("zipCode", searchPostcode.trim());
+        }
 
-      const res = await fetch(`/api/babysitters/latest?${params.toString()}`);
-      const result = await res.json();
+        const res = await fetch(`/api/babysitters/latest?${params.toString()}`);
+        const result = await res.json();
 
-      if (res.ok) {
-        setLatestBabysitters(result.data || []);
-        setPostcodeError("");
-      } else {
-        setPostcodeError(result.error || "Failed to fetch latest babysitters");
+        if (res.ok) {
+          setLatestBabysitters(result.data || []);
+          setPostcodeError("");
+        } else {
+          setPostcodeError(
+            result.error || "Failed to fetch latest babysitters",
+          );
+          setLatestBabysitters([]);
+        }
+      } catch (error) {
+        setPostcodeError(error.message || "Failed to fetch latest babysitters");
         setLatestBabysitters([]);
+      } finally {
+        setLoadingLatestBabysitters(false);
       }
-    } catch (error) {
-      setPostcodeError(error.message || "Failed to fetch latest babysitters");
-      setLatestBabysitters([]);
-    } finally {
-      setLoadingLatestBabysitters(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchBabysitters(1);
@@ -124,7 +130,7 @@ export default function JungleZone() {
     <>
       <Navbar />
       {/* HERO */}
-      <section className="relative overflow-hidden pt-24 pb-12 sm:pt-28 lg:min-h-[720px] lg:py-32">
+      <section className="relative overflow-hidden pt-20 pb-10 sm:pt-24 sm:pb-14 lg:min-h-[720px] lg:py-32">
         {/* Sliding Background Images */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div className="hero-slider-container flex h-full will-change-transform">
@@ -169,13 +175,13 @@ export default function JungleZone() {
             <h1 className="mb-4 max-w-3xl text-[clamp(2.35rem,10vw,4.5rem)] font-semibold leading-[1.04] text-white lg:mb-6">
               Find trusted childcare
               <br />
-              <span className="text-brandColor">
-                close to home
-              </span>
+              <span className="text-brandColor">close to home</span>
             </h1>
 
             <p className="mb-7 max-w-xl text-sm leading-7 text-white/85 sm:text-base lg:mb-9 lg:text-lg lg:leading-8">
-              Browse approved babysitters, compare local rates, and choose care with confidence. Built for families who want safety, clarity, and a calmer way to find help nearby.
+              Browse approved babysitters, compare local rates, and choose care
+              with confidence. Built for families who want safety, clarity, and
+              a calmer way to find help nearby.
             </p>
 
             <div className="mb-6 flex flex-col gap-3 sm:flex-row">
@@ -200,7 +206,7 @@ export default function JungleZone() {
           </div>
 
           {/* RIGHT SIDE CARDS */}
-          <div className="relative w-full min-w-0 overflow-hidden rounded-3xl border border-white/20 bg-white/[0.16] p-4 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:p-6">
+          <div className="relative w-full min-w-0 overflow-hidden rounded-3xl border border-white/20 bg-white/[0.16] p-4 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:p-5 lg:p-6">
             <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -216,7 +222,12 @@ export default function JungleZone() {
               </div>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
+            >
               <div className="mb-2 flex flex-col gap-2 sm:flex-row lg:mb-3">
                 <label className="flex min-h-12 flex-1 items-center gap-2 rounded-2xl border border-white/15 bg-black/20 px-4 text-white shadow-inner shadow-black/10">
                   <MapPin className="h-4 w-4 flex-shrink-0 text-brandColor" />
@@ -228,20 +239,23 @@ export default function JungleZone() {
                     className="w-full bg-transparent py-3 text-sm text-white placeholder:text-white/45 focus:outline-none lg:text-base"
                   />
                 </label>
-                <button type="submit" className="min-h-12 rounded-2xl bg-brandColor px-5 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:bg-brandColor/90 whitespace-nowrap">
+                <button
+                  type="submit"
+                  className="min-h-12 rounded-2xl bg-brandColor px-5 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:bg-brandColor/90 whitespace-nowrap"
+                >
                   Search
                 </button>
               </div>
               {postcodeError && (
-                <p className="text-red-200 text-xs mb-3">
-                  {postcodeError}
-                </p>
+                <p className="text-red-200 text-xs mb-3">{postcodeError}</p>
               )}
             </form>
 
             <div className="flex flex-col gap-3">
               {loadingLatestBabysitters ? (
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">Loading latest sitters...</div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+                  Loading latest sitters...
+                </div>
               ) : latestBabysitters.length > 0 ? (
                 latestBabysitters.map((item) => (
                   <Sitter
@@ -249,20 +263,26 @@ export default function JungleZone() {
                     id={item._id}
                     name={item.fullName}
                     loc={item.zipCode ? `PostCode ${item.zipCode}` : "UK"}
-                    rate={item.hourlyRate ? `£${item.hourlyRate}/hr` : "Contact"}
+                    rate={
+                      item.hourlyRate ? `£${item.hourlyRate}/hr` : "Contact"
+                    }
                     img={item.profilePhoto}
                   />
                 ))
               ) : (
                 <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-center text-sm text-white/80">
-                  No Sitters Found. Try expanding your search or check back later for new sitters joining JungleZone.
+                  No Sitters Found. Try expanding your search or check back
+                  later for new sitters joining JungleZone.
                 </p>
               )}
             </div>
 
             <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-white/80">
               <span>Need more options?</span>
-              <Link href="/babysitters" className="inline-flex items-center gap-1 font-semibold text-brandColor">
+              <Link
+                href="/babysitters"
+                className="inline-flex items-center gap-1 font-semibold text-brandColor"
+              >
                 View all
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -286,9 +306,7 @@ export default function JungleZone() {
               Our Promise
             </div>
 
-            <h2 className="text-3xl lg:text-4xl">
-              What We Stand For
-            </h2>
+            <h2 className="text-3xl lg:text-4xl">What We Stand For</h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -351,23 +369,27 @@ export default function JungleZone() {
       {/* FAQ */}
       <section className="py-16 lg:py-24 bg-gray-50">
         <div className="container max-w-5xl mx-auto">
-
           {/* Header */}
           <div className="text-center mb-14">
             <h2 className="text-3xl lg:text-4xl font-serif text-gray-900">
               Frequently Asked Questions
             </h2>
             <p className="text-gray-500 mt-2">
-              Everything you need to know about JungleZone — for parents and babysitters.
+              Everything you need to know about JungleZone — for parents and
+              babysitters.
             </p>
           </div>
 
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-10'>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* Parents FAQ */}
             <div className="mb-12">
               <div className="text-center mb-8">
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-2">For Parents</h3>
-                <p className="text-gray-500">Find childcare that fits your family&apos;s needs</p>
+                <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-2">
+                  For Parents
+                </h3>
+                <p className="text-gray-500">
+                  Find childcare that fits your family&apos;s needs
+                </p>
               </div>
               <div className="bg-white border border-gray-200 rounded overflow-hidden">
                 <Accordion allowMultiple transition transitionTimeout={200}>
@@ -395,8 +417,12 @@ export default function JungleZone() {
             {/* Babysitter FAQ */}
             <div>
               <div className="text-center mb-8">
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-2">For Babysitters</h3>
-                <p className="text-gray-500">Start your childcare journey with us</p>
+                <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-2">
+                  For Babysitters
+                </h3>
+                <p className="text-gray-500">
+                  Start your childcare journey with us
+                </p>
               </div>
               <div className="bg-white border border-gray-200 rounded overflow-hidden">
                 <Accordion allowMultiple transition transitionTimeout={200}>
@@ -423,12 +449,15 @@ export default function JungleZone() {
           </div>
         </div>
 
-        <div className='text-center mt-5 space-y-3'>
-          <h3 className='text-3xl text-brandColor font-bold'>Still have questions?</h3>
+        <div className="text-center mt-5 space-y-3">
+          <h3 className="text-3xl text-brandColor font-bold">
+            Still have questions?
+          </h3>
           <p>Contact our support team and we will be happy to help.</p>
-          <p className='text-brandColor text-bold text-lg'>support@junglezone.uk | junglezone.uk</p>
+          <p className="text-brandColor text-bold text-lg">
+            support@junglezone.uk | junglezone.uk
+          </p>
         </div>
-
       </section>
 
       {/* CTA */}
@@ -446,12 +475,12 @@ export default function JungleZone() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-3 lg:gap-4">
-            <Link href={'/register'}>
+            <Link href={"/register"}>
               <button className="cursor-pointer px-6 lg:px-8 py-3 lg:py-4 bg-white text-brandColor rounded-full shadow-lg hover:scale-105 transition w-full sm:w-auto">
                 Create Free Account
               </button>
             </Link>
-            <Link href={'/babysitters'}>
+            <Link href={"/babysitters"}>
               <button className="cursor-pointer px-6 lg:px-8 py-3 lg:py-4 border border-white rounded-full hover:bg-white hover:text-brandColor transition w-full sm:w-auto">
                 Browse Babysitters
               </button>
@@ -468,7 +497,9 @@ export default function JungleZone() {
 function Stat({ num, label }) {
   return (
     <div>
-      <div className="text-2xl lg:text-3xl text-brandColor font-semibold">{num}</div>
+      <div className="text-2xl lg:text-3xl text-brandColor font-semibold">
+        {num}
+      </div>
       <div className="text-xs lg:text-sm text-white">{label}</div>
     </div>
   );
@@ -503,14 +534,16 @@ function Sitter({ id, name, loc, rate, img }) {
       <div className="flex min-w-0 items-center gap-3 lg:gap-4">
         <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-2xl bg-white/20 ring-1 ring-white/20 lg:h-14 lg:w-14">
           <img
-            loading='lazy'
+            loading="lazy"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
             src={getImageUrl(img) ?? "/img/user-placeholder.svg"}
             alt={name}
           />
         </div>
-        <div className='min-w-0 text-white'>
-          <div className="truncate text-sm font-semibold lg:text-base">{name}</div>
+        <div className="min-w-0 text-white">
+          <div className="truncate text-sm font-semibold lg:text-base">
+            {name}
+          </div>
           <div className="mt-1 flex items-center gap-1 text-xs text-white/70">
             <MapPin className="h-3.5 w-3.5 text-brandColor" />
             <span>{loc}</span>
