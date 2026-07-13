@@ -2,6 +2,9 @@ import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
 import { verifyAdmin } from "../auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req) {
   try {
     await verifyAdmin();
@@ -27,16 +30,29 @@ export async function GET(req) {
       .skip(skip)
       .limit(limit);
 
-    return Response.json({
-      parents,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+    return Response.json(
+      {
+        parents,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
   } catch (error) {
-    return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
+    return Response.json(
+      { error: error.message || "Server error" },
+      { status: error.message?.includes("Unauthorized") ? 403 : 500 },
+    );
   }
 }
