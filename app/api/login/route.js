@@ -79,9 +79,34 @@ export async function POST(req) {
 
     return res;
   } catch (err) {
-    return NextResponse.json(
-      { message: err.message || "Server error" },
-      { status: 500 },
-    );
+    const message = String(err?.message || "Server error");
+    const isMongoAuthIssue =
+      /not allowed|not authorized|authorization|authentication/i.test(message);
+    const isMongoTimeout =
+      /timed out|server selection|ECONNREFUSED|ENOTFOUND|topology/i.test(
+        message,
+      );
+
+    if (isMongoTimeout) {
+      return NextResponse.json(
+        {
+          message:
+            "We could not reach the database right now. Please try again in a moment.",
+        },
+        { status: 503 },
+      );
+    }
+
+    if (isMongoAuthIssue) {
+      return NextResponse.json(
+        {
+          message:
+            "The database user does not have permission to read the account data.",
+        },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
