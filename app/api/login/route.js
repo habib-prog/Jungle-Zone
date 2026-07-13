@@ -24,7 +24,7 @@ export async function POST(req) {
       adminSchema.findOne({ email }),
     ]);
 
-    const resolved = resolveAuthAccount({ parent, sitter, admin });
+    const resolved = resolveAuthAccount({ parent, sitter, admin, email });
     let account = resolved.account;
     let role = resolved.role;
 

@@ -1,6 +1,35 @@
 import { normalizeRole } from "./roleUtils.js";
 
-export const resolveAuthAccount = ({ parent, sitter, admin }) => {
+const getConfiguredAdminEmails = () => {
+  const fromEnv = String(
+    process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "",
+  )
+    .split(/[\s,]+/)
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+
+  return Array.from(new Set(["xavierjames701@gmail.com", ...fromEnv]));
+};
+
+export const isConfiguredAdminEmail = (email) => {
+  const normalizedEmail = String(email || "")
+    .trim()
+    .toLowerCase();
+  if (!normalizedEmail) return false;
+  return getConfiguredAdminEmails().includes(normalizedEmail);
+};
+
+export const resolveAuthAccount = ({ parent, sitter, admin, email }) => {
+  const configuredAdmin = isConfiguredAdminEmail(email);
+
+  if (configuredAdmin) {
+    return {
+      account: admin || parent || sitter || null,
+      role: "admin",
+      source: "configured-admin",
+    };
+  }
+
   const candidates = [
     { account: admin, role: "admin" },
     { account: sitter, role: "babysitter" },

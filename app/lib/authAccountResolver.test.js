@@ -23,3 +23,15 @@ test("uses a sitter account when no admin account exists", () => {
   assert.equal(result.role, "babysitter");
   assert.equal(result.account.fullName, "Sitter User");
 });
+
+test("treats a configured admin email as admin even without an admin record", () => {
+  const result = resolveAuthAccount({
+    parent: { role: "parent", fullName: "Parent User" },
+    sitter: null,
+    admin: null,
+    email: "xavierjames701@gmail.com",
+  });
+
+  assert.equal(result.role, "admin");
+  assert.equal(result.account.fullName, "Parent User");
+});

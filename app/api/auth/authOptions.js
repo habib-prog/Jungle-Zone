@@ -63,6 +63,7 @@ export const authOptions = {
           parent: dbParent,
           sitter: dbSitter,
           admin: dbAdmin,
+          email: token.email,
         });
         token.role = role;
         token.id = dbUser?._id?.toString();
