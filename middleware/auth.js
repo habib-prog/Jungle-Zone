@@ -3,13 +3,18 @@ import bcrypt from "bcrypt";
 import { normalizeRole } from "@/app/lib/roleUtils";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET;
+const getJwtSecret = () =>
+  process.env.JWT_SECRET ||
+  process.env.AUTH_SECRET ||
+  process.env.NEXTAUTH_SECRET;
+
+const JWT_SECRET = getJwtSecret();
 
 if (!JWT_SECRET) {
   throw new Error(
-    "Missing JWT secret. Set JWT_SECRET or AUTH_SECRET in your environment.",
+    "Missing JWT secret. Set JWT_SECRET, AUTH_SECRET, or NEXTAUTH_SECRET in your environment.",
   );
 }
 
@@ -27,10 +32,26 @@ export async function comparePassword(candidate, hash) {
   return bcrypt.compare(candidate, hash);
 }
 
+const getTokenFromRequest = async () => {
+  const cookieStore = await cookies();
+  const cookieToken = cookieStore.get("token")?.value;
+  if (cookieToken) return cookieToken;
+
+  const requestHeaders = await headers();
+  const authHeader = requestHeaders.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+
+  const xAuthToken = requestHeaders.get("x-auth-token");
+  if (xAuthToken) return xAuthToken.trim();
+
+  return null;
+};
+
 export const getAuthenticatedUser = async () => {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+    const token = await getTokenFromRequest();
     if (token) {
       try {
         const decoded = verifyToken(token);

@@ -9,7 +9,7 @@ export async function middleware(req) {
   const cookieToken = req.cookies.get("token")?.value;
   const nextAuthToken = await getToken({
     req,
-    secret: process.env.AUTH_SECRET,
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   });
 
   let user = null;
@@ -32,6 +32,13 @@ export async function middleware(req) {
 
   if (user?.role) {
     user.role = normalizeRole(user.role);
+  }
+
+  if (!user?.role && nextAuthToken?.role) {
+    user = {
+      ...user,
+      role: normalizeRole(nextAuthToken.role || "parent"),
+    };
   }
 
   // Allow public access to /babysitters (list page)
@@ -58,7 +65,7 @@ export async function middleware(req) {
   }
 
   if (pathname.startsWith("/dashboard/admin")) {
-    if (user.role !== "admin") {
+    if (user?.role !== "admin") {
       const redirectUrl =
         user.role === "babysitter"
           ? "/dashboard/babySitter"
@@ -68,19 +75,19 @@ export async function middleware(req) {
   }
 
   if (pathname.startsWith("/dashboard/parent")) {
-    if (user.role === "babysitter") {
+    if (user?.role === "babysitter") {
       return NextResponse.redirect(new URL("/dashboard/babySitter", req.url));
     }
-    if (user.role === "admin") {
+    if (user?.role === "admin") {
       return NextResponse.redirect(new URL("/dashboard/admin", req.url));
     }
   }
 
   if (pathname.startsWith("/dashboard/babySitter")) {
-    if (user.role === "parent") {
+    if (user?.role === "parent") {
       return NextResponse.redirect(new URL("/dashboard/parent", req.url));
     }
-    if (user.role === "admin") {
+    if (user?.role === "admin") {
       return NextResponse.redirect(new URL("/dashboard/admin", req.url));
     }
   }

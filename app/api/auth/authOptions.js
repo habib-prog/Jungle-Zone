@@ -2,8 +2,8 @@ import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import adminSchema from "@/models/adminSchema";
-import { normalizeRole } from "@/app/lib/roleUtils";
 import GoogleProvider from "next-auth/providers/google";
+import { resolveAuthAccount } from "@/app/lib/authAccountResolver";
 
 export const authOptions = {
   providers: [
@@ -59,10 +59,12 @@ export const authOptions = {
           BabySitterRegistration.findOne({ email: token.email }),
           adminSchema.findOne({ email: token.email }),
         ]);
-        const dbUser = dbParent || dbSitter || dbAdmin;
-        token.role = normalizeRole(
-          dbUser?.role || (dbAdmin ? "admin" : "parent"),
-        );
+        const { account: dbUser, role } = resolveAuthAccount({
+          parent: dbParent,
+          sitter: dbSitter,
+          admin: dbAdmin,
+        });
+        token.role = role;
         token.id = dbUser?._id?.toString();
         token.name = dbUser?.fullName || token.name || user.name;
         token.picture = dbUser?.picture || token.picture || user.image;

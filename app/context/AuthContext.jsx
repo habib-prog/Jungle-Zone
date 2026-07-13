@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -36,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       const endpoints = {
         admin: "/api/admin/profile",
         sitter: "/api/babysitters/profile",
-        parent: "/api/parent/profile"
+        parent: "/api/parent/profile",
       };
 
       const endpoint = endpoints[role];
@@ -45,16 +51,12 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
 
       // Handle different response structures
-      const userProfile = data.parent || data.sitter || data.admin || data.account;
+      const userProfile =
+        data.parent || data.sitter || data.admin || data.account;
       if (!userProfile) return;
 
       if (session) {
-        // Google user — only allowed for parent role
-        if (session.user.role !== "parent") {
-          toast.error("Google sign-in only available for parents");
-          await signOut({ callbackUrl: "/login" });
-          return;
-        }
+        const resolvedRole = userProfile?.role || session.user.role || "parent";
 
         await update({
           ...session,
@@ -62,7 +64,7 @@ export const AuthProvider = ({ children }) => {
             ...session.user,
             name: userProfile.fullName || session.user.name,
             image: userProfile.picture || session.user.image,
-            role: "parent", // Force parent role for Google users
+            role: resolvedRole,
           },
         });
       } else {
@@ -79,22 +81,22 @@ export const AuthProvider = ({ children }) => {
   // The unified user — Google session takes priority (ONLY for parent role)
   const user = session?.user
     ? {
-      name: session.user.name,
-      email: session.user.email,
-      image: session.user.image,
-      role: "parent", // Google users are always parents
-      provider: "google",
-      fullData: session.user, // Complete session data
-    }
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        role: session.user.role || "parent",
+        provider: "google",
+        fullData: session.user, // Complete session data
+      }
     : localUser
       ? {
-        name: localUser?.fullName || "User",
-        email: localUser?.parent?.email,
-        image: localUser?.picture || localUser?.profilePhoto,
-        role: localUser?.role,
-        provider: "credentials",
-        fullData: localUser, // Complete backend data
-      }
+          name: localUser?.fullName || "User",
+          email: localUser?.parent?.email,
+          image: localUser?.picture || localUser?.profilePhoto,
+          role: localUser?.role,
+          provider: "credentials",
+          fullData: localUser, // Complete backend data
+        }
       : null;
 
   const isLoading = status === "loading";
@@ -142,7 +144,7 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         logout,
         loginLocal,
-        refreshUser
+        refreshUser,
       }}
     >
       {children}

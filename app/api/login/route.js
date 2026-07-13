@@ -5,7 +5,7 @@ import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import parentSchema from "@/models/parentSchema";
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
-import { normalizeRole } from "@/app/lib/roleUtils";
+import { resolveAuthAccount } from "@/app/lib/authAccountResolver";
 
 export async function POST(req) {
   try {
@@ -24,10 +24,9 @@ export async function POST(req) {
       adminSchema.findOne({ email }),
     ]);
 
-    let account = parent || sitter || admin;
-    let role = normalizeRole(
-      account?.role || (admin ? "admin" : sitter ? "sitter" : "parent"),
-    );
+    const resolved = resolveAuthAccount({ parent, sitter, admin });
+    let account = resolved.account;
+    let role = resolved.role;
 
     if (!account)
       return NextResponse.json(
@@ -73,7 +72,7 @@ export async function POST(req) {
     res.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });

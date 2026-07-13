@@ -1,9 +1,13 @@
 import { jwtVerify } from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET;
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  process.env.AUTH_SECRET ||
+  process.env.NEXTAUTH_SECRET;
+
 if (!JWT_SECRET) {
   throw new Error(
-    "Missing JWT secret for edge verification. Set JWT_SECRET or AUTH_SECRET.",
+    "Missing JWT secret for edge verification. Set JWT_SECRET, AUTH_SECRET, or NEXTAUTH_SECRET.",
   );
 }
 
