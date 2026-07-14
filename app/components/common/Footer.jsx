@@ -101,30 +101,6 @@ const Footer = () => {
           Registered in England & Wales
         </p>
       </div>
-      <div className=" bg-white">
-        <div className="container mx-auto px-6 text-center sm:px-8">
-          <p className="font-poppis text-xs font-light leading-5 text-[#555555]">
-            Created by{" "}
-            <Link
-              href="https://www.nafiahtech.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-brandColor hover:underline"
-            >
-              NafiahTech
-            </Link>{" "}
-            ·{" "}
-            <Link
-              href="https://www.nafiahtech.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brandColor hover:underline"
-            >
-              Contact NafiahTech
-            </Link>
-          </p>
-        </div>
-      </div>
     </footer>
   );
 };
