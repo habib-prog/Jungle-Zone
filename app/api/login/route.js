@@ -6,10 +6,11 @@ import parentSchema from "@/models/parentSchema";
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 import { resolveAuthAccount } from "@/app/lib/authAccountResolver";
+import { recordActivity } from "@/app/lib/activityLogger";
 
 export async function POST(req) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, userAgent, timezone } = await req.json();
     if (!email || !password)
       return NextResponse.json(
         { message: "All fields required" },
@@ -31,6 +32,15 @@ export async function POST(req) {
     if (!account)
       return NextResponse.json(
         { message: "Invalid credentials" },
+        { status: 401 },
+      );
+
+    if (account.isVerified === false)
+      return NextResponse.json(
+        {
+          message:
+            "Please verify your email address first. Check your inbox for the verification code sent during signup.",
+        },
         { status: 401 },
       );
 
@@ -75,6 +85,19 @@ export async function POST(req) {
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
+    });
+
+    await recordActivity(req, {
+      action: "login",
+      userAgent: userAgent || undefined,
+      timezone: timezone || undefined,
+      user: {
+        id: account._id?.toString(),
+        email: account.email,
+        name: account.fullName || account.name,
+        role,
+        timezone,
+      },
     });
 
     return res;

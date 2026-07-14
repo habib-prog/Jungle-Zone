@@ -4,6 +4,9 @@ import AdminSidebarButton from "../common/AdminSidebarButton"
 import OverView from "./OverView";
 import AllBabySitters from "./AllBabySitters";
 import AllParents from "./AllParents";
+import AddAdmin from "./AddAdmin";
+import AllAdmins from "./AllAdmins";
+import AllActivity from "./AllActivity";
 import Link from "next/link";
 import logo from "../../../public/img/logo.png";
 import SubscriptionPlans from "./SubscriptionPlans";
@@ -29,6 +32,9 @@ const AdminDashboard = () => {
                     <AdminSidebarButton label="Subscription Plans" active={activeTab === "subscription"} onClick={() => setActiveTab("subscription")} />
                     <AdminSidebarButton label="Payments" active={activeTab === "payments"} onClick={() => setActiveTab("payments")} />
                     <AdminSidebarButton label="Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
+                    <AdminSidebarButton label="Add Admin" active={activeTab === "addAdmin"} onClick={() => setActiveTab("addAdmin")} />
+                    <AdminSidebarButton label="Admins" active={activeTab === "admins"} onClick={() => setActiveTab("admins")} />
+                    <AdminSidebarButton label="Activity" active={activeTab === "activity"} onClick={() => setActiveTab("activity")} />
                 </nav>
             </aside>
 
@@ -65,11 +71,26 @@ const AdminDashboard = () => {
                     <PaymentHistory />
                 )}
 
+                {/* Add Admin */}
+                {activeTab === "addAdmin" && (
+                    <AddAdmin />
+                )}
+
+                {/* Admins */}
+                {activeTab === "admins" && (
+                    <AllAdmins />
+                )}
+
+                {/* Activity */}
+                {activeTab === "activity" && (
+                    <AllActivity />
+                )}
+
                 {/* Placeholder for other tabs */}
-                {!["sitters", "parents", "overview", "subscription", "payments"].includes(activeTab) && (
+                {!["sitters", "parents", "overview", "subscription", "payments", "addAdmin", "admins", "activity"].includes(activeTab) && (
                     <div className="bg-white p-10 rounded-xl border text-center text-gray-500">
                         <p className="text-lg">{activeTab} section UI is ready for your real data.</p>
-                        <p className="text-sm mt-2">Connect this to your backend API and you're golden 🚀</p>
+                        <p className="text-sm mt-2">Connect this to your backend API and you&apos;re golden 🚀</p>
                     </div>
                 )}
             </main>

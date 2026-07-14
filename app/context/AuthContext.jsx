@@ -34,6 +34,24 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Track Google/next-auth logins client-side (the auth callback has no
+  // access to request headers, so device/region are sent from the browser).
+  useEffect(() => {
+    if (status === "authenticated" && typeof window !== "undefined") {
+      if (!sessionStorage.getItem("loginTracked")) {
+        sessionStorage.setItem("loginTracked", "1");
+        fetch("/api/auth/record-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userAgent: navigator.userAgent,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
+        }).catch(() => {});
+      }
+    }
+  }, [status]);
+
   const refreshUser = useCallback(async () => {
     if (!localUser && !session) return;
     try {
@@ -103,6 +121,21 @@ export const AuthProvider = ({ children }) => {
   const isLoggedIn = !!user;
 
   const logout = async () => {
+    // Record logout (and clear httpOnly cookie) first, before any
+    // next-auth signOut navigation that would prevent this request.
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userAgent: navigator.userAgent,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+    } catch (err) {
+      toast.error(err.message || "Failed to log out");
+    }
+
     if (session) {
       await signOut({ callbackUrl: "/" });
     }
@@ -111,15 +144,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("parent");
     localStorage.removeItem("sitter");
     localStorage.removeItem("admin");
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("loginTracked");
+    }
 
     setLocalUser(null);
-
-    // Clear httpOnly cookie
-    try {
-      await fetch("/api/logout", { method: "POST" });
-    } catch (err) {
-      toast.error(err.message || "Failed to log out");
-    }
 
     router.push("/");
     router.refresh();

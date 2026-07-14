@@ -20,6 +20,9 @@ const parentSchema = new mongoose.Schema({
   subscriptionExpiry: { type: Date, default: "" },
   totalDeals: { type: Number, default: 0 },
   totalSpent: { type: Number, default: 0 },
+  otp: { type: String, default: "" },
+  otpExpires: { type: Date, default: null },
+  isVerified: { type: Boolean, default: true },
 }, { timestamps: true });
 
 export default mongoose.models.Parent || mongoose.model('Parent', parentSchema);

@@ -1,6 +1,8 @@
 import { connectDB } from "@/config/db";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import { verifyAdmin } from "../auth";
+import { sendEmail } from "@/app/lib/mailer";
+import { sitterApprovedEmail, sitterRejectedEmail } from "@/app/lib/emailTemplates";
 
 export async function GET(req) {
   try {
@@ -62,6 +64,18 @@ export async function POST(req){
 
     if (!updated) {
       return Response.json({ error: "Babysitter not found" }, { status: 404 });
+    }
+
+    try {
+      await sendEmail({
+        to: updated.email,
+        subject: `Your JungleZone babysitter account was ${action === "approve" ? "approved" : "not approved"}`,
+        html: action === "approve"
+          ? sitterApprovedEmail({ name: updated.fullName || "there" })
+          : sitterRejectedEmail({ name: updated.fullName || "there" }),
+      });
+    } catch (mailErr) {
+      console.error("Failed to send approval email:", mailErr);
     }
 
     return Response.json({ message: `Babysitter ${action}d`, babysitter: updated });

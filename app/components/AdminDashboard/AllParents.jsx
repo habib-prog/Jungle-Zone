@@ -49,6 +49,24 @@ const AllParents = () => {
     setShowModal(true);
   };
 
+  const handleDeleteParent = async (id) => {
+    if (!confirm("Are you sure you want to delete this parent?")) return;
+    try {
+      const res = await fetch(`/api/admin/parentsInfo?id=${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete parent");
+      }
+      setParents((prev) => prev.filter((p) => p._id !== id));
+      toast.success("Parent deleted successfully");
+      if (selectedParent?._id === id) closeModal();
+    } catch (error) {
+      toast.error(error.message || "Failed to delete parent");
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setSelectedParent(null);
@@ -135,12 +153,20 @@ const AllParents = () => {
                   <td>{u.totalDeals}</td>
                   <td>{u.totalSpent}</td>
                   <td>
-                    <button
-                      onClick={() => handleInfoClick(u)}
-                      className="bg-brandColor hover:bg-brandColor/80 cursor-pointer text-white px-2 py-1 rounded"
-                    >
-                      Info
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleInfoClick(u)}
+                        className="bg-brandColor hover:bg-brandColor/80 cursor-pointer text-white px-2 py-1 rounded"
+                      >
+                        Info
+                      </button>
+                      <button
+                        onClick={() => handleDeleteParent(u._id)}
+                        className="bg-red-500 hover:bg-red-600 cursor-pointer text-white px-2 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -294,7 +320,13 @@ const AllParents = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => handleDeleteParent(selectedParent._id)}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
+              >
+                Delete
+              </button>
               <button
                 onClick={closeModal}
                 className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded cursor-pointer"

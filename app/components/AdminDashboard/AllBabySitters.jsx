@@ -150,6 +150,7 @@ const AllBabySitters = () => {
                                 <th>Email</th>
                                 <th>Postal Code</th>
                                 <th>Place</th>
+                                <th>OTP</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -170,6 +171,16 @@ const AllBabySitters = () => {
                                     <td>{s.email}</td>
                                     <td>{s.zipCode}</td>
                                     <td>{s.location}</td>
+                                    <td>
+                                        <span
+                                            className={`px-2 py-1 rounded text-xs font-medium ${s.isVerified
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-yellow-100 text-yellow-700"
+                                                }`}
+                                        >
+                                            {s.isVerified ? "Verified" : "Not Verified"}
+                                        </span>
+                                    </td>
                                     <td>
                                         <span
                                             className={`px-2 py-1 rounded text-xs font-medium ${s.isApproved
@@ -256,6 +267,14 @@ const AllBabySitters = () => {
                                     </span>
                                     <span className="capitalize px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                                         {selectedSitter.subscription || "free"}
+                                    </span>
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-sm font-medium ${selectedSitter.isVerified
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-yellow-100 text-yellow-700"
+                                            }`}
+                                    >
+                                        OTP {selectedSitter.isVerified ? "Verified" : "Not Verified"}
                                     </span>
                                 </div>
                             </div>

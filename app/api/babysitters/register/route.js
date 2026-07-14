@@ -5,6 +5,9 @@ import bcrypt from "bcrypt";
 import { upload } from "@/app/lib/multer";
 import { runMiddleware } from "@/middleware/multerMiddleware";
 import { NextResponse } from "next/server";
+import { sendEmail } from "@/app/lib/mailer";
+import { otpEmail } from "@/app/lib/emailTemplates";
+import { generateOtp, OTP_EXPIRY_MINUTES } from "@/app/lib/otp";
 
 export const runtime = "nodejs";
 
@@ -238,13 +241,33 @@ export async function POST(req) {
       subscription: "trial",
       subscriptionStart: new Date(),
       subscriptionExpiry: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+      isVerified: false,
+      otp: generateOtp(),
+      otpExpires: new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
     });
 
     const savedData = await newBabysitter.save();
 
+    try {
+      await sendEmail({
+        to: savedData.email,
+        subject: "Verify your JungleZone babysitter account",
+        html: otpEmail({
+          name: savedData.fullName || "there",
+          otp: savedData.otp,
+          expiryMinutes: OTP_EXPIRY_MINUTES,
+        }),
+      });
+    } catch (mailErr) {
+      console.error("Failed to send OTP email:", mailErr);
+    }
+
     return NextResponse.json(
       {
-        message: "Registration successful",
+        message:
+          "Registration successful. Please verify your email to continue.",
+        requiresVerification: true,
+        email: savedData.email,
         data: savedData,
       },
       { status: 201 },

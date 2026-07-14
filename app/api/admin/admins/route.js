@@ -1,45 +1,34 @@
 import { connectDB } from "@/config/db";
-import parentSchema from "@/models/parentSchema";
+import adminSchema from "@/models/adminSchema";
 import { verifyAdmin } from "../auth";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
+const SUPER_ADMIN_EMAIL = (
+  process.env.SUPER_ADMIN_EMAIL || "xavierjames701@gmail.com"
+)
+  .trim()
+  .toLowerCase();
 
 export async function GET(req) {
   try {
     await verifyAdmin();
     await connectDB();
 
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 10;
-    const skip = (page - 1) * limit;
-    const emailQuery = searchParams.get("email");
-
-    const filter = {};
-    if (emailQuery) {
-      filter.email = { $regex: emailQuery, $options: "i" };
-    }
-
-    const total = await parentSchema.countDocuments(filter);
-
-    const parents = await parentSchema
-      .find(filter)
+    const admins = await adminSchema
+      .find()
       .select("-password")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ createdAt: 1 });
+
+    const adminsWithRole = admins.map((a) => {
+      const obj = a.toObject();
+      obj.isSuperAdmin =
+        obj.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+      return obj;
+    });
 
     return Response.json(
-      {
-        parents,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      },
+      { admins: adminsWithRole },
       {
         headers: {
           "Cache-Control":
@@ -59,24 +48,39 @@ export async function GET(req) {
 
 export async function DELETE(req) {
   try {
-    await verifyAdmin();
+    const admin = await verifyAdmin();
     await connectDB();
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
     if (!id) {
-      return Response.json({ error: "Parent id is required" }, { status: 400 });
+      return Response.json({ error: "Admin id is required" }, { status: 400 });
     }
 
-    const deleted = await parentSchema.findByIdAndDelete(id);
-
-    if (!deleted) {
-      return Response.json({ error: "Parent not found" }, { status: 404 });
+    const target = await adminSchema.findById(id);
+    if (!target) {
+      return Response.json({ error: "Admin not found" }, { status: 404 });
     }
+
+    if (target.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
+      return Response.json(
+        { error: "The super admin cannot be removed" },
+        { status: 403 },
+      );
+    }
+
+    if (target.email.trim().toLowerCase() === admin.email?.trim().toLowerCase()) {
+      return Response.json(
+        { error: "You cannot remove your own admin account" },
+        { status: 403 },
+      );
+    }
+
+    await adminSchema.findByIdAndDelete(id);
 
     return Response.json(
-      { message: "Parent deleted successfully" },
+      { message: "Admin removed successfully" },
       {
         headers: {
           "Cache-Control":

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Checkbox } from "antd";
-import { FiArrowLeft, FiCheckCircle, FiEdit2 } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle, FiEdit2, FiClock } from "react-icons/fi";
 import gsap from "gsap";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,9 +15,14 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
   const [agree, setAgree] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!formData) {
-    return null;
-  }
+  // ========== otp / approval state ==========
+  const [step, setStep] = useState("review"); // "review" | "otp" | "done"
+  const [regEmail, setRegEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [approvalWaitHours, setApprovalWaitHours] = useState(72);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -32,6 +37,10 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
 
     return () => ctx.revert();
   }, []);
+
+  if (!formData) {
+    return null;
+  }
 
   const getAvailabilityText = (timeSlots) => {
     if (!timeSlots) return "-";
@@ -98,6 +107,12 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
 
       if (!response.ok) {
         toast.error(result.error || "Registration failed");
+      } else if (response.ok && result.requiresVerification) {
+        setRegEmail(result.email || formData.email || "");
+        setOtp("");
+        setOtpError("");
+        setStep("otp");
+        toast.success("Verification code sent to your email");
       } else if (response.ok) {
         toast.success(
           "Registration successful. Your sitter account is pending approval and may take up to 72 hours.",
@@ -111,6 +126,53 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
     }
   };
 
+  // ========== verify otp ==========
+  const onVerify = async (e) => {
+    e.preventDefault();
+    setOtpError("");
+    if (otp.trim().length < 4) {
+      setOtpError("Please enter the 6-digit code");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const res = await fetch("/api/babysitters/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: regEmail, otp: otp.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Verification failed");
+      setApprovalWaitHours(data.approvalWaitHours || 72);
+      setStep("done");
+      toast.success("Verification successful!");
+    } catch (err) {
+      setOtpError(err.message || "Verification failed");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  // ========== resend otp ==========
+  const onResend = async () => {
+    setResending(true);
+    try {
+      const res = await fetch("/api/babysitters/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: regEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to resend");
+      toast.success("A new code has been sent");
+      setOtp("");
+    } catch (err) {
+      toast.error(err.message || "Failed to resend code");
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <section
       ref={sectionRef}
@@ -118,6 +180,84 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
     >
       <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col">
         <div className="flex flex-1 flex-col justify-between">
+          {step === "done" ? (
+            <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center py-16 text-center">
+              <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl">
+                <FiCheckCircle className="text-emerald-600" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800">
+                Your email is verified
+              </h3>
+              <div className="mt-4 flex items-center gap-3 rounded-xl bg-amber-50 px-5 py-4 text-amber-800">
+                <FiClock className="text-2xl" />
+                <p className="text-left text-sm">
+                  Your sitter account is now pending admin approval. This usually
+                  takes up to <strong>{approvalWaitHours} hours</strong>. We&apos;ll
+                  notify you by email once you&apos;re approved.
+                </p>
+              </div>
+              <button
+                onClick={() => router.push("/login?pendingApproval=true")}
+                className="mt-8 rounded-full bg-brandColor px-8 py-3 text-white transition hover:bg-brandColor/80"
+              >
+                Go to login
+              </button>
+            </div>
+          ) : step === "otp" ? (
+            <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center py-10">
+              <div className="step-fade mb-6 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">
+                  🔐
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800">
+                  Verify your email
+                </h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  We&apos;ve sent a 6-digit code to{" "}
+                  <span className="font-medium text-gray-700">{regEmail}</span>.
+                  Enter it below to continue.
+                </p>
+              </div>
+
+              <form onSubmit={onVerify} className="step-fade w-full space-y-6">
+                <input
+                  name="otp"
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="123456"
+                  className="h-14 w-full rounded-xl border-2 border-gray-300 bg-white px-4 text-center text-2xl tracking-[0.5em] text-gray-800 outline-none focus:border-brandColor"
+                />
+                {otpError && (
+                  <p className="text-center text-sm text-red-500">{otpError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={verifying}
+                  className="h-12 w-full rounded-full bg-brandColor text-base font-medium text-white transition hover:bg-brandColor/80 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+                >
+                  {verifying ? "Verifying..." : "Verify email"}
+                </button>
+
+                <div className="text-center text-sm text-gray-500">
+                  Didn&apos;t get the code?{" "}
+                  <button
+                    type="button"
+                    onClick={onResend}
+                    disabled={resending}
+                    className="font-medium text-brandColor underline underline-offset-4 disabled:opacity-50"
+                  >
+                    {resending ? "Sending..." : "Resend code"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+          <>
           <div className="mx-auto w-full max-w-2xl py-10">
             <div className="step-fade mb-10 text-center">
               <h3 className="text-2xl font-medium text-gray-800">
@@ -409,6 +549,8 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
               </button>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </section>
