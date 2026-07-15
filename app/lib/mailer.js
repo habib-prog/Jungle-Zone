@@ -1,34 +1,39 @@
 import nodemailer from "nodemailer";
 
-const createTransporter = () => {
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
+const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
+const SMTP_SECURE = process.env.SMTP_SECURE !== "false";
+const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+const FROM_NAME = process.env.FROM_NAME || "jungleZone";
+const FROM_EMAIL = process.env.FROM_EMAIL || process.env.EMAIL_USER;
 
-  if (!user || !pass) {
+const createTransporter = () => {
+  if (!SMTP_USER || !SMTP_PASS) {
     throw new Error(
-      "EMAIL_USER and EMAIL_PASS environment variables must be set to send emails."
+      "SMTP credentials missing. Set SMTP_USER/SMTP_PASS or EMAIL_USER/EMAIL_PASS."
     );
   }
 
   return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user, pass },
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
   });
 };
 
-/// SEND MAIL HELPER
 export const sendEmail = async ({ to, subject, html, text }) => {
   try {
     const transporter = createTransporter();
     return await transporter.sendMail({
-      from: `"jungleZone" <${process.env.EMAIL_USER}>`,
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to,
       subject,
       html,
       text,
     });
   } catch (error) {
-    // Surface the real provider error (e.g. Gmail "535 Username and Password not accepted")
     console.error(
       "[mailer] Failed to send email to",
       to,
