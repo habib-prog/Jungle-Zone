@@ -327,11 +327,11 @@ const Page = () => {
     =============================== */}
       <div className="border-b border-brandColor/20 bg-white px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="profile-hero-animate mb-6 text-xs text-gray-500 sm:text-sm">
+          <div className="profile-hero-animate mb-4 break-words text-xs text-gray-500 sm:mb-6 sm:text-sm">
             Babysits / Babysitter wanted / Babysitter / {profile.name}
           </div>
 
-          <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
+          <div className="flex flex-col items-center gap-5 text-center md:flex-row md:items-center md:justify-between md:gap-6 md:text-left">
             <div className="profile-hero-animate flex w-full min-w-0 flex-col items-center gap-5 md:flex-row">
               <img
                 loading="lazy"
@@ -341,7 +341,7 @@ const Page = () => {
                     : "https://via.placeholder.com/300?text=No+Image"
                 }
                 alt={profile.name}
-                className="h-28 w-28 flex-shrink-0 rounded-full object-cover shadow-sm ring-4 ring-brandColor/10 sm:h-32 sm:w-32"
+                className="h-24 w-24 flex-shrink-0 rounded-full object-cover shadow-sm ring-4 ring-brandColor/10 sm:h-32 sm:w-32"
               />
 
               <div className="min-w-0">
@@ -388,8 +388,8 @@ const Page = () => {
         ============================ */}
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="w-full rounded-3xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="min-w-0">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="min-w-0 order-2 lg:order-1">
 
               <div className="profile-card-animate flex flex-col gap-5 border-b border-gray-200 pb-6 xl:flex-row xl:items-start xl:justify-between">
                 <div className="min-w-0 flex-1">
@@ -751,7 +751,7 @@ const Page = () => {
               </div>
             </div>
 
-            <aside className="min-w-0 space-y-6 lg:sticky lg:top-24 lg:self-start">
+            <aside className="min-w-0 order-1 space-y-6 lg:order-2 lg:sticky lg:top-24 lg:self-start">
               <div className="profile-side-animate w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
                 <h3 className="text-xl font-semibold text-gray-800">
                   Availability
@@ -845,7 +845,7 @@ const Page = () => {
                   {profile.about.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-start justify-between gap-4"
+                      className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
                     >
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="mt-1 text-gray-400">{item.icon}</span>
