@@ -1,30 +1,4 @@
 import multer from "multer";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
-
-const baseDir = path.join(process.cwd(), "profilePicture/babySitterWebsite");
-
-const ensureDir = (dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-};
-
-ensureDir(path.join(baseDir, "sitter"));
-ensureDir(path.join(baseDir, "parent"));
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const type = req.headers["upload-type"] || "parent";
-    const uploadDir = path.join(baseDir, type);
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
-  },
-});
 
 const fileFilter = (req, file, cb) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -34,6 +8,11 @@ const fileFilter = (req, file, cb) => {
     cb(new Error("Only jpg, png, webp allowed"), false);
   }
 };
+
+// Memory storage: keeps the file in a Buffer so we never write to the
+// (read-only) serverless filesystem. Files are uploaded to Cloudinary
+// (or a writable local path in dev) by the route handlers.
+const storage = multer.memoryStorage();
 
 export const upload = multer({
   storage,

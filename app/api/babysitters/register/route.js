@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "@/app/lib/mailer";
 import { otpEmail } from "@/app/lib/emailTemplates";
 import { generateOtp, OTP_EXPIRY_MINUTES } from "@/app/lib/otp";
+import { saveProfilePhoto } from "@/app/lib/imageUpload";
 
 export const runtime = "nodejs";
 
@@ -168,8 +169,11 @@ export async function POST(req) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save picture path using the API image proxy route
-    const picturePath = `/api/profilePicture/babySitterWebsite/sitter/${mockReq.file.filename}`;
+    // Save picture (Cloudinary in production, local disk in dev)
+    const picturePath = await saveProfilePhoto(
+      mockReq.file,
+      "babySitterWebsite/sitter"
+    );
 
     const newBabysitter = new BabySitterRegistration({
       fullName,

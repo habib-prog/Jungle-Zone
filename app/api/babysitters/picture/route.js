@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
 import { upload } from "@/app/lib/multer";
+import { saveProfilePhoto } from "@/app/lib/imageUpload";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 
 export const runtime = 'nodejs';
@@ -43,16 +44,25 @@ export async function POST(req) {
 
     await connectDB();
 
-    // Delete old picture from disk if it exists and isn't a Google URL
+    // Save new picture (Cloudinary in production, local disk in dev)
+    const picturePath = await saveProfilePhoto(
+      mockReq.file,
+      "babySitterWebsite/sitter"
+    );
+
+    // Delete old local picture from disk if it exists (Cloudinary URLs are ignored)
     const existing = await BabySitterRegistration.findById(userId).select("profilePhoto");
-    if (existing?.profilePhoto && (existing.profilePhoto.startsWith("/profilePicture/") || existing.profilePhoto.startsWith("/api/profilePicture/"))) {
-      const relativePath = existing.profilePhoto.replace(/^\/api/, "").replace(/^\//, "");
+    if (
+      existing?.profilePhoto &&
+      (existing.profilePhoto.startsWith("/profilePicture/") ||
+        existing.profilePhoto.startsWith("/api/profilePicture/"))
+    ) {
+      const relativePath = existing.profilePhoto
+        .replace(/^\/api/, "")
+        .replace(/^\//, "");
       const oldPath = path.join(process.cwd(), relativePath);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
-
-    // Save new picture path using the API image proxy route
-    const picturePath = `/api/profilePicture/babySitterWebsite/sitter/${mockReq.file.filename}`;
 
     const updated = await BabySitterRegistration.findByIdAndUpdate(
       userId,
