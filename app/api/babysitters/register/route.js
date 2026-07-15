@@ -272,7 +272,6 @@ export async function POST(req) {
           "Registration successful. Please verify your email to continue.",
         requiresVerification: true,
         email: savedData.email,
-        data: savedData,
       },
       { status: 201 },
     );
