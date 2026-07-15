@@ -97,13 +97,13 @@ const AllBabySitters = () => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl border">
-            <div className="flex justify-between items-start">
-                <h2 className="font-semibold mb-4">All Babysitters</h2>
+        <div className="bg-white p-4 sm:p-6 rounded-xl border">
+            <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start mb-4">
+                <h2 className="font-semibold">All Babysitters</h2>
 
                 {/* Filters */}
-                <div className="flex flex-wrap items-stretch gap-4 mb-6">
-                    <div className="max-w-75">
+                <div className="flex flex-wrap items-stretch gap-2 sm:gap-4">
+                    <div className="w-full sm:max-w-75 sm:flex-1">
                         <input
                             type="text"
                             placeholder="Search by email..."
@@ -112,11 +112,11 @@ const AllBabySitters = () => {
                             className="w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brandColor"
                         />
                     </div>
-                    <div>
+                    <div className="flex-1 sm:flex-none">
                         <select
                             value={statusInput}
                             onChange={(e) => setStatusInput(e.target.value)}
-                            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brandColor"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brandColor"
                         >
                             <option value="all">All Status</option>
                             <option value="approved">Approved</option>
@@ -141,75 +141,130 @@ const AllBabySitters = () => {
                 <p className="text-gray-500">Loading...</p>
             ) : (
                 <>
-                    <table className="w-full text-sm">
-                        <thead className="border-b text-left">
-                            <tr>
-                                <th className="py-2">ID</th>
-                                <th>Photo</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Postal Code</th>
-                                <th>Place</th>
-                                <th>OTP</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {babysitters?.map((s, i) => (
-                                <tr key={s._id} className="border-b last:border-none">
-                                    <td className="py-2">#{i + 1}</td>
-                                    <td className="py-2">
-                                        <img
-                                            loading="lazy"
-                                            src={getImageUrl(s.profilePhoto) ?? "/default-avatar.png"}
-                                            alt={s.fullName}
-                                            className="w-12 h-12 object-cover rounded-full"
-                                        />
-                                    </td>
-                                    <td>{s.fullName}</td>
-                                    <td>{s.email}</td>
-                                    <td>{s.zipCode}</td>
-                                    <td>{s.location}</td>
-                                    <td>
-                                        <span
-                                            className={`px-2 py-1 rounded text-xs font-medium ${s.isVerified
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                                }`}
-                                        >
-                                            {s.isVerified ? "Verified" : "Not Verified"}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span
-                                            className={`px-2 py-1 rounded text-xs font-medium ${s.isApproved
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-red-100 text-red-700"
-                                                }`}
-                                        >
-                                            {s.isApproved ? "Approved" : "Rejected"}
-                                        </span>
-                                    </td>
-                                    <td className="space-x-2">
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-sm min-w-[800px]">
+                            <thead className="border-b text-left">
+                                <tr>
+                                    <th className="py-2">ID</th>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Postal Code</th>
+                                    <th>Place</th>
+                                    <th>OTP</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {babysitters?.map((s, i) => (
+                                    <tr key={s._id} className="border-b last:border-none">
+                                        <td className="py-2">#{i + 1}</td>
+                                        <td className="py-2">
+                                            <img
+                                                loading="lazy"
+                                                src={getImageUrl(s.profilePhoto) ?? "/default-avatar.png"}
+                                                alt={s.fullName}
+                                                className="w-12 h-12 object-cover rounded-full"
+                                            />
+                                        </td>
+                                        <td>{s.fullName}</td>
+                                        <td>{s.email}</td>
+                                        <td>{s.zipCode}</td>
+                                        <td>{s.location}</td>
+                                        <td>
+                                            <span
+                                                className={`px-2 py-1 rounded text-xs font-medium ${s.isVerified
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                            >
+                                                {s.isVerified ? "Verified" : "Not Verified"}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span
+                                                className={`px-2 py-1 rounded text-xs font-medium ${s.isApproved
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
+                                                    }`}
+                                            >
+                                                {s.isApproved ? "Approved" : "Rejected"}
+                                            </span>
+                                        </td>
+                                        <td className="space-x-2 whitespace-nowrap">
+                                            <button
+                                                onClick={() => handleInfoClick(s)}
+                                                className="px-2 py-1 bg-slate-300 hover:bg-slate-400 duration-200 rounded cursor-pointer"
+                                            >
+                                                Info
+                                            </button>
+                                            <Link
+                                                href={`/babysitters/${s._id}`}
+                                            >
+                                                <button className=" duration-200 rounded cursor-pointer text-black p-1 hover:bg-gray-300">
+                                                    <SquareArrowOutUpRight size={20} />
+                                                </button>
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Cards */}
+                    <div className="md:hidden space-y-3">
+                        {babysitters?.map((s, i) => (
+                            <div key={s._id} className="border rounded-lg p-3 space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <img
+                                        loading="lazy"
+                                        src={getImageUrl(s.profilePhoto) ?? "/default-avatar.png"}
+                                        alt={s.fullName}
+                                        className="w-12 h-12 object-cover rounded-full shrink-0"
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="font-medium truncate">{s.fullName}</p>
+                                        <p className="text-sm text-gray-500 truncate">{s.email}</p>
+                                        <p className="text-xs text-gray-400">#{i + 1} · {s.location} · {s.zipCode}</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span
+                                        className={`px-2 py-1 rounded text-xs font-medium ${s.isVerified
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-yellow-100 text-yellow-700"
+                                            }`}
+                                    >
+                                        {s.isVerified ? "Verified" : "Not Verified"}
+                                    </span>
+                                    <span
+                                        className={`px-2 py-1 rounded text-xs font-medium ${s.isApproved
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700"
+                                            }`}
+                                    >
+                                        {s.isApproved ? "Approved" : "Rejected"}
+                                    </span>
+                                    <div className="ml-auto flex items-center gap-2">
                                         <button
                                             onClick={() => handleInfoClick(s)}
                                             className="px-2 py-1 bg-slate-300 hover:bg-slate-400 duration-200 rounded cursor-pointer"
                                         >
                                             Info
                                         </button>
-                                        <Link
-                                            href={`/babysitters/${s._id}`}
-                                        >
-                                            <button className=" duration-200 rounded cursor-pointer text-black p-1 hover:bg-gray-300">
+                                        <Link href={`/babysitters/${s._id}`}>
+                                            <button className="duration-200 rounded cursor-pointer text-black p-1 hover:bg-gray-300">
                                                 <SquareArrowOutUpRight size={20} />
                                             </button>
                                         </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
 
                     {/* Pagination */}
                     <div className="flex justify-end items-center gap-2 mt-4">
@@ -237,8 +292,8 @@ const AllBabySitters = () => {
             {/* Babysitter Details Modal */}
             {showModal && selectedSitter && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-4">
+                    <div className="bg-white rounded-xl p-4 sm:p-6 mx-4 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4 gap-2">
                             <h3 className="text-xl font-bold">Babysitter Details</h3>
                             <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 text-2xl cursor-pointer">
                                 <X />
@@ -246,7 +301,7 @@ const AllBabySitters = () => {
                         </div>
 
                         {/* Profile Header */}
-                        <div className="flex justify-between gap-6 my-6">
+                        <div className="flex flex-col gap-6 my-6 sm:flex-row sm:justify-between">
                             <img
                                 loading="lazy"
                                 src={getImageUrl(selectedSitter.profilePhoto) ?? "/default-avatar.png"}
@@ -280,7 +335,7 @@ const AllBabySitters = () => {
                             </div>
 
                             {/* Approval Status Control */}
-                            <div className="bg-gray-50 rounded-lg">
+                            <div className="bg-gray-50 rounded-lg mt-4 sm:mt-0 sm:shrink-0">
                                 <h4 className="font-semibold text-gray-700 mb-3 text-end">Approval Status</h4>
                                 <div className="flex items-center gap-3">
                                     <button
@@ -314,7 +369,7 @@ const AllBabySitters = () => {
                         </div>
 
                         {/* Basic Info */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <h4 className="col-span-2 font-semibold text-gray-700 mb-2">Contact Information</h4>
                             <div className="flex justify-between py-2 border-b">
                                 <span className="font-medium text-gray-600">Email:</span>
@@ -343,7 +398,7 @@ const AllBabySitters = () => {
                         </div>
 
                         {/* Professional Details */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <h4 className="col-span-2 font-semibold text-gray-700 mb-2">Professional Details</h4>
                             <div className="flex justify-between py-2 border-b">
                                 <span className="font-medium text-gray-600">Hourly Rate:</span>
@@ -391,7 +446,7 @@ const AllBabySitters = () => {
                         {/* Additional Info */}
                         <div className="mb-6">
                             <h4 className="font-semibold text-gray-700 mb-2">Additional Information</h4>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="flex justify-between py-2 border-b">
                                     <span className="font-medium text-gray-600">Education Level:</span>
                                     <span>{selectedSitter.educationLevel || "Not provided"}</span>
@@ -440,7 +495,7 @@ const AllBabySitters = () => {
                         </div>
 
                         {/* Account Dates */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <div className="flex justify-between py-2 border-b">
                                 <span className="font-medium text-gray-600">Member Since:</span>
                                 <span>{new Date(selectedSitter.createdAt).toLocaleDateString()}</span>

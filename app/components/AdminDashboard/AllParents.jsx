@@ -84,13 +84,13 @@ const AllParents = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border">
-      <div className="flex justify-between items-start">
-        <h2 className="font-semibold mb-4">All Parents</h2>
+    <div className="bg-white p-4 sm:p-6 rounded-xl border">
+      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start mb-4">
+        <h2 className="font-semibold">All Parents</h2>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-stretch gap-4 mb-6">
-          <div className="max-w-75">
+        <div className="flex flex-wrap items-stretch gap-2 sm:gap-4">
+          <div className="w-full sm:max-w-75 sm:flex-1">
             <input
               type="text"
               placeholder="Search by email..."
@@ -118,60 +118,104 @@ const AllParents = () => {
         <p className="text-gray-500">Loading...</p>
       ) : (
         <>
-          <table className="w-full text-sm">
-            <thead className="border-b text-left">
-              <tr>
-                <th className="py-2">ID</th>
-                <th>Photo</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Subscription</th>
-                <th>TotalDeals</th>
-                <th>Total Spent</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {parents?.map((u, i) => (
-                <tr key={u._id} className="border-b last:border-none">
-                  <td className="py-2">#{i + 1}</td>
-                  <td className="py-2">
-                    <img
-                      loading="lazy"
-                      src={
-                        getImageUrl(u.picture) ??
-                        u.image ??
-                        "/default-avatar.png"
-                      }
-                      alt={u.fullName || u.name}
-                      className="w-12 h-12 object-cover rounded-full"
-                    />
-                  </td>
-                  <td>{u.fullName || u.name}</td>
-                  <td>{u.email}</td>
-                  <td>{u.subscription}</td>
-                  <td>{u.totalDeals}</td>
-                  <td>{u.totalSpent}</td>
-                  <td>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleInfoClick(u)}
-                        className="bg-brandColor hover:bg-brandColor/80 cursor-pointer text-white px-2 py-1 rounded"
-                      >
-                        Info
-                      </button>
-                      <button
-                        onClick={() => handleDeleteParent(u._id)}
-                        className="bg-red-500 hover:bg-red-600 cursor-pointer text-white px-2 py-1 rounded"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm min-w-[800px]">
+              <thead className="border-b text-left">
+                <tr>
+                  <th className="py-2">ID</th>
+                  <th>Photo</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Subscription</th>
+                  <th>TotalDeals</th>
+                  <th>Total Spent</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {parents?.map((u, i) => (
+                  <tr key={u._id} className="border-b last:border-none">
+                    <td className="py-2">#{i + 1}</td>
+                    <td className="py-2">
+                      <img
+                        loading="lazy"
+                        src={
+                          getImageUrl(u.picture) ??
+                          u.image ??
+                          "/default-avatar.png"
+                        }
+                        alt={u.fullName || u.name}
+                        className="w-12 h-12 object-cover rounded-full"
+                      />
+                    </td>
+                    <td>{u.fullName || u.name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.subscription}</td>
+                    <td>{u.totalDeals}</td>
+                    <td>{u.totalSpent}</td>
+                    <td>
+                      <div className="flex gap-2 whitespace-nowrap">
+                        <button
+                          onClick={() => handleInfoClick(u)}
+                          className="bg-brandColor hover:bg-brandColor/80 cursor-pointer text-white px-2 py-1 rounded"
+                        >
+                          Info
+                        </button>
+                        <button
+                          onClick={() => handleDeleteParent(u._id)}
+                          className="bg-red-500 hover:bg-red-600 cursor-pointer text-white px-2 py-1 rounded"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {parents?.map((u, i) => (
+              <div key={u._id} className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-3">
+                  <img
+                    loading="lazy"
+                    src={
+                      getImageUrl(u.picture) ??
+                      u.image ??
+                      "/default-avatar.png"
+                    }
+                    alt={u.fullName || u.name}
+                    className="w-12 h-12 object-cover rounded-full shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">{u.fullName || u.name}</p>
+                    <p className="text-sm text-gray-500 truncate">{u.email}</p>
+                    <p className="text-xs text-gray-400">
+                      #{i + 1} · {u.subscription} · {u.totalDeals} deals · ${u.totalSpent}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleInfoClick(u)}
+                    className="bg-brandColor hover:bg-brandColor/80 cursor-pointer text-white px-2 py-1 rounded"
+                  >
+                    Info
+                  </button>
+                  <button
+                    onClick={() => handleDeleteParent(u._id)}
+                    className="bg-red-500 hover:bg-red-600 cursor-pointer text-white px-2 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Pagination */}
           <div className="flex justify-end items-center gap-2 mt-4">
@@ -199,7 +243,7 @@ const AllParents = () => {
       {/* Parent Details Modal */}
       {showModal && selectedParent && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-4 sm:p-6 mx-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">Parent Details</h3>
               <button
@@ -210,7 +254,7 @@ const AllParents = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col items-center">
                 <img
                   loading="lazy"
@@ -268,7 +312,7 @@ const AllParents = () => {
               <h4 className="font-semibold text-gray-700 mb-2">
                 Address Information
               </h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex justify-between py-2 border-b">
                   <span className="font-medium text-gray-600">House No:</span>
                   <span>{selectedParent.houseNo || "Not provided"}</span>
@@ -292,7 +336,7 @@ const AllParents = () => {
               <h4 className="font-semibold text-gray-700 mb-2">
                 Additional Information
               </h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex justify-between py-2 border-b">
                   <span className="font-medium text-gray-600">
                     National ID:

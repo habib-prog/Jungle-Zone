@@ -304,7 +304,7 @@ const AllActivity = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div>
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-16 text-gray-400 text-sm">
             <span className="w-4 h-4 border-2 border-brandColor border-t-transparent rounded-full animate-spin" />
@@ -316,20 +316,101 @@ const AllActivity = () => {
             <p className="text-sm">No activity records found.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-brandColor text-white text-left">
-                <th className="px-6 py-3 font-semibold whitespace-nowrap">
-                  Date / Time
-                </th>
-                <th className="px-6 py-3 font-semibold">User</th>
-                <th className="px-6 py-3 font-semibold">Role</th>
-                <th className="px-6 py-3 font-semibold">Action</th>
-                <th className="px-6 py-3 font-semibold">Device</th>
-                <th className="px-6 py-3 font-semibold">Region</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm min-w-[800px]">
+                <thead>
+                  <tr className="bg-brandColor text-white text-left">
+                    <th className="px-6 py-3 font-semibold whitespace-nowrap">
+                      Date / Time
+                    </th>
+                    <th className="px-6 py-3 font-semibold">User</th>
+                    <th className="px-6 py-3 font-semibold">Role</th>
+                    <th className="px-6 py-3 font-semibold">Action</th>
+                    <th className="px-6 py-3 font-semibold">Device</th>
+                    <th className="px-6 py-3 font-semibold">Region</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {logs.map((log) => {
+                    const isLogin = log.action === "login";
+                    const initials = (
+                      log.name ||
+                      log.email ||
+                      "?"
+                    )
+                      .charAt(0)
+                      .toUpperCase();
+                    return (
+                      <tr
+                        key={log._id}
+                        className="hover:bg-gray-50/70 transition-colors"
+                      >
+                        <td className="px-6 py-3 text-gray-600 whitespace-nowrap">
+                          {formatDateTime(log.createdAt)}
+                        </td>
+                        <td className="px-6 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 shrink-0 rounded-full bg-brandColor/10 text-brandColor flex items-center justify-center text-xs font-semibold uppercase">
+                              {initials}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-800 truncate">
+                                {log.name || "—"}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {log.email || "—"}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3">
+                          <span className="inline-block px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium capitalize">
+                            {log.role || "—"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              isLogin
+                                ? "bg-green-50 text-green-700 ring-1 ring-green-200"
+                                : "bg-red-50 text-red-700 ring-1 ring-red-200"
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                isLogin ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            />
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-gray-600">
+                          <span className="inline-flex items-center gap-1.5">
+                            {/iOS|Android/i.test(log.device || "") ? (
+                              <Smartphone size={15} className="text-gray-400" />
+                            ) : (
+                              <Monitor size={15} className="text-gray-400" />
+                            )}
+                            {log.device || "—"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-gray-600">
+                          <span className="inline-flex items-center gap-1.5">
+                            <MapPin size={15} className="text-gray-400" />
+                            {log.region || "—"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-gray-100">
               {logs.map((log) => {
                 const isLogin = log.action === "login";
                 const initials = (
@@ -340,36 +421,17 @@ const AllActivity = () => {
                   .charAt(0)
                   .toUpperCase();
                 return (
-                  <tr
-                    key={log._id}
-                    className="hover:bg-gray-50/70 transition-colors"
-                  >
-                    <td className="px-6 py-3 text-gray-600 whitespace-nowrap">
-                      {formatDateTime(log.createdAt)}
-                    </td>
-                    <td className="px-6 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 shrink-0 rounded-full bg-brandColor/10 text-brandColor flex items-center justify-center text-xs font-semibold uppercase">
-                          {initials}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-800 truncate">
-                            {log.name || "—"}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {log.email || "—"}
-                          </p>
-                        </div>
+                  <div key={log._id} className="px-4 py-4 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 shrink-0 rounded-full bg-brandColor/10 text-brandColor flex items-center justify-center text-xs font-semibold uppercase">
+                        {initials}
                       </div>
-                    </td>
-                    <td className="px-6 py-3">
-                      <span className="inline-block px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium capitalize">
-                        {log.role || "—"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-800 truncate">{log.name || "—"}</p>
+                        <p className="text-xs text-gray-500 truncate">{log.email || "—"}</p>
+                      </div>
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${
                           isLogin
                             ? "bg-green-50 text-green-700 ring-1 ring-green-200"
                             : "bg-red-50 text-red-700 ring-1 ring-red-200"
@@ -382,28 +444,28 @@ const AllActivity = () => {
                         />
                         {log.action}
                       </span>
-                    </td>
-                    <td className="px-6 py-3 text-gray-600">
-                      <span className="inline-flex items-center gap-1.5">
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                      <span className="whitespace-nowrap">{formatDateTime(log.createdAt)}</span>
+                      <span className="capitalize px-2 py-0.5 rounded-full bg-gray-100">{log.role || "—"}</span>
+                      <span className="inline-flex items-center gap-1">
                         {/iOS|Android/i.test(log.device || "") ? (
-                          <Smartphone size={15} className="text-gray-400" />
+                          <Smartphone size={14} className="text-gray-400" />
                         ) : (
-                          <Monitor size={15} className="text-gray-400" />
+                          <Monitor size={14} className="text-gray-400" />
                         )}
                         {log.device || "—"}
                       </span>
-                    </td>
-                    <td className="px-6 py-3 text-gray-600">
-                      <span className="inline-flex items-center gap-1.5">
-                        <MapPin size={15} className="text-gray-400" />
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin size={14} className="text-gray-400" />
                         {log.region || "—"}
                       </span>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 

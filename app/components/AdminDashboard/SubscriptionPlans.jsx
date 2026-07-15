@@ -232,94 +232,152 @@ const SubscriptionPlans = () => {
 
       {/* Plans Table */}
       <div className="bg-white rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-4 py-3 text-left font-semibold">Name</th>
-              <th className="px-4 py-3 text-left font-semibold">Category</th>
-              <th className="px-4 py-3 text-left font-semibold">Price</th>
-              <th className="px-4 py-3 text-left font-semibold">Duration</th>
-              <th className="px-4 py-3 text-left font-semibold">Discount</th>
-              <th className="px-4 py-3 text-left font-semibold">Status</th>
-              <th className="px-4 py-3 text-left font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {plans.length === 0 ? (
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm min-w-[800px]">
+            <thead className="bg-gray-50 border-b">
               <tr>
-                <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
-                  No subscription plans found. Create your first plan!
-                </td>
+                <th className="px-4 py-3 text-left font-semibold">Name</th>
+                <th className="px-4 py-3 text-left font-semibold">Category</th>
+                <th className="px-4 py-3 text-left font-semibold">Price</th>
+                <th className="px-4 py-3 text-left font-semibold">Duration</th>
+                <th className="px-4 py-3 text-left font-semibold">Discount</th>
+                <th className="px-4 py-3 text-left font-semibold">Status</th>
+                <th className="px-4 py-3 text-left font-semibold">Actions</th>
               </tr>
-            ) : (
-              plans.map((plan) => (
-                <tr key={plan._id} className="border-b last:border-none hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="font-medium">{plan.name}</p>
-                      {plan.description && (
-                        <p className="text-xs text-gray-500 line-clamp-1">{plan.description}</p>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadge(plan.category)}`}>
-                      {plan.category}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="font-semibold text-brandColor">
-                      ${plan.price?.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {plan.duration} {plan.durationUnit}
-                  </td>
-                  <td className="px-4 py-3">
-                    {plan.isDiscounted && plan.discountPercentage > 0 ? (
-                      <span className="text-orange-600 font-medium">
-                        {plan.discountPercentage}% off
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      {plan.isActive ? (
-                        <span className="text-xs text-green-600 font-medium">Active</span>
-                      ) : (
-                        <span className="text-xs text-red-600 font-medium">Inactive</span>
-                      )}
-                      {plan.isPopular && (
-                        <span className="text-xs bg-brandColor/10 text-brandColor px-2 py-0.5 rounded-full w-fit">
-                          Popular
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleOpenModal(plan)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {plans.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                    No subscription plans found. Create your first plan!
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                plans.map((plan) => (
+                  <tr key={plan._id} className="border-b last:border-none hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="font-medium">{plan.name}</p>
+                        {plan.description && (
+                          <p className="text-xs text-gray-500 line-clamp-1">{plan.description}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadge(plan.category)}`}>
+                        {plan.category}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-semibold text-brandColor">
+                        ${plan.price?.toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {plan.duration} {plan.durationUnit}
+                    </td>
+                    <td className="px-4 py-3">
+                      {plan.isDiscounted && plan.discountPercentage > 0 ? (
+                        <span className="text-orange-600 font-medium">
+                          {plan.discountPercentage}% off
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        {plan.isActive ? (
+                          <span className="text-xs text-green-600 font-medium">Active</span>
+                        ) : (
+                          <span className="text-xs text-red-600 font-medium">Inactive</span>
+                        )}
+                        {plan.isPopular && (
+                          <span className="text-xs bg-brandColor/10 text-brandColor px-2 py-0.5 rounded-full w-fit">
+                            Popular
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleOpenModal(plan)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden divide-y">
+          {plans.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-500">
+              No subscription plans found. Create your first plan!
+            </p>
+          ) : (
+            plans.map((plan) => (
+              <div key={plan._id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium">{plan.name}</p>
+                    {plan.description && (
+                      <p className="text-xs text-gray-500 line-clamp-1">{plan.description}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleOpenModal(plan)}
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition cursor-pointer shrink-0"
+                    title="Edit"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadge(plan.category)}`}>
+                    {plan.category}
+                  </span>
+                  <span className="font-semibold text-brandColor">
+                    ${plan.price?.toLocaleString()}
+                  </span>
+                  <span className="text-gray-500">{plan.duration} {plan.durationUnit}</span>
+                  {plan.isDiscounted && plan.discountPercentage > 0 && (
+                    <span className="text-orange-600 font-medium text-xs">
+                      {plan.discountPercentage}% off
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {plan.isActive ? (
+                    <span className="text-xs text-green-600 font-medium">Active</span>
+                  ) : (
+                    <span className="text-xs text-red-600 font-medium">Inactive</span>
+                  )}
+                  {plan.isPopular && (
+                    <span className="text-xs bg-brandColor/10 text-brandColor px-2 py-0.5 rounded-full">
+                      Popular
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold">
                 {editingPlan ? "Edit Plan" : "Create New Plan"}
@@ -382,7 +440,7 @@ const SubscriptionPlans = () => {
               </div>
 
               {/* Price and Duration Row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Price (৳) *
