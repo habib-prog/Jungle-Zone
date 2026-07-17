@@ -8,7 +8,7 @@ const SITE_URL =
 
 const ADMIN_DASHBOARD_URL =
   process.env.NEXT_PUBLIC_ADMIN_DASHBOARD_URL ||
-  `${SITE_URL === "http://localhost:3000" ? "http://localhost:3000" : "https://junglezone.uk"}/dashboard/admin`;
+  "https://junglezone.uk/dashboard/admin";
 
 const wrap = (inner) => `<!DOCTYPE html>
 <html lang="en">
