@@ -1,7 +1,14 @@
 const BRAND = "#629d2f";
 const BRAND_DARK = "#4d7a24";
 const SITE_URL =
-  process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXTAUTH_URL ||
+  "http://localhost:3000";
+
+const ADMIN_DASHBOARD_URL =
+  process.env.NEXT_PUBLIC_ADMIN_DASHBOARD_URL ||
+  `${SITE_URL === "http://localhost:3000" ? "http://localhost:3000" : "https://junglezone.uk"}/dashboard/admin`;
 
 const wrap = (inner) => `<!DOCTYPE html>
 <html lang="en">
@@ -151,7 +158,7 @@ export const adminAddedEmail = ({ name = "Admin", email = "" }) => {
         <div style="background:#f3f6f1;border:1px solid #e2ead9;border-radius:12px;padding:16px 18px;margin:0 0 20px;font-size:14px;color:#52606d;line-height:1.6;">
           You can now manage parents, babysitters, subscriptions, payments and more from the admin dashboard.
         </div>
-        <a href="${SITE_URL}/dashboard/admin" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Open Admin Dashboard</a>
+        <a href="${ADMIN_DASHBOARD_URL}" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Open Admin Dashboard</a>
       </td>
     </tr>
     ${footer}
