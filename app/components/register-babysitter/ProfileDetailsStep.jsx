@@ -5,19 +5,29 @@ import { Button, Select } from "antd";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import gsap from "gsap";
 
+const getDobError = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "Please enter a valid date";
+  const ageYears = Math.floor(
+    (Date.now() - d.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+  );
+  if (ageYears < 18 || ageYears > 100)
+    return "You must be between 18 and 100 years old";
+  return "";
+};
+
 const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
   const sectionRef = useRef(null);
 
-  const ageError = formData.age && (!/^\d+$/.test(formData.age) || Number(formData.age) < 18 || Number(formData.age) > 100)
-    ? "Age must be a number between 18 and 100"
-    : "";
+  const dobError = getDobError(formData.dateOfBirth);
 
   const locationError = formData.location && !/^[a-zA-Z\s,]+$/.test(formData.location)
     ? "Location should contain letters only"
     : "";
 
-  const zipError = formData.zipCode && !/^\d+$/.test(formData.zipCode)
-    ? "Post code must be positive numbers only"
+  const zipError = formData.zipCode && !/^[a-zA-Z0-9\s]+$/.test(formData.zipCode)
+    ? "Post code must contain letters and numbers only"
     : "";
 
   const expError = formData.yearsOfExperience && (!/^\d+$/.test(formData.yearsOfExperience) || Number(formData.yearsOfExperience) < 0)
@@ -33,7 +43,7 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
     : "";
 
   const isValid =
-    formData.age && !ageError &&
+    formData.dateOfBirth && !dobError &&
     formData.gender &&
     formData.location && !locationError &&
     formData.zipCode && !zipError &&
@@ -95,17 +105,19 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="step-fade">
                   <label className="mb-2 block text-lg font-semibold text-gray-400">
-                    Age
+                    Date of Birth
                   </label>
                   <input
-                    type="text"
-                    placeholder="Enter your age"
-                    value={formData.age}
-                    onChange={(e) => updateFormData({ age: e.target.value })}
+                    type="date"
+                    max={new Date().toISOString().split("T")[0]}
+                    value={formData.dateOfBirth}
+                    onChange={(e) =>
+                      updateFormData({ dateOfBirth: e.target.value, age: "" })
+                    }
                     className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
                   />
-                  {ageError && (
-                    <p className="mt-1 text-sm text-red-500 font-poppins">{ageError}</p>
+                  {dobError && (
+                    <p className="mt-1 text-sm text-red-500 font-poppins">{dobError}</p>
                   )}
                 </div>
 

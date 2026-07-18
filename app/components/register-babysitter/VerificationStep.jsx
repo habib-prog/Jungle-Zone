@@ -5,7 +5,12 @@ import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import gsap from "gsap";
 import { verificationDocuments } from "../api/fakeApi";
 
-const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) => {
+const BabysitterVerification = ({
+  onNext,
+  onBack,
+  formData,
+  updateFormData,
+}) => {
   const sectionRef = useRef(null);
   const selectedDocs = Array.isArray(formData?.verificationDocs)
     ? formData.verificationDocs
@@ -56,8 +61,7 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
     updateFormData({ verificationDocs: newDocs });
   };
 
-  const isSelected = (label) =>
-    selectedDocs.some((doc) => doc === label);
+  const isSelected = (label) => selectedDocs.some((doc) => doc === label);
 
   return (
     <section
@@ -81,21 +85,9 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
 
             <div className="step-fade mb-8 text-center">
               <p className="text-sm text-gray-500 sm:text-base">
-                Please ensure you have the following documents to verify your eligibility:
+                Please ensure you have the following documents to verify your
+                eligibility:
               </p>
-            </div>
-
-            {/* Legal Documents List */}
-            <div className="step-fade mb-8 text-left text-sm text-gray-500 sm:text-base">
-              <ul className="list-disc pl-5">
-                <li>Valid Passport or UK Photo ID</li>
-                <li>Right to Work in the UK (if applicable)</li>
-                <li>Enhanced DBS Certificate (recommended)</li>
-                <li>Proof of Address (utility bill or bank statement)</li>
-                <li>National Insurance Number (if applicable)</li>
-                <li>UK Visa / BRP (for non-UK citizens)</li>
-                <li>Paediatric First Aid or Childcare Qualifications (optional)</li>
-              </ul>
             </div>
 
             {/* UK Verification Documents Checklist */}
@@ -107,10 +99,11 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
                 {verificationDocuments.map((doc) => (
                   <label
                     key={doc.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${isSelected(doc.label)
-                      ? "border-brandColor bg-brandColor/10"
-                      : "border-gray-200 bg-white hover:border-brandColor"
-                      }`}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
+                      isSelected(doc.label)
+                        ? "border-brandColor bg-brandColor/10"
+                        : "border-gray-200 bg-white hover:border-brandColor"
+                    }`}
                   >
                     <div className="relative">
                       <input
@@ -121,10 +114,11 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
                       />
 
                       <div
-                        className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border-2 transition-all duration-200 ${isSelected(doc.label)
-                          ? "border-brandColor bg-brandColor scale-90"
-                          : "border-gray-300 bg-white"
-                          }`}
+                        className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border-2 transition-all duration-200 ${
+                          isSelected(doc.label)
+                            ? "border-brandColor bg-brandColor scale-90"
+                            : "border-gray-300 bg-white"
+                        }`}
                       >
                         {isSelected(doc.label) && (
                           <svg
@@ -148,14 +142,16 @@ const BabysitterVerification = ({ onNext, onBack, formData, updateFormData }) =>
               </div>
               {selectedDocs.length > 0 && (
                 <p className="mt-3 text-xs text-gray-500">
-                  {selectedDocs.length} document type{selectedDocs.length > 1 ? "s" : ""} selected
+                  {selectedDocs.length} document type
+                  {selectedDocs.length > 1 ? "s" : ""} selected
                 </p>
               )}
             </div>
 
             <div className="step-fade mt-6">
               <p className="text-sm text-gray-500 sm:text-base">
-                Your documents are secure and will only be used for verification purposes.
+                Your documents are secure and will only be used for verification
+                purposes.
               </p>
             </div>
           </div>

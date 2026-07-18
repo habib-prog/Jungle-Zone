@@ -21,6 +21,7 @@ const Page = () => {
     phoneNumber: "",
     password: "",
     profilePhoto: "",
+    dateOfBirth: "",
     age: "",
     gender: "",
     location: "",

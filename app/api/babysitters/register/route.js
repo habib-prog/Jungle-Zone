@@ -45,6 +45,7 @@ export async function POST(req) {
       phoneNumber,
       password,
       age,
+      dateOfBirth,
       gender,
       location,
       zipCode,
@@ -67,7 +68,7 @@ export async function POST(req) {
       !email ||
       !phoneNumber ||
       !password ||
-      !age ||
+      !(age || dateOfBirth) ||
       !gender ||
       !location ||
       !zipCode
@@ -109,20 +110,31 @@ export async function POST(req) {
       );
     }
 
-    // Age validation
-    const parsedAge = Number(age);
+    // Date of Birth / Age validation
+    let parsedAge = age ? Number(age) : null;
+    let parsedDob = null;
+    if (dateOfBirth) {
+      parsedDob = new Date(dateOfBirth);
+      if (isNaN(parsedDob.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid date of birth" },
+          { status: 400 },
+        );
+      }
+      const diffMs = Date.now() - parsedDob.getTime();
+      parsedAge = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
+    }
     if (isNaN(parsedAge) || parsedAge < 18 || parsedAge > 100) {
       return NextResponse.json(
-        { error: "Age must be a number between 18 and 100" },
+        { error: "You must be between 18 and 100 years old" },
         { status: 400 },
       );
     }
 
-    // Post code validation (must be positive number)
-    const parsedZip = Number(zipCode);
-    if (isNaN(parsedZip) || parsedZip <= 0) {
+    // Post code validation (alphanumeric)
+    if (!/^[a-zA-Z0-9\s]+$/.test(String(zipCode).trim())) {
       return NextResponse.json(
-        { error: "Post code must be positive numbers only" },
+        { error: "Post code must contain letters and numbers only" },
         { status: 400 },
       );
     }
@@ -181,10 +193,11 @@ export async function POST(req) {
       phoneNumber,
       password: hashedPassword,
       profilePhoto: picturePath,
-      age: Number(age),
+      age: parsedAge,
+      dateOfBirth: parsedDob,
       gender,
       location,
-      zipCode: Number(zipCode),
+      zipCode: String(zipCode).trim(),
       description,
       certifications: Array.isArray(certifications)
         ? certifications

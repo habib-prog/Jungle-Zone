@@ -64,6 +64,7 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
       payload.append("email", formData.email || "");
       payload.append("phoneNumber", formData.phoneNumber || "");
       payload.append("password", formData.password || "");
+      payload.append("dateOfBirth", formData.dateOfBirth || "");
       payload.append("age", formData.age || "");
       payload.append("gender", formData.gender || "");
       payload.append("location", formData.location || "");
@@ -352,10 +353,10 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
               <div className="space-y-6">
                 <div>
                   <label className="text-lg font-semibold text-gray-400">
-                    Age
+                    Date of Birth
                   </label>
                   <p className="mt-2 border-b-2 border-gray-300 pb-3 text-base text-gray-800">
-                    {formData.age || "-"}
+                    {formData.dateOfBirth || "-"}
                   </p>
                 </div>
 
