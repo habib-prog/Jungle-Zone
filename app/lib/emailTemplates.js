@@ -85,7 +85,7 @@ export const verifiedEmail = ({ name = "there" }) => {
         <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#52606d;">
           Hi ${name}, your email has been verified. Welcome to the JungleZone family &mdash; you can now sign in and explore.
         </p>
-        <a href="${SITE_URL}/login" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Go to login</a>
+        <a href="https://junglezone.uk/login" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Go to login</a>
       </td>
     </tr>
     ${footer}
@@ -109,7 +109,7 @@ export const sitterApprovedEmail = ({ name = "there" }) => {
           Hi ${name}, great news! Your JungleZone babysitter account has been approved by our team.
           You can now sign in and start receiving bookings from parents.
         </p>
-        <a href="${SITE_URL}/login" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Go to login</a>
+        <a href="https://junglezone.uk/login" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Go to login</a>
       </td>
     </tr>
     ${footer}
