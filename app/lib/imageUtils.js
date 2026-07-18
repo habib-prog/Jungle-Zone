@@ -6,7 +6,7 @@
 export async function compressImageFile(file, {
   maxSize = 1024,
   quality = 0.8,
-  mime = "image/jpeg",
+  jpegQuality = 0.8,
 } = {}) {
   if (typeof window === "undefined" || !window.createObjectURL) return file;
 
@@ -34,14 +34,20 @@ export async function compressImageFile(file, {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
 
+    // Default to JPEG for photos, but keep transparency/animation-free
+    // sources as PNG when the original wasn't a JPEG-type image.
+    const isJpegLike = /jpe?g/i.test(file.type);
+    const outMime = isJpegLike ? "image/jpeg" : "image/png";
+    const outQuality = isJpegLike ? jpegQuality : undefined;
+
     const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, mime, quality),
+      canvas.toBlob(resolve, outMime, outQuality),
     );
     if (!blob) return file;
 
-    const ext = mime === "image/png" ? "png" : "jpg";
+    const ext = outMime === "image/png" ? "png" : "jpg";
     const filename = (file.name || "profile").replace(/\.[^.]+$/, "") + "." + ext;
-    return new File([blob], filename, { type: mime });
+    return new File([blob], filename, { type: outMime });
   } catch {
     return file;
   } finally {
