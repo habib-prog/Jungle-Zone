@@ -5,10 +5,15 @@
  */
 export async function compressImageFile(file, {
   maxSize = 1024,
-  quality = 0.8,
+  maxBytes = 800 * 1024,
   jpegQuality = 0.8,
 } = {}) {
   if (typeof window === "undefined" || !window.createObjectURL) return file;
+
+  // Already small enough? Skip the expensive canvas work.
+  if (file.size && file.size <= maxBytes && /jpe?g|png|webp/i.test(file.type)) {
+    return file;
+  }
 
   const url = URL.createObjectURL(file);
   try {
@@ -38,11 +43,17 @@ export async function compressImageFile(file, {
     // sources as PNG when the original wasn't a JPEG-type image.
     const isJpegLike = /jpe?g/i.test(file.type);
     const outMime = isJpegLike ? "image/jpeg" : "image/png";
-    const outQuality = isJpegLike ? jpegQuality : undefined;
 
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, outMime, outQuality),
-    );
+    // Iteratively lower quality until the blob fits the byte budget.
+    let quality = jpegQuality;
+    let blob = null;
+    for (let i = 0; i < 6; i++) {
+      blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, outMime, outMime === "image/png" ? undefined : quality),
+      );
+      if (!blob || blob.size <= maxBytes || quality <= 0.3) break;
+      quality = Math.max(0.3, quality - 0.1);
+    }
     if (!blob) return file;
 
     const ext = outMime === "image/png" ? "png" : "jpg";

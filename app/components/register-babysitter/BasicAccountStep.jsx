@@ -46,7 +46,8 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
     if (file) {
       const compressed = await compressImageFile(file, {
         maxSize: 1024,
-        quality: 0.8,
+        jpegQuality: 0.8,
+        maxBytes: 800 * 1024,
       });
       const localUrl = URL.createObjectURL(compressed);
       setImageUrl(localUrl);
