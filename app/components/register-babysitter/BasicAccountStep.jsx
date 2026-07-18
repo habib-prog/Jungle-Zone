@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Upload } from "antd";
 import { FiArrowRight, FiImage } from "react-icons/fi";
 import gsap from "gsap";
+import { compressImageFile } from "@/app/lib/imageUtils";
 
 const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
   const sectionRef = useRef(null);
@@ -41,11 +42,15 @@ const BasicAccountStep = ({ onNext, onBack, formData, updateFormData }) => {
     return () => ctx.revert();
   }, []);
 
-  const handleImageUpload = ({ file }) => {
+  const handleImageUpload = async ({ file }) => {
     if (file) {
-      const localUrl = URL.createObjectURL(file);
+      const compressed = await compressImageFile(file, {
+        maxSize: 1024,
+        quality: 0.8,
+      });
+      const localUrl = URL.createObjectURL(compressed);
       setImageUrl(localUrl);
-      updateFormData({ profilePhoto: file });
+      updateFormData({ profilePhoto: compressed });
     }
   };
 
