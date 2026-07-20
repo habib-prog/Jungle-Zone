@@ -118,7 +118,7 @@ const SearchBabySitter = () => {
   const handleBabysitterClick = (id) => {
     if (!isLoggedIn) {
       toast.error("Please login to view babysitter details");
-      router.push("/login");
+      router.push(`/login?redirect=${encodeURIComponent(`/babysitters/${id}`)}`);
       return;
     }
     router.push(`/babysitters/${id}`);
@@ -222,7 +222,11 @@ const SearchBabySitter = () => {
                 </p>
                 <button
                   onClick={() =>
-                    router.push(accessError.status === 401 ? "/login" : "/pricing")
+                    router.push(
+                      accessError.status === 401
+                        ? "/login?redirect=%2Fbabysitters"
+                        : "/pricing",
+                    )
                   }
                   className="rounded-[35px] bg-brandColor px-5 py-2 text-sm font-semibold text-white"
                 >

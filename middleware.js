@@ -49,7 +49,9 @@ export async function middleware(req) {
   // Require login for individual babysitter profiles
   if (pathname.startsWith("/babysitters/")) {
     if (!user) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
     }
     // Only allow parents to view babysitter profiles
     if (user.role !== "parent") {

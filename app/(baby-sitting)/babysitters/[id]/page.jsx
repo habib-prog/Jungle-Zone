@@ -121,7 +121,7 @@ const Page = () => {
         if (!res.ok) {
           if (res.status === 401) {
             toast.error(result.error || "Please log in to use this facility");
-            router.push("/login");
+            router.push(`/login?redirect=${encodeURIComponent(`/babysitters/${id}`)}`);
             return;
           }
 

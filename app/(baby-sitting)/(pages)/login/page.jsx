@@ -69,19 +69,24 @@ const LoginContent = () => {
 
         // Redirect based on user role
         const role = data.account?.role;
+        const paramRedirect = searchParams?.get("redirect");
         let redirectUrl = "/";
 
-        if (role === "sitter" || role === "babysitter") {
-          redirectUrl = "/dashboard/babySitter";
-          if (data.pendingApproval) {
-            toast.info(
-              "Your sitter account is pending approval. Please wait up to 72 hours.",
-            );
+        if (paramRedirect && role === "parent") {
+          redirectUrl = paramRedirect;
+        } else {
+          if (role === "sitter" || role === "babysitter") {
+            redirectUrl = "/dashboard/babySitter";
+            if (data.pendingApproval) {
+              toast.info(
+                "Your sitter account is pending approval. Please wait up to 72 hours.",
+              );
+            }
+          } else if (role === "admin") {
+            redirectUrl = "/dashboard/admin";
+          } else if (role === "parent") {
+            redirectUrl = "/dashboard/parent";
           }
-        } else if (role === "admin") {
-          redirectUrl = "/dashboard/admin";
-        } else if (role === "parent") {
-          redirectUrl = "/dashboard/parent";
         }
 
         router.push(redirectUrl);
