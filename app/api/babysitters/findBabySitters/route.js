@@ -46,17 +46,22 @@ export async function GET(req) {
     const filter = { isApproved: true };
 
     if (zipCode) {
-      const normalizedZipCode = zipCode.replace(/\s+/g, "");
-      const zipNum = Number(normalizedZipCode);
+      const normalizedZipCode = zipCode.replace(/\s+/g, "").trim();
 
-      if (!normalizedZipCode || isNaN(zipNum)) {
+      if (!normalizedZipCode) {
         return new Response(
-          JSON.stringify({ error: "Postcode must be numeric" }),
+          JSON.stringify({ error: "Postcode must not be empty" }),
           { status: 400 },
         );
       }
 
-      filter.zipCode = zipNum;
+      // Build a case-insensitive regex that ignores spaces in the stored postcode.
+      // E.g., searching "E147fu" or "E14 7fu" will match "E14 7fu" or "e14 7fu" in DB.
+      const regexStr = normalizedZipCode.split("").map(char => {
+        return char.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\s*";
+      }).join("");
+
+      filter.zipCode = { $regex: new RegExp("^" + regexStr + "$", "i") };
     }
 
     if (name) {
