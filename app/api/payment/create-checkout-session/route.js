@@ -10,6 +10,26 @@ import Parent from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import { normalizeRole } from "@/app/lib/roleUtils";
 
+const getBaseUrl = (req) => {
+  // If running in production, prefer the official domain to avoid configuration mismatches
+  if (process.env.NODE_ENV === "production") {
+    const host = req.headers.get("host") || "";
+    if (host.includes("localhost") || host.includes("127.0.0.1")) {
+      const proto = req.headers.get("x-forwarded-proto") || "http";
+      return `${proto}://${host}`;
+    }
+    return "https://junglezone.uk";
+  }
+
+  // In development, resolve dynamically from request headers or default to NEXT_PUBLIC_API_URL
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  if (host) {
+    const proto = req.headers.get("x-forwarded-proto") || "http";
+    return `${proto}://${host}`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+};
+
 export async function POST(req) {
   try {
     await connectDB();
@@ -157,6 +177,8 @@ export async function POST(req) {
       trialDays = normalizedRole === "babysitter" ? 60 : 30;
     }
 
+    const baseUrl = getBaseUrl(req);
+
     const sessionOptions = {
       payment_method_types: ["card"],
       line_items: [
@@ -166,8 +188,8 @@ export async function POST(req) {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout/success?sessionId={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout?planId=${planId}&billingCycle=${billingCycle}`,
+      success_url: `${baseUrl}/checkout/success?sessionId={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/checkout?planId=${planId}&billingCycle=${billingCycle}`,
       customer_email: userDoc.email,
       subscription_data: {
         metadata: {

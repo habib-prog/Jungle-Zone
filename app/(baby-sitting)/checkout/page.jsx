@@ -124,12 +124,20 @@ const CheckoutContent = () => {
           planDetails={planDetails}
           billingCycle={billingCycle}
         />
-        <button
-          onClick={() => router.push("/pricing")}
-          className="w-full mt-4 text-center text-brandColor hover:underline py-2"
-        >
-          Back to Pricing
-        </button>
+        <div className="w-full mt-4 flex items-center gap-3">
+          <button
+            onClick={() => router.push("/")}
+            className="flex-1 text-center text-brandColor hover:underline py-2"
+          >
+            Return to Home
+          </button>
+          <button
+            onClick={() => router.push("/pricing")}
+            className="flex-1 text-center text-gray-600 hover:text-brandColor hover:underline py-2"
+          >
+            Back to Pricing
+          </button>
+        </div>
       </div>
     </div>
   );

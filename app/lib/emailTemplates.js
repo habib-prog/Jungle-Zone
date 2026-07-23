@@ -1,14 +1,19 @@
 const BRAND = "#629d2f";
 const BRAND_DARK = "#4d7a24";
-const SITE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.NEXTAUTH_URL ||
-  "https://junglezone.uk";
 
-const ADMIN_DASHBOARD_URL =
-  process.env.NEXT_PUBLIC_ADMIN_DASHBOARD_URL ||
-  "https://junglezone.uk/dashboard/admin";
+const isProd = process.env.NODE_ENV === "production";
+
+const SITE_URL = isProd
+  ? "https://junglezone.uk"
+  : (process.env.NEXT_PUBLIC_API_URL ||
+     process.env.NEXT_PUBLIC_SITE_URL ||
+     process.env.NEXTAUTH_URL ||
+     "http://localhost:3000");
+
+const ADMIN_DASHBOARD_URL = isProd
+  ? "https://junglezone.uk/dashboard/admin"
+  : (process.env.NEXT_PUBLIC_ADMIN_DASHBOARD_URL ||
+     "http://localhost:3000/dashboard/admin");
 
 const wrap = (inner) => `<!DOCTYPE html>
 <html lang="en">
