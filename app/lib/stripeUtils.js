@@ -97,6 +97,7 @@ export const fulfillSubscription = async ({
   }
 
   const newStripeSubId = stripeSubscriptionId || payment?.stripeSubscriptionId;
+  let userSubscriptionStatus = finalPlanName;
 
   if (newStripeSubId) {
     try {
@@ -104,7 +105,10 @@ export const fulfillSubscription = async ({
       if (stripeSubscriptionObj) {
         startDate = new Date(stripeSubscriptionObj.current_period_start * 1000);
         endDate = new Date(stripeSubscriptionObj.current_period_end * 1000);
-        console.log("[Fulfillment] Set dates from Stripe Subscription:", { startDate, endDate });
+        if (stripeSubscriptionObj.status === "trialing") {
+          userSubscriptionStatus = "trial";
+        }
+        console.log("[Fulfillment] Set dates and status from Stripe Subscription:", { startDate, endDate, status: stripeSubscriptionObj.status });
       }
     } catch (err) {
       console.error("[Fulfillment] Failed to retrieve stripe subscription for dates:", err.message);
@@ -163,7 +167,7 @@ export const fulfillSubscription = async ({
   const userModel = finalCategory === "babysitter" ? BabySitterRegistration : Parent;
   await userModel.findByIdAndUpdate(finalUserId, {
     subscriptionId: finalPlanId,
-    subscription: finalPlanName,
+    subscription: userSubscriptionStatus,
     subscriptionStart: startDate,
     subscriptionExpiry: endDate,
   });

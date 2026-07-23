@@ -22,17 +22,6 @@ export async function GET(req) {
       );
     }
 
-    if (!access.canUseFacilities) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "Your free trial or subscription has expired. Please subscribe to use this facility.",
-          reason: access.reason,
-        }),
-        { status: 403 },
-      );
-    }
-
     const { searchParams } = new URL(req.url);
 
     const zipCode = searchParams.get("zipCode");

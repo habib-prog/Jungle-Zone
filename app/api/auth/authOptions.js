@@ -36,11 +36,9 @@ export const authOptions = {
               password: "",
               provider: "google",
               role: "parent",
-              subscription: "trial",
-              subscriptionStart: new Date(),
-              subscriptionExpiry: new Date(
-                Date.now() + 30 * 24 * 60 * 60 * 1000,
-              ),
+              subscription: "free",
+              subscriptionStart: null,
+              subscriptionExpiry: null,
             });
           }
         }

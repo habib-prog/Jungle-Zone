@@ -33,24 +33,17 @@ export async function GET(req, context) {
       );
     }
 
-    if (!access.canUseFacilities) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "Your free trial or subscription has expired. Please subscribe to use this facility.",
-          reason: access.reason,
-          viewer: access,
-        }),
-        { status: 403 },
-      );
-    }
-
     const data = await BabySitterRegistration.findById(id).lean();
 
     if (!data) {
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
       });
+    }
+
+    if (!access.canUseFacilities) {
+      data.phoneNumber = "Hidden";
+      data.email = "Hidden";
     }
 
     return new Response(
