@@ -76,24 +76,38 @@ const BabysitterVerification = ({
                 <span className="text-5xl">🪪</span>
               </div>
 
-              <div className="mascot-bounce rounded-full bg-cyan-50 px-8 py-6 text-center shadow-sm sm:px-10 sm:py-8">
+              <div className="mascot-bounce rounded-2xl bg-cyan-50 px-8 py-6 text-center shadow-sm sm:px-10 sm:py-8">
                 <h3 className="text-xl font-medium text-gray-800 sm:text-2xl">
-                  Verify Your Identity to Serve as a Babysitter
+                  Credentials &amp; Documentation Declarations
                 </h3>
               </div>
             </div>
 
-            <div className="step-fade mb-8 text-center">
-              <p className="text-sm text-gray-500 sm:text-base">
-                Please ensure you have the following documents to verify your
-                eligibility:
+            <div className="step-fade mb-6 text-center">
+              <p className="text-sm text-gray-600 sm:text-base">
+                Declare the documentation and credentials you hold and are
+                prepared to present to parents or guardians upon request:
+              </p>
+            </div>
+
+            {/* Platform disclaimer notice */}
+            <div className="step-fade mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-900">
+              <p className="font-semibold uppercase tracking-wide mb-1 text-[11px]">
+                Notice to Babysitters
+              </p>
+              <p>
+                JungleZone is an online introduction platform. JungleZone does
+                not obtain, verify, or endorse DBS certificates, background
+                checks, or qualifications. You are responsible for the accuracy
+                of your declared credentials, and parents may ask to inspect
+                original documents before booking.
               </p>
             </div>
 
             {/* UK Verification Documents Checklist */}
             <div className="step-fade">
               <h4 className="mb-4 text-base font-semibold text-gray-800">
-                Select documents you will provide for verification:
+                Select documents you currently hold:
               </h4>
               <div className="space-y-3">
                 {verificationDocuments.map((doc) => (
@@ -140,19 +154,17 @@ const BabysitterVerification = ({
                   </label>
                 ))}
               </div>
-              {selectedDocs.length > 0 && (
+              {selectedDocs.length > 0 ? (
                 <p className="mt-3 text-xs text-gray-500">
-                  {selectedDocs.length} document type
-                  {selectedDocs.length > 1 ? "s" : ""} selected
+                  {selectedDocs.length} credential
+                  {selectedDocs.length > 1 ? "s" : ""} declared
+                </p>
+              ) : (
+                <p className="mt-3 text-xs text-gray-400">
+                  Optional: You can proceed without selecting documents now and
+                  update your profile later.
                 </p>
               )}
-            </div>
-
-            <div className="step-fade mt-6">
-              <p className="text-sm text-gray-500 sm:text-base">
-                Your documents are secure and will only be used for verification
-                purposes.
-              </p>
             </div>
           </div>
 
@@ -170,8 +182,7 @@ const BabysitterVerification = ({
                 type="primary"
                 size="large"
                 onClick={onNext}
-                disabled={selectedDocs.length === 0}
-                className="flex items-center gap-2 rounded px-6 py-2 bg-brandColor text-white cursor-pointer duration-200 hover:bg-brandColor/80 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+                className="flex items-center gap-2 rounded px-6 py-2 bg-brandColor text-white cursor-pointer duration-200 hover:bg-brandColor/80"
               >
                 Next
                 <FiArrowRight />

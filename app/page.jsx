@@ -20,12 +20,6 @@ import { getImageUrl } from "@/app/lib/imageUtils";
 import { faqData } from "./components/api/fakeApi";
 
 export default function JungleZone() {
-  const heroImages = [
-    "/img/frontPageImg.jpg",
-    "/img/frontPageImg2.jpg",
-    "/img/frontPageImg3.jpg",
-  ];
-
   const [latestBabysitters, setLatestBabysitters] = useState([]);
   const [loadingLatestBabysitters, setLoadingLatestBabysitters] =
     useState(false);
@@ -33,47 +27,23 @@ export default function JungleZone() {
   const [postcodeError, setPostcodeError] = useState("");
 
   useEffect(() => {
-    const container = document.querySelector(".hero-slider-container");
-    if (!container) return;
-
-    const totalSlides = heroImages.length + 1; // including clone
-
-    const tl = gsap.timeline({ repeat: -1 });
-
-    // Set initial position
-    gsap.set(container, { x: 0 });
-    gsap.set(".hero-bg-image img", { scale: 1.04 });
-
-    const zoomTween = gsap.to(".hero-bg-image img", {
-      scale: 1.12,
-      duration: 18,
-      ease: "sine.inOut",
-      repeat: -1,
-      yoyo: true,
+    const ctx = gsap.context(() => {
+      // Animated hero header entrance
+      const headerTl = gsap.timeline({
+        defaults: { ease: "power3.out" },
+        delay: 0.2,
+      });
+      headerTl.from("[data-hero-anim]", {
+        opacity: 0,
+        y: 28,
+        filter: "blur(8px)",
+        duration: 0.8,
+        stagger: 0.12,
+      });
     });
 
-    // Wait on first image, then slide through each subsequent image with wait
-    tl.to({}, { duration: 4 });
-
-    for (let i = 1; i < totalSlides; i++) {
-      tl.to(container, {
-        x: `-${i * 100}%`,
-        duration: 5,
-        ease: "power2.inOut",
-      });
-      if (i < totalSlides - 1) {
-        tl.to({}, { duration: 4 });
-      }
-    }
-
-    // Reset to start instantly for seamless loop
-    tl.set(container, { x: 0 });
-
-    return () => {
-      tl.kill();
-      zoomTween.kill();
-    };
-  }, [heroImages.length]);
+    return () => ctx.revert();
+  }, []);
 
   const fetchBabysitters = useCallback(
     async (page = 1, searchPostcode = "") => {
@@ -130,83 +100,68 @@ export default function JungleZone() {
     <>
       <Navbar />
       {/* HERO */}
-      <section className="relative overflow-hidden pt-20 pb-10 sm:pt-24 sm:pb-14 lg:min-h-[720px] lg:py-32">
-        {/* Sliding Background Images */}
+      <section className="relative overflow-hidden pt-16 pb-6 sm:pt-20 sm:pb-10 lg:min-h-[640px] lg:py-24">
+        {/* Static Background Image */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <div className="hero-slider-container flex h-full will-change-transform">
-            {heroImages.map((img, index) => (
-              <div
-                key={index}
-                className="hero-bg-image w-full h-full flex-shrink-0 relative"
-              >
-                <Image
-                  src={img}
-                  alt={`Hero background ${index + 1}`}
-                  fill
-                  priority={index === 0}
-                  className="object-cover will-change-transform"
-                  quality={80}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25" />
-              </div>
-            ))}
-            {/* Clone first image for seamless loop */}
-            <div className="hero-bg-image w-full h-full flex-shrink-0 relative">
-              <Image
-                src={heroImages[0]}
-                alt="Hero background 1"
-                fill
-                className="object-cover will-change-transform"
-                quality={80}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25" />
-            </div>
-          </div>
+          <Image
+            src="/img/frontPageImg.jpg"
+            alt="Hero background"
+            fill
+            priority
+            className="object-cover"
+            quality={80}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25" />
         </div>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.16),rgba(0,0,0,0.08)_45%,rgba(255,255,255,0.95)_100%)]" />
+        {/* Blurred backdrop for content legibility */}
+        <div className="absolute inset-0 backdrop-blur-[2px] bg-black/20" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.2)_45%,rgba(255,255,255,0.95)_100%)]" />
 
-        <div className="container relative z-10 grid grid-cols-1 items-center gap-8 px-4 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
-          <div className="max-w-2xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase text-white shadow-lg backdrop-blur-md">
-              <ShieldCheck className="h-4 w-4 text-brandColor" />
-              Verified childcare network
+        <div className="container relative z-10 flex flex-col items-center justify-center gap-6 px-4 py-6 sm:px-6 md:py-8 lg:grid lg:grid-cols-[1.08fr_0.92f r] lg:gap-16 lg:py-0">
+          <div className="max-w-lg">
+            <div data-hero-anim className="mt-6 sm:mt-4 mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-poppins text-xs font-semibold uppercase text-white shadow-lg backdrop-blur-md">
+              <Search className="h-4 w-4 text-brandColor" />
+              Online Introduction Platform
             </div>
 
-            <h1 className="mb-4 max-w-3xl text-[clamp(2.35rem,10vw,4.5rem)] font-semibold leading-[1.04] text-white lg:mb-6">
-              Find trusted childcare
+            <h1 data-hero-anim className="mb-4 max-w-3xl font-poppins text-[clamp(2rem,9vw,4.5rem)] font-bold leading-[1.05] text-white lg:mb-6">
+              Find Local Babysitters,
               <br />
-              <span className="text-brandColor">close to home</span>
+              <span className="bg-gradient-to-r from-brandColor to-[#a7d27a] bg-clip-text text-transparent">All in One Place</span>
             </h1>
 
-            <p className="mb-7 max-w-xl text-sm leading-7 text-white/85 sm:text-base lg:mb-9 lg:text-lg lg:leading-8">
-              Browse approved babysitters, compare local rates, and choose care
-              with confidence. Built for families who want safety, clarity, and
-              a calmer way to find help nearby.
+            <p data-hero-anim className="mb-6 max-w-xl font-poppins text-sm leading-7 text-white/85 sm:text-base lg:mb-7 lg:text-lg lg:leading-8">
+              JungleZone is an online introduction platform that helps parents and independent babysitters find and connect with each other. Browse profiles, compare information and connect directly with babysitters in your area.
             </p>
 
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-              <Link href={"/register"} className="w-full sm:w-auto">
+            <div data-hero-anim className="mb-4 flex flex-col gap-3 sm:flex-row">
+              <Link href={"/babysitters"} className="w-full sm:w-auto">
                 <button className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brandColor px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-brandColor/90 lg:px-8">
-                  Get Started
+                  Browse Babysitters
                   <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </button>
               </Link>
-              <Link href={"/babysitters"} className="w-full sm:w-auto">
+              <Link href={"/register-babysitter"} className="w-full sm:w-auto">
                 <button className="w-full cursor-pointer rounded-full border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white hover:text-gray-900 lg:px-8">
-                  Browse Babysitters
+                  Join as a Babysitter
                 </button>
               </Link>
             </div>
 
-            <div className="grid max-w-xl grid-cols-1 gap-3 text-white sm:grid-cols-3">
-              <HeroMetric icon={ShieldCheck} label="DBS checked" />
-              <HeroMetric icon={BadgeCheck} label="Identity verified" />
-              <HeroMetric icon={Clock3} label="Fast local search" />
+            <div data-hero-anim className="mb-6 rounded-2xl border border-white/15 bg-black/30 p-3.5 text-xs text-white/90 backdrop-blur-md max-w-xl">
+              <strong className="font-semibold text-brandColor">Platform Disclaimer: </strong>
+              JungleZone is an introduction platform only. We do not provide childcare services, employ babysitters, carry out DBS or background checks, or guarantee the suitability of any user.
+            </div>
+
+            <div data-hero-anim className="grid max-w-xl grid-cols-1 gap-3 text-white sm:grid-cols-3">
+              <HeroMetric icon={HeartHandshake} label="Direct Connections" />
+              <HeroMetric icon={Clock3} label="Direct Arrangements" />
+              <HeroMetric icon={Search} label="Fast Local Search" />
             </div>
           </div>
 
           {/* RIGHT SIDE CARDS */}
-          <div className="relative w-full min-w-0 overflow-hidden rounded-3xl border border-white/20 bg-white/[0.16] p-4 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:p-5 lg:p-6">
+          <div className="relative w-full min-w-0 overflow-hidden rounded-3xl border border-white/25 bg-white/10 p-3.5 shadow-2xl shadow-black/30 backdrop-blur-3xl sm:p-5 lg:p-6">
             <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -214,7 +169,7 @@ export default function JungleZone() {
                   Featured sitters
                 </div>
                 <p className="mt-1 text-sm text-white/70">
-                  Search by postcode or view latest approved profiles.
+                  Search by postcode or view latest babysitter profiles.
                 </p>
               </div>
               <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/15 text-white">
@@ -298,114 +253,131 @@ export default function JungleZone() {
         </div>
       </section>
 
-      {/* VALUES */}
+      {/* HOW JUNGLEZONE WORKS */}
       <section className="py-16 lg:py-24">
         <div className="container">
           <div className="text-center mb-10 lg:mb-14">
-            <div className="text-xs tracking-widest text-brandColor uppercase mb-2">
-              Our Promise
+            <div className="text-xs tracking-widest text-brandColor uppercase mb-2 font-semibold">
+              Platform Introduction
             </div>
 
-            <h2 className="text-3xl lg:text-4xl">What We Stand For</h2>
+            <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-gray-900">How JungleZone Works</h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <ValueCard
-              icon={ShieldCheck}
-              title="Trust"
-              desc="Every babysitter is identity-verified and DBS-checked."
+              icon={HeartHandshake}
+              title="Simple Connections"
+              desc="Find and connect with independent babysitters in your area."
             />
             <ValueCard
-              icon={HeartHandshake}
-              title="Care"
-              desc="Personalized childcare tailored to your family's needs."
+              icon={Search}
+              title="Choice"
+              desc="Browse profiles and decide for yourself who may be suitable for your family's needs."
             />
             <ValueCard
               icon={Clock3}
-              title="Reliability"
-              desc="Dependable sitters who show up on time."
+              title="Direct Arrangements"
+              desc="Parents and babysitters agree childcare arrangements, rates and payments directly with each other."
             />
           </div>
         </div>
       </section>
 
-      {/* SAFETY */}
+      {/* MAKE AN INFORMED CHOICE */}
       <section className="py-16 lg:py-24 bg-brandColor/5">
-        <div className="container">
+        <div className="container max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 lg:mb-14">
-            <div className="text-xs tracking-widest text-brandColor uppercase mb-2">
-              Safety First
+            <div className="text-xs tracking-widest text-brandColor uppercase mb-2 font-semibold">
+              Parent Guidance
             </div>
 
-            <h2 className="text-3xl lg:text-4xl">
-              Your Child&apos;s Safety is Our Priority
+            <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-gray-900">
+              Make an Informed Choice
             </h2>
+            <p className="mt-3 text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
+              JungleZone provides an online platform for introductions only. We encourage parents and guardians to carry out their own checks before engaging a babysitter.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             <SafetyItem
-              title="Verified Profiles"
-              desc="Every babysitter completes identity verification."
+              title="Check Identity"
+              desc="Ask the babysitter to provide appropriate identification."
             />
 
             <SafetyItem
-              title="DBS Background Checks"
-              desc="All sitters pass official UK screenings."
+              title="Check DBS Information"
+              desc="Where relevant to you, ask to see the babysitter's current DBS certificate or other appropriate evidence."
             />
 
             <SafetyItem
-              title="Ratings & Reviews"
-              desc="Honest feedback from real families."
+              title="Check References & Experience"
+              desc="Consider checking references, qualifications and previous childcare experience."
             />
 
             <SafetyItem
-              title="Secure Messaging"
-              desc="Encrypted communication platform."
+              title="Meet Before Engaging"
+              desc="Parents should consider interviewing or meeting a babysitter before making their own childcare arrangement."
             />
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-xs sm:text-sm text-gray-500 font-medium italic">
+              JungleZone does not conduct or verify these checks on behalf of users.
+            </p>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
       <section className="py-16 lg:py-24 bg-gray-50">
-        <div className="container max-w-5xl mx-auto">
+        <div className="container max-w-6xl mx-auto px-4 sm:px-6">
           {/* Header */}
-          <div className="text-center mb-14">
-            <h2 className="text-3xl lg:text-4xl font-serif text-gray-900">
+          <div className="text-center mb-10 lg:mb-16">
+            <div className="text-xs tracking-widest text-brandColor uppercase mb-2 font-semibold">
+              Support
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-gray-900">
               Frequently Asked Questions
             </h2>
-            <p className="text-gray-500 mt-2">
+            <p className="text-gray-500 mt-3 max-w-xl mx-auto text-sm sm:text-base">
               Everything you need to know about JungleZone — for parents and
               babysitters.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Parents FAQ */}
-            <div className="mb-12">
-              <div className="text-center mb-8">
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-2">
-                  For Parents
-                </h3>
-                <p className="text-gray-500">
-                  Find childcare that fits your family&apos;s needs
-                </p>
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brandColor/15 text-brandColor">
+                  <HeartHandshake className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    For Parents
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Find childcare that fits your family&apos;s needs
+                  </p>
+                </div>
               </div>
-              <div className="bg-white border border-gray-200 rounded overflow-hidden">
+              <div className="space-y-3">
                 <Accordion allowMultiple transition transitionTimeout={200}>
                   {faqData.parentFaqs.map((faq, index) => (
                     <AccordionItem
                       key={`parent-${index}`}
                       header={
-                        <div className="w-full flex justify-between items-center gap-2 px-6 py-5 cursor-pointer hover:bg-brandColor/20 duration-200">
-                          <span className="text-sm lg:text-[16px] font-medium text-gray-800">
+                        <div className="w-full flex justify-between items-center gap-3 px-4 sm:px-5 py-4 cursor-pointer hover:bg-brandColor/5 transition-colors duration-200">
+                          <span className="text-sm sm:text-[15px] font-medium text-gray-800 text-left">
                             {faq.question}
                           </span>
-                          <ChevronDown className="text-gray-400 acc-caret" />
+                          <ChevronDown className="h-4 w-4 flex-shrink-0 text-gray-400 acc-caret transition-transform duration-200" />
                         </div>
                       }
                     >
-                      <div className="px-6 pb-3 text-xs lg:text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                      <div className="px-4 sm:px-5 pb-4 text-xs sm:text-sm text-gray-600 border-t border-gray-100 pt-3 leading-relaxed">
                         {faq.answer}
                       </div>
                     </AccordionItem>
@@ -416,29 +388,34 @@ export default function JungleZone() {
 
             {/* Babysitter FAQ */}
             <div>
-              <div className="text-center mb-8">
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-2">
-                  For Babysitters
-                </h3>
-                <p className="text-gray-500">
-                  Start your childcare journey with us
-                </p>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brandColor/15 text-brandColor">
+                  <BadgeCheck className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    For Babysitters
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Start your childcare journey with us
+                  </p>
+                </div>
               </div>
-              <div className="bg-white border border-gray-200 rounded overflow-hidden">
+              <div className="space-y-3">
                 <Accordion allowMultiple transition transitionTimeout={200}>
                   {faqData.babysitterFaqs.map((faq, index) => (
                     <AccordionItem
                       key={`babysitter-${index}`}
                       header={
-                        <div className="min-w-full flex justify-between items-center gap-2 px-6 py-5 cursor-pointer hover:bg-brandColor/20 duration-200">
-                          <span className="text-sm lg:text-[16px] font-medium text-gray-800">
+                        <div className="w-full flex justify-between items-center gap-3 px-4 sm:px-5 py-4 cursor-pointer hover:bg-brandColor/5 transition-colors duration-200">
+                          <span className="text-sm sm:text-[15px] font-medium text-gray-800 text-left">
                             {faq.question}
                           </span>
-                          <ChevronDown className="text-gray-400 acc-caret" />
+                          <ChevronDown className="h-4 w-4 flex-shrink-0 text-gray-400 acc-caret transition-transform duration-200" />
                         </div>
                       }
                     >
-                      <div className="px-6 pb-3 text-xs lg:text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                      <div className="px-4 sm:px-5 pb-4 text-xs sm:text-sm text-gray-600 border-t border-gray-100 pt-3 leading-relaxed">
                         {faq.answer}
                       </div>
                     </AccordionItem>
@@ -447,16 +424,23 @@ export default function JungleZone() {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="text-center mt-5 space-y-3">
-          <h3 className="text-3xl text-brandColor font-bold">
-            Still have questions?
-          </h3>
-          <p>Contact our support team and we will be happy to help.</p>
-          <p className="text-brandColor text-bold text-lg">
-            support@junglezone.uk | junglezone.uk
-          </p>
+          {/* Still have questions CTA */}
+          <div className="mt-12 lg:mt-16 mx-auto max-w-xl rounded-2xl border border-brandColor/20 bg-white p-6 sm:p-8 text-center shadow-sm">
+            <h3 className="text-xl sm:text-2xl font-poppins font-bold text-gray-900 mb-2">
+              Still have questions?
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Contact our support team and we will be happy to help.
+            </p>
+            <a
+              href="mailto:support@junglezone.uk"
+              className="inline-flex items-center gap-2 rounded-full bg-brandColor px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-brandColor/90"
+            >
+              support@junglezone.uk
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
         </div>
       </section>
 
@@ -467,22 +451,22 @@ export default function JungleZone() {
 
         <div className="container relative text-white px-4">
           <h2 className="text-3xl lg:text-5xl font-serif mb-4 lg:mb-6">
-            Ready to Find Your Perfect Babysitter?
+            Ready to Connect with Local Babysitters?
           </h2>
 
-          <p className="mb-8 lg:mb-10 text-white/80 text-base lg:text-lg">
-            Join thousands of UK families who trust JungleZone
+          <p className="mb-8 lg:mb-10 text-white/80 text-base lg:text-lg max-w-2xl mx-auto">
+            Discover independent babysitters in your area, review profiles, and agree arrangements directly.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-3 lg:gap-4">
-            <Link href={"/register"}>
-              <button className="cursor-pointer px-6 lg:px-8 py-3 lg:py-4 bg-white text-brandColor rounded-full shadow-lg hover:scale-105 transition w-full sm:w-auto">
-                Create Free Account
+            <Link href={"/babysitters"}>
+              <button className="cursor-pointer px-6 lg:px-8 py-3 lg:py-4 bg-white text-brandColor font-semibold rounded-full shadow-lg hover:scale-105 transition w-full sm:w-auto">
+                Browse Babysitters
               </button>
             </Link>
-            <Link href={"/babysitters"}>
-              <button className="cursor-pointer px-6 lg:px-8 py-3 lg:py-4 border border-white rounded-full hover:bg-white hover:text-brandColor transition w-full sm:w-auto">
-                Browse Babysitters
+            <Link href={"/register-babysitter"}>
+              <button className="cursor-pointer px-6 lg:px-8 py-3 lg:py-4 border border-white font-semibold rounded-full hover:bg-white hover:text-brandColor transition w-full sm:w-auto">
+                Join as a Babysitter
               </button>
             </Link>
           </div>
@@ -552,9 +536,8 @@ function Sitter({ id, name, loc, rate, img }) {
       </div>
 
       <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:flex-col sm:items-end">
-        <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-800">
-          <ShieldCheck className="h-3.5 w-3.5 text-brandColor" />
-          DBS Checked
+        <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-xs">
+          Active Profile
         </div>
         <div className="text-sm font-semibold text-white">{rate}</div>
       </div>

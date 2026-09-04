@@ -1,39 +1,39 @@
-
 export default function SafetyVerification() {
   const items = [
     {
-      title: "Verified Profiles",
-      desc: "Every babysitter completes identity verification before accepting jobs.",
+      title: "Detailed Profiles",
+      desc: "Review experience, availability, and self-declared credentials directly on babysitter profiles.",
     },
     {
-      title: "Background Checks",
-      desc: "We help parents connect with sitters who pass safety screenings.",
+      title: "Direct Inquiries",
+      desc: "Ask to see original DBS certificates, identification, and references before engaging care.",
     },
     {
-      title: "Ratings & Reviews",
-      desc: "Honest feedback from real families builds trust and transparency.",
+      title: "Community Feedback",
+      desc: "Transparent reviews help parents and sitters connect with confidence.",
     },
     {
-      title: "Secure Communication",
-      desc: "Message and coordinate safely through our trusted platform.",
+      title: "Direct Arrangements",
+      desc: "Agree on rates, hours, and working arrangements directly with independent babysitters.",
     },
   ];
 
   return (
     <section
       className="w-full bg-gray-50 py-12 sm:py-16"
-      aria-label="Safety and verification"
+      aria-label="Safety and Informed Choices"
     >
       {/* container */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-poppis text-3xl font-medium leading-9 text-[#4C494A] sm:text-4xl sm:leading-10">
-            Safety Comes First
+            Make an Informed Choice
           </h2>
 
           <p className="mt-4 font-poppis text-base font-light leading-8 text-[#555555]">
-            We focus on trust, transparency, and peace of mind for every family.
+            JungleZone gives you the tools to discover local childcare, review
+            profiles, and conduct your own safety checks.
           </p>
         </div>
 

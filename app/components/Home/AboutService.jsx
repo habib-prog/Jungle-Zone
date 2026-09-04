@@ -19,7 +19,7 @@ export default function AboutService() {
   const services = [
     {
       title: "Trust",
-      desc: "Verified sitters you can rely on for every booking, every time.",
+      desc: "Connect directly with local independent babysitters who fit your schedule.",
       img: "/img/trust.png",
       aos: "fade-up",
       delay: 0,

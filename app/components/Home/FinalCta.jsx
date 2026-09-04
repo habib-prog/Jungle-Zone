@@ -3,16 +3,20 @@ import Link from "next/link";
 // components/Home/FinalCta.jsx
 export default function FinalCta() {
   return (
-    <section className="w-full py-12 sm:py-16" aria-label="Final call to action">
+    <section
+      className="w-full py-12 sm:py-16"
+      aria-label="Final call to action"
+    >
       {/* container */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-poppis text-3xl font-medium leading-9 text-[#4C494A] sm:text-4xl sm:leading-10">
-            Find a Trusted Babysitter Near You
+            Find Local Babysitters Near You
           </h2>
 
           <p className="mt-4 font-poppis text-base font-light leading-8 text-[#555555]">
-            Search by Post code and book in minutes—safe, simple, and stress-free.
+            Search by postcode and connect directly—simple, convenient, and
+            direct.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -24,14 +28,14 @@ export default function FinalCta() {
               Get Started
             </Link>
 
-            <a
-              href="#"
+            <Link
+              href="/find-babysitter"
               className="inline-block font-daughter text-xs font-medium leading-6 text-brandColor"
               aria-label="Browse babysitters"
             >
               BROWSE BABYSITTERS
               <span className="mt-1 block h-0.5 w-24 bg-brandColor" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

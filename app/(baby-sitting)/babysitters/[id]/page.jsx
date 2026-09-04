@@ -121,14 +121,16 @@ const Page = () => {
         if (!res.ok) {
           if (res.status === 401) {
             toast.error(result.error || "Please log in to use this facility");
-            router.push(`/login?redirect=${encodeURIComponent(`/babysitters/${id}`)}`);
+            router.push(
+              `/login?redirect=${encodeURIComponent(`/babysitters/${id}`)}`,
+            );
             return;
           }
 
           if (res.status === 403) {
             toast.error(
               result.error ||
-              "Your free trial or subscription has expired. Please subscribe to continue.",
+                "Your free trial or subscription has expired. Please subscribe to continue.",
             );
             router.push("/pricing");
             return;
@@ -159,9 +161,10 @@ const Page = () => {
           zipCode: db.zipCode ?? "Unmentioned",
           rate: db.hourlyRate ? `£ ${db.hourlyRate}/hr` : "Unmentioned",
           image: db.profilePhoto ? db.profilePhoto : "Unmentioned",
-          activity: db.lastActivity?.$date || db.lastActivity
-            ? `Last activity: ${new Date(db.lastActivity?.$date || db.lastActivity).toLocaleDateString()}`
-            : "Recently active",
+          activity:
+            db.lastActivity?.$date || db.lastActivity
+              ? `Last activity: ${new Date(db.lastActivity?.$date || db.lastActivity).toLocaleDateString()}`
+              : "Recently active",
           intro: textOrUnmentioned(db.description),
           certifications: arrayOrUnmentioned(db.certifications),
           characteristics: arrayOrUnmentioned(db.characteristics),
@@ -176,11 +179,16 @@ const Page = () => {
           location: textOrUnmentioned(db.location),
           updated: formatUpdatedDate(db.updatedAt),
           memberSince: formatDate(db.createdAt),
-          lastActivity: db.lastActivity?.$date || db.lastActivity
-            ? new Date(db.lastActivity?.$date || db.lastActivity).toLocaleDateString()
-            : "Unmentioned",
+          lastActivity:
+            db.lastActivity?.$date || db.lastActivity
+              ? new Date(
+                  db.lastActivity?.$date || db.lastActivity,
+                ).toLocaleDateString()
+              : "Unmentioned",
           mapLink: textOrUnmentioned(db.mapLink),
-          preferredBabysittingLocation: textOrUnmentioned(db.preferredBabysittingLocation),
+          preferredBabysittingLocation: textOrUnmentioned(
+            db.preferredBabysittingLocation,
+          ),
           governmentIdVerified: db.governmentIdVerified,
           emailVerified: db.emailVerified,
           googleAccountVerified: db.googleAccountVerified,
@@ -243,10 +251,10 @@ const Page = () => {
             },
             ...(Array.isArray(db.verificationDocs)
               ? db.verificationDocs.map((doc, i) => ({
-                label: `Verification Doc ${i + 1}`,
-                value: doc,
-                icon: <FiAward className="text-brandColor" />,
-              }))
+                  label: `Declared Credential ${i + 1}`,
+                  value: doc,
+                  icon: <FiAward className="text-brandColor" />,
+                }))
               : []),
           ],
           verifications: [
@@ -350,9 +358,13 @@ const Page = () => {
                     <h1 className="min-w-0 break-words text-2xl font-semibold text-gray-800 sm:text-3xl">
                       {profile.name}
                     </h1>
-                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brandColor text-xs text-white">
-                      ✓
-                    </span>
+                    {profile.subscription &&
+                      profile.subscription !== "Unmentioned" &&
+                      profile.subscription.toLowerCase() !== "free" && (
+                        <span className="rounded-full bg-brandColor/15 px-2.5 py-0.5 text-xs font-semibold text-brandColor">
+                          Pro Member
+                        </span>
+                      )}
                   </div>
 
                   <p className="break-words text-sm font-medium text-gray-500 sm:text-base">
@@ -390,7 +402,6 @@ const Page = () => {
         <div className="w-full rounded-3xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="min-w-0 order-2 lg:order-1">
-
               <div className="profile-card-animate flex flex-col gap-5 border-b border-gray-200 pb-6 xl:flex-row xl:items-start xl:justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="mb-4 flex items-center gap-2 text-sm text-gray-400">
@@ -418,22 +429,34 @@ const Page = () => {
                     </div>
                   </div>
 
-                  {/* Show all extra fields */}
+                  {/* Profile details */}
                   <div className="mt-5 grid grid-cols-1 gap-3 text-sm text-gray-700 sm:grid-cols-2">
                     <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
-                      <span className="font-semibold text-gray-500">Gender:</span> {profile.gender}
+                      <span className="font-semibold text-gray-500">
+                        Gender:
+                      </span>{" "}
+                      {profile.gender}
                     </div>
                     <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
-                      <span className="font-semibold text-gray-500">Certifications:</span> {profile.certifications}
+                      <span className="font-semibold text-gray-500">
+                        Certifications:
+                      </span>{" "}
+                      {profile.certifications}
                     </div>
+                    {profile.subscription &&
+                      profile.subscription !== "Unmentioned" && (
+                        <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
+                          <span className="font-semibold text-gray-500">
+                            Membership Tier:
+                          </span>{" "}
+                          {profile.subscription}
+                        </div>
+                      )}
                     <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
-                      <span className="font-semibold text-gray-500">Subscription:</span> {profile.subscription}
-                    </div>
-                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3">
-                      <span className="font-semibold text-gray-500">Is Approved:</span> {profile.isApproved ? "Yes" : "No"}
-                    </div>
-                    <div className="min-w-0 break-words rounded-2xl bg-gray-50 p-3 sm:col-span-2">
-                      <span className="font-semibold text-gray-500">Is Favorite:</span> {profile.isFavorite ? "Yes" : "No"}
+                      <span className="font-semibold text-gray-500">
+                        Profile Status:
+                      </span>{" "}
+                      Active Profile
                     </div>
                   </div>
                 </div>
@@ -444,7 +467,9 @@ const Page = () => {
                       Contact Information
                     </p>
                     <p className="mt-2 text-base font-semibold text-gray-800 break-all">
-                      {contactRevealed ? `${profile.phone} • ${profile.email}` : "Hidden"}
+                      {contactRevealed
+                        ? `${profile.phone} • ${profile.email}`
+                        : "Hidden"}
                     </p>
                     {!contactRevealed && (
                       <div className="mt-3 space-y-2 text-sm text-gray-500">
@@ -453,8 +478,7 @@ const Page = () => {
                             ? "Please register or log in to reveal contact details."
                             : viewer.hasActiveSubscription
                               ? "Click the button to reveal the babysitter's contact details."
-                              : "Subscribe to reveal this babysitter's contact details."
-                          }
+                              : "Subscribe to reveal this babysitter's contact details."}
                         </p>
                         <button
                           onClick={() => {
@@ -476,8 +500,7 @@ const Page = () => {
                             ? "Register to Reveal"
                             : viewer.hasActiveSubscription
                               ? "Click to Reveal"
-                              : "Subscribe to Reveal"
-                          }
+                              : "Subscribe to Reveal"}
                         </button>
                       </div>
                     )}
@@ -515,17 +538,17 @@ const Page = () => {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 text-rose-400">
+                  <div className="mt-1 text-emerald-600">
                     <FiCheckCircle />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-600">
-                      Government ID
+                      ID &amp; Documentation
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
                       {profile.verifications.includes("Government ID")
-                        ? `${profile.name} successfully provided a government ID.`
-                        : "Unmentioned"}
+                        ? `${profile.name} declares holding government-issued photo ID available for inspection upon request.`
+                        : "Documentation details available upon request."}
                     </p>
                   </div>
                 </div>
@@ -664,7 +687,7 @@ const Page = () => {
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-800">
-                      Verifications
+                      Declared Credentials &amp; Account Status
                     </h3>
 
                     <div className="mt-4 rounded-2xl bg-gray-50 p-4">
@@ -676,15 +699,25 @@ const Page = () => {
                               className="flex items-center justify-between gap-4"
                             >
                               <span className="min-w-0 break-words text-sm font-medium text-gray-600">
-                                {item}
+                                {item === "Government ID"
+                                  ? "Government Photo ID (available on request)"
+                                  : item === "Email address"
+                                    ? "Email Address Confirmed"
+                                    : item}
                               </span>
                               <FiCheckCircle className="flex-shrink-0 text-cyan-600" />
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-gray-600">Unmentioned</p>
+                          <p className="text-sm text-gray-600">
+                            No declarations provided
+                          </p>
                         )}
                       </div>
+                      <p className="mt-4 text-xs text-gray-400 border-t border-gray-200 pt-3">
+                        JungleZone does not perform DBS or background checks.
+                        Please inspect original documents before booking.
+                      </p>
                     </div>
                   </div>
 
@@ -763,26 +796,42 @@ const Page = () => {
                     <div className="space-y-2 overflow-x-auto pb-1">
                       {/* Time slot headers */}
                       <div className="grid grid-cols-5 gap-1">
-                        <div className="text-[10px] font-semibold text-gray-400">Day</div>
-                        <div className="text-[10px] font-semibold text-gray-400 text-center">Morning</div>
-                        <div className="text-[10px] font-semibold text-gray-400 text-center">Afternoon</div>
-                        <div className="text-[10px] font-semibold text-gray-400 text-center">Evening</div>
-                        <div className="text-[10px] font-semibold text-gray-400 text-center">Night</div>
+                        <div className="text-[10px] font-semibold text-gray-400">
+                          Day
+                        </div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">
+                          Morning
+                        </div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">
+                          Afternoon
+                        </div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">
+                          Evening
+                        </div>
+                        <div className="text-[10px] font-semibold text-gray-400 text-center">
+                          Night
+                        </div>
                       </div>
 
                       {/* Each day as a row */}
                       {days.map((day, dayIndex) => (
-                        <div key={day} className="grid min-w-72 grid-cols-5 gap-1 items-center">
-                          <span className="text-xs font-medium text-gray-600">{day}</span>
+                        <div
+                          key={day}
+                          className="grid min-w-72 grid-cols-5 gap-1 items-center"
+                        >
+                          <span className="text-xs font-medium text-gray-600">
+                            {day}
+                          </span>
                           {availability.map((row) => {
                             const active = row.values[dayIndex];
                             return (
                               <div
                                 key={`${day}-${row.label}`}
-                                className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full ${active
-                                  ? "bg-brandColor"
-                                  : "border border-gray-300 bg-gray-100"
-                                  }`}
+                                className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full ${
+                                  active
+                                    ? "bg-brandColor"
+                                    : "border border-gray-300 bg-gray-100"
+                                }`}
                               />
                             );
                           })}
@@ -818,10 +867,11 @@ const Page = () => {
                           {row.values.map((active, index) => (
                             <div
                               key={`${row.label}-${index}`}
-                              className={`mx-auto h-3.5 w-3.5 rounded-full ${active
-                                ? "bg-brandColor"
-                                : "border border-gray-300 bg-gray-100"
-                                }`}
+                              className={`mx-auto h-3.5 w-3.5 rounded-full ${
+                                active
+                                  ? "bg-brandColor"
+                                  : "border border-gray-300 bg-gray-100"
+                              }`}
                             />
                           ))}
                         </div>
@@ -863,6 +913,30 @@ const Page = () => {
               </div>
             </aside>
           </div>
+        </div>
+      </div>
+
+      {/* Section 16 Site-Wide Platform Disclaimer */}
+      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-xs text-amber-950 leading-relaxed shadow-sm">
+          <p className="font-bold uppercase tracking-wide mb-1.5 text-[11px] text-amber-900">
+            Platform Notice &amp; Safety Disclaimer
+          </p>
+          <p className="mb-2">
+            JungleZone is an online introduction platform that enables
+            parents/guardians and independent babysitters to discover and
+            connect with each other. JungleZone does not provide childcare
+            services, does not employ or supply babysitters, does not carry out
+            DBS or background checks, does not verify references or
+            qualifications, and does not supervise childcare arrangements. All
+            childcare arrangements, checks, and payments are the sole
+            responsibility of the users involved.
+          </p>
+          <p className="text-amber-800 font-medium">
+            Parents and guardians are strongly encouraged to inspect original
+            DBS certificates, government photo ID, and references directly
+            before engaging any babysitter.
+          </p>
         </div>
       </div>
     </section>

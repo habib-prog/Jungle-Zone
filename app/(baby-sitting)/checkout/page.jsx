@@ -6,9 +6,14 @@ import { Loader } from "lucide-react";
 
 const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      toast.error("Please acknowledge the platform fee and terms to proceed.");
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch("/api/payment/create-checkout-session", {
@@ -27,21 +32,114 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
     }
   };
 
+  const cycleText = billingCycle === "yearly" ? "year" : "month";
+
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md">
-      <div className="mb-4 p-4 bg-gray-100 rounded-lg">
-        <p className="text-sm text-gray-600">Plan: {planDetails?.name}</p>
-        <p className="text-2xl font-bold text-gray-800">
-          £{planDetails?.price?.toFixed(2)}
+    <form onSubmit={handleSubmit} className="w-full max-w-lg">
+      <div className="mb-5 p-5 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+        <div className="flex justify-between items-start border-b border-gray-200 pb-3">
+          <div>
+            <p className="text-xs font-semibold text-brandColor uppercase tracking-wider">
+              Product
+            </p>
+            <p className="text-lg font-bold text-gray-900">
+              JungleZone Platform Access: {planDetails?.name}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-extrabold text-gray-900">
+              £{planDetails?.price?.toFixed(2)}
+            </p>
+            <p className="text-xs text-gray-500">
+              per {cycleText} (incl. VAT where applicable)
+            </p>
+          </div>
+        </div>
+
+        <div className="text-xs text-gray-600 space-y-1.5 pt-1">
+          <p>
+            <span className="font-semibold text-gray-700">Billing Cycle:</span>{" "}
+            Billed {billingCycle === "yearly" ? "annually" : "monthly"}.
+          </p>
+          <p>
+            <span className="font-semibold text-gray-700">
+              Automatic Renewal:
+            </span>{" "}
+            Subscriptions renew automatically each {cycleText} unless cancelled
+            before renewal.
+          </p>
+          <p>
+            <span className="font-semibold text-gray-700">How to Cancel:</span>{" "}
+            Cancel anytime in your Account Settings or by emailing{" "}
+            <a
+              href="mailto:support@junglezone.uk"
+              className="text-brandColor underline"
+            >
+              support@junglezone.uk
+            </a>{" "}
+            before the renewal date.
+          </p>
+          <p>
+            <span className="font-semibold text-gray-700">
+              Cooling-Off & Refunds:
+            </span>{" "}
+            A statutory 14-day cooling-off period applies to new subscriptions
+            under UK consumer law. If you access digital features during this
+            period, fees may be prorated or non-refundable in accordance with
+            our terms.
+          </p>
+        </div>
+      </div>
+
+      {/* Prominent Platform Fees Notice */}
+      <div className="mb-5 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg text-amber-950 text-xs leading-relaxed">
+        <p className="font-bold text-amber-900 uppercase tracking-wide mb-1 text-[11px]">
+          Important Notice – Platform Fees
         </p>
-        <p className="text-sm text-gray-500">
-          Billing: {billingCycle === "yearly" ? "Yearly" : "Monthly"}
+        <p className="mb-1.5">
+          Any fee paid to JungleZone is a{" "}
+          <strong>platform access or membership fee</strong>. It gives you
+          access to the JungleZone platform and its features (such as messaging,
+          profile browsing, and booking requests).
+        </p>
+        <p>
+          This fee <strong>does NOT include childcare services</strong>. Any
+          fees for childcare are agreed separately between the parent/guardian
+          and the babysitter and are paid directly by the parent to the
+          babysitter. JungleZone does not set, collect, process, or guarantee
+          childcare payments.
         </p>
       </div>
+
+      <div className="mb-5">
+        <label className="flex items-start gap-2.5 text-xs text-gray-700 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded text-brandColor border-gray-300 focus:ring-brandColor shrink-0"
+            required
+          />
+          <span>
+            I agree to the{" "}
+            <a
+              href="/terms-conditions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brandColor underline font-semibold"
+            >
+              Terms &amp; Conditions
+            </a>{" "}
+            and acknowledge that this payment is solely for JungleZone platform
+            access and does not include or cover childcare fees.
+          </span>
+        </label>
+      </div>
+
       <button
         type="submit"
-        disabled={loading}
-        className="w-full bg-brandColor text-white py-3 rounded-lg font-semibold hover:bg-[#558b2f] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        disabled={loading || !termsAccepted}
+        className="w-full bg-brandColor text-white py-3 rounded-lg font-semibold hover:bg-[#558b2f] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition"
       >
         {loading && <Loader size={20} className="animate-spin" />}
         {loading ? "Processing..." : "Continue to Stripe"}

@@ -84,22 +84,43 @@ const Page = () => {
           <Card
             id="worker"
             title="I'm a babysitter"
-            desc="Find families near you and apply to jobs that match your schedule."
+            desc="Create a profile, discover local families, and arrange childcare directly."
           />
           <Card
             id="parent"
             title="I'm a parent"
-            desc="Post a job, review profiles, and hire a trusted babysitter easily."
+            desc="Browse babysitter profiles, discover local sitters, and connect directly."
           />
         </div>
 
+        {/* Section 16 Site-Wide Platform Disclaimer */}
+        <div
+          className="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950 leading-relaxed"
+          data-aos="fade-up"
+          data-aos-delay="150"
+          data-aos-once="true"
+        >
+          <p className="font-bold uppercase tracking-wide mb-1 text-[11px] text-amber-900">
+            Platform Notice
+          </p>
+          <p>
+            JungleZone is an online introduction platform that enables
+            parents/guardians and independent babysitters to discover and
+            connect with each other. JungleZone does not provide childcare
+            services, does not employ or supply babysitters, does not carry out
+            DBS or background checks, does not verify references or
+            qualifications, and does not supervise childcare arrangements. All
+            childcare arrangements, checks, and payments are the sole
+            responsibility of the users involved.
+          </p>
+        </div>
+
         {/* Next button bottom-right */}
-        <div className="mt-10 flex justify-end">
+        <div className="mt-8 flex justify-end">
           <button
             type="button"
             onClick={handleNext}
             disabled={isDisabled}
-            
             className={`font-poppins rounded-xl px-6 py-3 text-sm md:text-base transition-all duration-200 cursor-pointer
               ${
                 isDisabled

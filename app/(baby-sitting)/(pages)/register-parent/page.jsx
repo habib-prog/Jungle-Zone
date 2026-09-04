@@ -23,6 +23,7 @@ const Page = () => {
 
   // ========== terms state ==========
   const [agree, setAgree] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   // ========== otp state ==========
@@ -314,22 +315,68 @@ const Page = () => {
                   )}
                 </div>
 
+                {/* ========== platform disclaimer ========== */}
+                <div className="register-animate rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950 leading-relaxed">
+                  <p className="font-bold uppercase tracking-wide mb-1 text-[11px] text-amber-900">
+                    Platform Disclaimer
+                  </p>
+                  <p>
+                    JungleZone is an online introduction platform that enables
+                    parents/guardians and independent babysitters to discover
+                    and connect with each other. JungleZone does not provide
+                    childcare services, does not employ or supply babysitters,
+                    does not carry out DBS or background checks, does not verify
+                    references or qualifications, and does not supervise
+                    childcare arrangements. All childcare arrangements, checks,
+                    and payments are the sole responsibility of the users
+                    involved.
+                  </p>
+                </div>
+
                 {/* ========== terms and conditions ========== */}
-                <div className="register-animate pt-2">
-                  <Checkbox
-                    checked={agree}
-                    onChange={(e) => setAgree(e.target.checked)}
-                  >
-                    <span className="text-sm text-gray-600">
-                      I agree to the{" "}
-                      <Link
-                        href="/terms&conditions"
-                        className="font-medium text-gray-800 underline underline-offset-4"
-                      >
-                        Terms & Conditions
-                      </Link>
-                    </span>
-                  </Checkbox>
+                <div className="register-animate space-y-3 pt-1">
+                  <div>
+                    <label className="flex items-start gap-2.5 text-xs sm:text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agree}
+                        onChange={(e) => setAgree(e.target.checked)}
+                        className="mt-1 w-4 h-4 rounded text-cyan-600 border-gray-300 focus:ring-cyan-500 shrink-0"
+                        required
+                      />
+                      <span>
+                        I agree to the{" "}
+                        <Link
+                          href="/terms-conditions"
+                          className="font-semibold text-cyan-700 underline underline-offset-4"
+                        >
+                          Terms &amp; Conditions
+                        </Link>{" "}
+                        and acknowledge that JungleZone is an introduction
+                        platform and does not provide childcare services or
+                        carry out DBS/background checks.{" "}
+                        <span className="text-red-500 font-semibold">
+                          (Mandatory)
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="flex items-start gap-2.5 text-xs sm:text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={marketingConsent}
+                        onChange={(e) => setMarketingConsent(e.target.checked)}
+                        className="mt-1 w-4 h-4 rounded text-cyan-600 border-gray-300 focus:ring-cyan-500 shrink-0"
+                      />
+                      <span>
+                        I agree to receive marketing communications from
+                        JungleZone.{" "}
+                        <span className="text-gray-400">(Optional)</span>
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
                 {/* ========== submit button ========== */}

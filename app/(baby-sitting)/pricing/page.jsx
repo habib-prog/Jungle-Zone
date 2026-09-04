@@ -231,16 +231,16 @@ const SubscriptionPage = () => {
 
   const features = {
     parent: [
-      "Find trusted babysitters near you",
-      "UNLIMITED babysitter searches",
-      "Background checks & verified profiles",
-      "Cancellation protection",
+      "Discover independent babysitters near you",
+      "UNLIMITED babysitter searches & profile browsing",
+      "Direct messaging and contact details reveal",
+      "Online subscription management & cancellation",
     ],
     babysitter: [
-      "Get hired by families",
-      "Build your reputation",
-      "Profile visibility boost",
-      "Priority listing",
+      "Connect with local families",
+      "Profile visibility boost in your area",
+      "Pro Member badge on your profile",
+      "Direct messaging access with parents",
     ],
   };
 
@@ -256,13 +256,16 @@ const SubscriptionPage = () => {
             <Check size={14} /> Current active plan
             {activeSub?.endDate && (
               <span className="text-gray-400 ml-1">
-                · {isCancelled ? "cancels" : "renews"} {fmtDate(activeSub.endDate)}
+                · {isCancelled ? "cancels" : "renews"}{" "}
+                {fmtDate(activeSub.endDate)}
               </span>
             )}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => isCancelled ? doResume() : handlePlanClick(planId, billingCycle)}
+              onClick={() =>
+                isCancelled ? doResume() : handlePlanClick(planId, billingCycle)
+              }
               disabled={checkoutLoading || cancelLoading}
               className={`flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm text-white transition-all shadow ${baseColor} ${hoverColor} disabled:opacity-50`}
             >
@@ -340,12 +343,33 @@ const SubscriptionPage = () => {
     <section className="min-h-screen pt-30 pb-12 lg:pt-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-3">
             Simple, Transparent Pricing
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Select your role to see the subscription options available.
+          </p>
+        </div>
+
+        {/* Platform Fees Notice */}
+        <div className="mb-10 max-w-4xl mx-auto rounded-2xl bg-amber-50 border border-amber-200 p-5 sm:p-6 text-xs sm:text-sm text-gray-700 leading-relaxed shadow-xs">
+          <h3 className="font-bold text-amber-900 text-sm sm:text-base mb-2">
+            Platform Fees Notice
+          </h3>
+          <p className="mb-2">
+            JungleZone may charge a membership, subscription or platform access
+            fee for access to certain features.
+          </p>
+          <p className="mb-2">
+            Any fee paid to JungleZone is solely for access to or use of the
+            JungleZone platform and its features. It is not payment for
+            childcare services. JungleZone does not receive or hold payments for
+            childcare services provided by babysitters.
+          </p>
+          <p>
+            Babysitters determine their own rates. Parents and babysitters agree
+            childcare fees and payment arrangements directly with each other.
           </p>
         </div>
 
@@ -382,7 +406,10 @@ const SubscriptionPage = () => {
               </span>{" "}
               {activeSub.plan} ·{" "}
               {activeSub.billingCycle === "yearly" ? "Yearly" : "Monthly"} ·
-              {activeSub.paymentStatus === "cancelled" ? " Cancels " : " Renews "} {fmtDate(activeSub.endDate)}
+              {activeSub.paymentStatus === "cancelled"
+                ? " Cancels "
+                : " Renews "}{" "}
+              {fmtDate(activeSub.endDate)}
             </div>
           </div>
         )}
@@ -564,7 +591,10 @@ const SubscriptionPage = () => {
           </p>
           {activeSub?.endDate && (
             <p className="text-xs text-gray-400 mt-1">
-              {activeSub?.paymentStatus === "cancelled" ? "Cancels on " : "Renews on "} {fmtDate(activeSub.endDate)}
+              {activeSub?.paymentStatus === "cancelled"
+                ? "Cancels on "
+                : "Renews on "}{" "}
+              {fmtDate(activeSub.endDate)}
             </p>
           )}
         </div>
@@ -586,7 +616,9 @@ const SubscriptionPage = () => {
             ) : (
               <RefreshCw size={14} />
             )}
-            {activeSub?.paymentStatus === "cancelled" ? "Resume Plan" : "Renew Plan"}
+            {activeSub?.paymentStatus === "cancelled"
+              ? "Resume Plan"
+              : "Renew Plan"}
           </button>
           {activeSub?.paymentStatus !== "cancelled" && (
             <button

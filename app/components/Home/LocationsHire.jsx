@@ -5,24 +5,27 @@ export default function LocationsHire() {
   const cards = [
     {
       title: "Find by Post Code",
-      desc: "Search trusted babysitters near you and compare profiles in minutes.",
+      desc: "Search local independent babysitters near you and compare profiles in minutes.",
       img: "/img/location.jpg",
       alt: "Neighborhood playground location",
       cta: "VIEW MORE",
-      href: "#",
+      href: "/find-babysitter",
     },
     {
       title: "Hire Your Babysitter",
-      desc: "Book confidently with verified sitters and flexible scheduling options.",
+      desc: "Connect directly with independent sitters and agree flexible scheduling options.",
       img: "/img/baby.jpg",
       alt: "Happy child enjoying snack",
       cta: "VIEW MORE",
-      href: "#",
+      href: "/find-babysitter",
     },
   ];
 
   return (
-    <section className="w-full py-12 sm:py-16" aria-label="Locations and Hiring">
+    <section
+      className="w-full py-12 sm:py-16"
+      aria-label="Locations and Hiring"
+    >
       {/* container */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
