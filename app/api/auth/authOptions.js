@@ -8,11 +8,12 @@ import { resolveAuthAccount } from "@/app/lib/authAccountResolver";
 export const authOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      clientId: process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   session: { strategy: "jwt" },
 
   callbacks: {
@@ -27,7 +28,7 @@ export const authOptions = {
               adminSchema.findOne({ email: user.email }),
             ]);
 
-          // If there's already an admin account with this email, allow sign-in
+          // If there's already an account, allow sign-in without creating a duplicate
           if (!existingParent && !existingSitter && !existingAdmin) {
             await parentSchema.create({
               fullName: user.name,
