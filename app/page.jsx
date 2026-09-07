@@ -117,8 +117,8 @@ export default function JungleZone() {
         <div className="absolute inset-0 backdrop-blur-[2px] bg-black/20" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.2)_45%,rgba(255,255,255,0.95)_100%)]" />
 
-        <div className="container relative z-10 flex flex-col items-center justify-center gap-6 px-4 py-6 sm:px-6 md:py-8 lg:grid lg:grid-cols-[1.08fr_0.92f r] lg:gap-16 lg:py-0">
-          <div className="max-w-lg">
+        <div className="container relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 px-4 py-8 sm:px-6 lg:gap-12 lg:py-12">
+          <div className="w-full lg:w-7/12 text-left font-poppins">
             <div data-hero-anim className="mt-6 sm:mt-4 mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-poppins text-xs font-semibold uppercase text-white shadow-lg backdrop-blur-md">
               <Search className="h-4 w-4 text-brandColor" />
               Online Introduction Platform
@@ -161,7 +161,7 @@ export default function JungleZone() {
           </div>
 
           {/* RIGHT SIDE CARDS */}
-          <div className="relative w-full min-w-0 overflow-hidden rounded-3xl border border-white/25 bg-white/10 p-3.5 shadow-2xl shadow-black/30 backdrop-blur-3xl sm:p-5 lg:p-6">
+          <div className="relative w-full lg:w-5/12 min-w-0 overflow-hidden rounded-3xl border border-white/25 bg-white/10 p-3.5 shadow-2xl shadow-black/30 backdrop-blur-3xl sm:p-5 lg:p-6">
             <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>

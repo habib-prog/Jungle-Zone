@@ -12,9 +12,11 @@ import logo from "../../../public/img/logo.png";
 import SubscriptionPlans from "./SubscriptionPlans";
 import PaymentHistory from "./PaymentHistory";
 import { Menu, X } from "lucide-react";
+import ManageBlogs from "./ManageBlogs";
 
 const NAV_ITEMS = [
   { label: "Overview", key: "overview" },
+  { label: "Blogs", key: "blogs" },
   { label: "Parents", key: "parents" },
   { label: "Babysitters", key: "sitters" },
   { label: "Subscription Plans", key: "subscription" },
@@ -39,6 +41,8 @@ const AdminDashboard = () => {
         switch (activeTab) {
             case "overview":
                 return <OverView />;
+            case "blogs":
+                return <ManageBlogs />;
             case "parents":
                 return <AllParents />;
             case "sitters":

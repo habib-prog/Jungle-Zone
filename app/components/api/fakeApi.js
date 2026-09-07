@@ -2,6 +2,7 @@
 export const navItems = [
   { navText: "Home", navLink: "/" },
   { navText: "Find Babysitter", navLink: "/babysitters" },
+  { navText: "Blogs", navLink: "/blogs" },
   { navText: "About Us", navLink: "/about-us" },
   { navText: "Pricing", navLink: "/pricing" },
   { navText: "Contact", navLink: "/contact" },
@@ -167,8 +168,9 @@ export const FooterItems = [
     title: "Platform",
     items: [
       { name: "Home", link: "/" },
-      { name: "About Us", link: "/about-us" },
       { name: "Find Babysitter", link: "/babysitters" },
+      { name: "Blogs", link: "/blogs" },
+      { name: "About Us", link: "/about-us" },
       { name: "Pricing", link: "/pricing" },
       { name: "Contact", link: "/contact" },
     ],
