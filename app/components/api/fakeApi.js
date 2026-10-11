@@ -1,7 +1,6 @@
 //  Navbar items
 export const navItems = [
   { navText: "Home", navLink: "/" },
-  { navText: "Find Babysitter", navLink: "/babysitters" },
   { navText: "Blogs", navLink: "/blogs" },
   { navText: "About Us", navLink: "/about-us" },
   { navText: "Pricing", navLink: "/pricing" },
@@ -168,7 +167,6 @@ export const FooterItems = [
     title: "Platform",
     items: [
       { name: "Home", link: "/" },
-      { name: "Find Babysitter", link: "/babysitters" },
       { name: "Blogs", link: "/blogs" },
       { name: "About Us", link: "/about-us" },
       { name: "Pricing", link: "/pricing" },

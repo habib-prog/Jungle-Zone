@@ -26,7 +26,7 @@ export default function Hero() {
               className="inline-flex items-center gap-2 rounded-full bg-brandColor/10 px-4 py-1.5 font-poppins text-xs font-semibold uppercase tracking-widest text-brandColor"
             >
               <FaShieldAlt className="text-brandColor" />
-              Safe & trusted childcare
+              Local childcare introductions
             </div>
 
             <h1 className="mt-6 font-poppins text-4xl font-bold leading-tight text-[#2f3a22] sm:text-5xl lg:text-6xl">

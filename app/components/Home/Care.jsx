@@ -25,7 +25,7 @@ export default function Care() {
         data-care-body
         className="mt-6 max-w-lg font-poppis text-base font-light leading-8 text-[#555555]"
       >
-        Trusted babysitters bringing safe routines, learning, and happy playtime daily.
+        Independent babysitters for routines, learning, and playtime. Check any provider yourself before you hire.
       </p>
 
       <a

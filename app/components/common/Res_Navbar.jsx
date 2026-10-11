@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { List, X } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/app/context/AuthContext";
 import { MdLogout } from "react-icons/md";
 import { getImageUrl } from "@/app/lib/imageUtils";
 import { normalizeRole } from "@/app/lib/roleUtils";
+import { services, serviceHref } from "@/app/lib/services";
 
-const Res_Navbar = ({ navItems }) => {
+const Res_Navbar = ({ navItems, transparent = false }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -21,7 +22,7 @@ const Res_Navbar = ({ navItems }) => {
         normalizeRole(user?.role) === "babysitter" ? "/dashboard/babySitter" : "/dashboard/parent";
 
     return (
-        <nav className="lg:hidden backdrop-blur-2xl shadow-md py-4 px-6 flex justify-between items-center fixed w-full bg-white/80 z-999">
+        <nav className={`lg:hidden py-4 px-6 flex justify-between items-center fixed w-full z-999 transition-colors duration-300 ${transparent ? "bg-transparent" : "backdrop-blur-2xl shadow-md bg-white/90"}`}>
             {/* logo and nav items */}
             <div className="flex gap-5 items-center flex-wrap">
                 <Link href={"/"}>
@@ -30,11 +31,12 @@ const Res_Navbar = ({ navItems }) => {
                         height={50}
                         src={"/img/logo.png"}
                         alt="logo"
+                        className={transparent ? "brightness-0 invert" : ""}
                     />
                 </Link>
             </div>
             <button
-                className="text-gray-700 hover:text-blue-600 focus:outline-none"
+                className={`focus:outline-none ${transparent ? "text-white" : "text-gray-700 hover:text-blue-600"}`}
                 onClick={toggleMenu}
             >
                 <List />
@@ -57,18 +59,39 @@ const Res_Navbar = ({ navItems }) => {
                         </button>
                     </div>
 
-                    <ul className="flex-1 space-y-2 px-6">
+                    <ul className="flex-1 space-y-2 overflow-y-auto px-6">
                         {/* Navigation Links */}
                         {
                             navItems?.map((item, i) => (
-                                <li key={i} className="py-2">
-                                    <Link
-                                        href={item.navLink}
-                                        onClick={toggleMenu}
-                                        className="text-gray-700">
-                                        {item.navText}
-                                    </Link>
-                                </li>
+                                <Fragment key={i}>
+                                    <li className="py-2">
+                                        <Link
+                                            href={item.navLink}
+                                            onClick={toggleMenu}
+                                            className="text-gray-700">
+                                            {item.navText}
+                                        </Link>
+                                    </li>
+                                    {i === 0 && (
+                        <li className="py-2">
+                            <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-brandColor">Services</div>
+                            <ul className="space-y-1 border-l border-gray-200 pl-3">
+                                {services.map((svc) => (
+                                    <li key={svc.slug}>
+                                        <Link
+                                            href={serviceHref(svc)}
+                                            onClick={toggleMenu}
+                                            className="flex items-center gap-2 py-1 text-sm text-gray-700">
+                                            <svc.icon className="h-4 w-4 text-brandColor" />
+                                            {svc.title}
+                                            {!svc.href && <span className="text-[10px] uppercase text-gray-400">{svc.status}</span>}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                                    )}
+                                </Fragment>
                             ))
                         }
                     </ul>
@@ -105,14 +128,14 @@ const Res_Navbar = ({ navItems }) => {
                                 <Link
                                     href="/login"
                                     onClick={toggleMenu}
-                                    className="py-1 px-5 border-2 border-brandColor rounded-xs text-xl font-medium font-poppins text-brandColor text-center"
+                                    className="rounded-full border border-gray-300 px-5 py-2.5 text-base font-semibold font-poppins text-gray-800 text-center"
                                 >
                                     Sign In
                                 </Link>
                                 <Link
                                     href="/register"
                                     onClick={toggleMenu}
-                                    className="py-1 px-5 border-2 border-brandColor bg-brandColor rounded-xs text-xl font-medium font-poppins text-white text-center"
+                                    className="rounded-full bg-brandColor px-5 py-2.5 text-base font-semibold font-poppins text-white text-center"
                                 >
                                     Sign Up
                                 </Link>
