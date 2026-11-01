@@ -31,7 +31,7 @@ export const aboutUsData = {
       icon: "💰",
       title: "Direct Arrangements",
       description:
-        "Agree childcare arrangements, rates and payments directly with each other.",
+        "Agree service availability, hourly rate and payment directly with your chosen provider.",
     },
   ],
   ctaText: "Learn More About Us",
@@ -72,7 +72,7 @@ export const workStatesForCustomerData = [
     benefits: [
       "Location-based search",
       "Direct comparison",
-      "Transparent self-set rates",
+      "Transparent hourly service rates",
     ],
     badge: "Smart Search",
     color: "#2196F3",
@@ -110,11 +110,11 @@ export const workStatesForWorkerData = [
     stepNumber: "01",
     duration: "10 minutes",
     ctaText: "Create Profile",
-    ctaLink: "/register-babysitter",
+    ctaLink: "/register",
     benefits: [
       "Free to list profile",
       "Showcase your experience",
-      "Set your own rates",
+      "Use JungleZone service rates",
     ],
     badge: "Independent Sitter",
     color: "#4CAF50",
@@ -144,7 +144,7 @@ export const workStatesForWorkerData = [
     id: 3,
     title: "Agree Childcare Directly",
     description:
-      "Agree your hourly rates, hours and payment methods directly with parents. JungleZone does not collect or hold childcare fees.",
+      "Set your own hourly rate and agree availability, service details and payments directly with customers.",
     imgSrc:
       "https://thumbs.dreamstime.com/b/chat-bubble-message-communication-icon-dialogue-discussion-vector-design-generative-ai-versatile-symbolizing-messages-406998690.jpg",
     stepNumber: "03",
@@ -153,7 +153,7 @@ export const workStatesForWorkerData = [
     ctaLink: "/worker/messages",
     benefits: [
       "Keep 100% of your earnings",
-      "Agree rates directly",
+      "Set your own hourly rates",
       "Set your own terms",
     ],
     badge: "Direct Agreement",
@@ -273,7 +273,7 @@ export const faqData = {
     {
       question: "How do childcare payments work?",
       answer:
-        "Parents and babysitters agree childcare fees and payment arrangements directly with each other. JungleZone does not collect or hold payments for childcare services. Any platform fee charged by JungleZone is solely for access to platform features.",
+        "Providers set their own hourly rates. Customers and providers agree service arrangements and payments directly; JungleZone charges a separate platform access fee.",
     },
     {
       question: "Can I cancel my platform subscription at any time?",
@@ -306,7 +306,7 @@ export const faqData = {
     {
       question: "Can I set my own hourly rate?",
       answer:
-        "Yes. Babysitters determine their own rates. JungleZone does not set babysitters' rates, hours or working methods, and does not take commission from your childcare earnings. Parents and babysitters agree childcare fees and payment arrangements directly.",
+        "Yes. You set your own hourly rate. Agree service details and payment directly with the customer; JungleZone's provider access fee is separate.",
     },
     {
       question: "How will parents contact me?",

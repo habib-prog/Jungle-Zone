@@ -29,10 +29,17 @@ export async function GET(req) {
     const minRate = searchParams.get("minRate");
     const maxRate = searchParams.get("maxRate");
     const availabilityDays = searchParams.get("availabilityDays");
+    const serviceCategory = searchParams.get("category") || "babysitting";
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 9;
 
     const filter = { isApproved: true };
+    if (!["babysitting", "cleaning", "cooking"].includes(serviceCategory)) {
+      return new Response(JSON.stringify({ error: "Invalid service category" }), { status: 400 });
+    }
+    filter.$or = serviceCategory === "babysitting"
+      ? [{ serviceCategory }, { serviceCategory: { $exists: false } }]
+      : [{ serviceCategory }];
 
     if (zipCode) {
       const normalizedZipCode = zipCode.replace(/\s+/g, "").trim();

@@ -239,6 +239,10 @@ export default function ManageBlogs() {
       selectedCategory === "All" || b.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+  const availableCategories = [...new Set([
+    ...CATEGORIES,
+    ...blogs.map((blog) => blog.category?.trim()).filter(Boolean),
+  ])].sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="space-y-6">
@@ -300,7 +304,7 @@ export default function ManageBlogs() {
           className="px-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#03914a]/30 focus:border-[#03914a] bg-white cursor-pointer"
         >
           <option value="All">All Categories</option>
-          {CATEGORIES.map((c) => (
+          {availableCategories.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -458,19 +462,19 @@ export default function ManageBlogs() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
                     Category
                   </label>
-                  <select
+                  <input
+                    type="text"
+                    list="blog-category-options"
                     value={formData.category}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, category: e.target.value }))
                     }
+                    placeholder="Choose or type a category"
                     className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#03914a]/30 focus:border-[#03914a] outline-none bg-white cursor-pointer"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                  />
+                  <datalist id="blog-category-options">
+                    {availableCategories.map((category) => <option key={category} value={category} />)}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">

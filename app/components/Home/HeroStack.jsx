@@ -9,7 +9,7 @@ const slides = [
     src: "/img/service-babysitting.jpg",
     label: "Babysitting",
     hireHref: "/babysitters",
-    applyHref: "/register-babysitter",
+    applyHref: "/register",
     video: "/videos/babysitting.mp4",
     alt: "Babysitter playing with a baby while a parent relaxes",
     position: "object-[center_30%]",

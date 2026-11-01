@@ -1,5 +1,6 @@
 import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
+import Payment from "@/models/paymentSchema";
 import { verifyAdmin } from "../auth";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +31,27 @@ export async function GET(req) {
       .skip(skip)
       .limit(limit);
 
+    const parentIds = parents.map((parent) => parent._id);
+    const paidPayments = parentIds.length
+      ? await Payment.find({ userId: { $in: parentIds }, category: "parent", status: "completed" })
+          .select("userId planName createdAt")
+          .sort({ createdAt: -1 })
+          .lean()
+      : [];
+    const paidPlanByUser = new Map();
+    for (const payment of paidPayments) {
+      const userId = payment.userId.toString();
+      if (!paidPlanByUser.has(userId)) paidPlanByUser.set(userId, payment.planName);
+    }
+    const usersWithAccessPlan = parents.map((parent) => {
+      const user = parent.toObject();
+      user.paidService = paidPlanByUser.get(parent._id.toString()) || null;
+      return user;
+    });
+
     return Response.json(
       {
-        parents,
+        parents: usersWithAccessPlan,
         pagination: {
           page,
           limit,

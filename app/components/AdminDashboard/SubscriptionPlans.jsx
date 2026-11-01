@@ -11,6 +11,7 @@ const SubscriptionPlans = () => {
   const [formData, setFormData] = useState({
     name: "",
     category: "both",
+    serviceCategory: "all",
     description: "",
     price: "",
     duration: "",
@@ -54,6 +55,7 @@ const SubscriptionPlans = () => {
       setFormData({
         name: plan.name || "",
         category: plan.category || "both",
+        serviceCategory: plan.serviceCategory || "all",
         description: plan.description || "",
         price: plan.price?.toString() || "",
         duration: plan.duration?.toString() || "",
@@ -69,6 +71,7 @@ const SubscriptionPlans = () => {
       setFormData({
         name: "",
         category: "both",
+        serviceCategory: "all",
         description: "",
         price: "",
         duration: "",
@@ -96,7 +99,7 @@ const SubscriptionPlans = () => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
     // Clear error for this field
     if (errors[name]) {
@@ -145,6 +148,7 @@ const SubscriptionPlans = () => {
 
     const payload = {
       ...formData,
+      serviceCategory: formData.serviceCategory || "all",
       price: Number(formData.price),
       duration: Number(formData.duration),
       discountPercentage: Number(formData.discountPercentage),
@@ -173,7 +177,15 @@ const SubscriptionPlans = () => {
 
       if (res.ok) {
         setSuccessMessage(editingPlan ? "Plan updated successfully" : "Plan created successfully");
-        fetchPlans();
+        if (data.data?._id) {
+          setPlans((currentPlans) => {
+            const exists = currentPlans.some((plan) => plan._id === data.data._id);
+            return exists
+              ? currentPlans.map((plan) => plan._id === data.data._id ? data.data : plan)
+              : [data.data, ...currentPlans];
+          });
+        }
+        await fetchPlans();
         handleCloseModal();
         setTimeout(() => setSuccessMessage(""), 3000);
       } else {
@@ -194,6 +206,12 @@ const SubscriptionPlans = () => {
     };
     return colors[category] || "bg-gray-100 text-gray-700";
   };
+
+  const getCategoryLabel = (category) => ({
+    parent: "Service Taker",
+    babysitter: "Service Provider",
+    both: "Both",
+  }[category] || category);
 
   if (loading) {
     return (
@@ -239,6 +257,7 @@ const SubscriptionPlans = () => {
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">Name</th>
                 <th className="px-4 py-3 text-left font-semibold">Category</th>
+                <th className="px-4 py-3 text-left font-semibold">Service</th>
                 <th className="px-4 py-3 text-left font-semibold">Price</th>
                 <th className="px-4 py-3 text-left font-semibold">Duration</th>
                 <th className="px-4 py-3 text-left font-semibold">Discount</th>
@@ -249,7 +268,7 @@ const SubscriptionPlans = () => {
             <tbody>
               {plans.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
                     No subscription plans found. Create your first plan!
                   </td>
                 </tr>
@@ -266,12 +285,17 @@ const SubscriptionPlans = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadge(plan.category)}`}>
-                        {plan.category}
+                        {getCategoryLabel(plan.category)}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 capitalize text-gray-600">
+                      {plan.serviceCategory === "all" || !plan.serviceCategory ? "All services" : plan.serviceCategory}
                     </td>
                     <td className="px-4 py-3">
                       <span className="font-semibold text-brandColor">
-                        ${plan.price?.toLocaleString()}
+                        £{(plan.isDiscounted && plan.discountPercentage
+                          ? plan.price * (1 - plan.discountPercentage / 100)
+                          : plan.price)?.toFixed(2)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -344,10 +368,15 @@ const SubscriptionPlans = () => {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadge(plan.category)}`}>
-                    {plan.category}
+                    {getCategoryLabel(plan.category)}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs capitalize text-slate-600">
+                    {plan.serviceCategory === "all" || !plan.serviceCategory ? "All services" : plan.serviceCategory}
                   </span>
                   <span className="font-semibold text-brandColor">
-                    ${plan.price?.toLocaleString()}
+                    £{(plan.isDiscounted && plan.discountPercentage
+                      ? plan.price * (1 - plan.discountPercentage / 100)
+                      : plan.price)?.toFixed(2)}
                   </span>
                   <span className="text-gray-500">{plan.duration} {plan.durationUnit}</span>
                   {plan.isDiscounted && plan.discountPercentage > 0 && (
@@ -402,8 +431,9 @@ const SubscriptionPlans = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brandColor ${errors.name ? "border-red-500" : ""}`}
-                  placeholder="e.g., Basic Monthly"
+                  placeholder="e.g., Cleaning Monthly"
                 />
+                <p className="mt-1 text-xs text-gray-500">Use a unique name that includes Monthly or Yearly (for example, Babysitting Monthly).</p>
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
 
@@ -418,10 +448,29 @@ const SubscriptionPlans = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brandColor"
                 >
-                  <option value="parent">Parent</option>
-                  <option value="babysitter">Babysitter</option>
+                  <option value="parent">Service Taker</option>
+                  <option value="babysitter">Service Provider</option>
                   <option value="both">Both</option>
                 </select>
+              </div>
+
+              {/* Provider Service */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Service Category
+                </label>
+                <select
+                  name="serviceCategory"
+                  value={formData.serviceCategory}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brandColor"
+                >
+                  <option value="all">All services / existing plan</option>
+                  <option value="babysitting">Babysitting</option>
+                  <option value="cleaning">Cleaning</option>
+                  <option value="cooking">Cooking</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">The selected service and role determine where this fee appears. The amount shown to users and charged at checkout includes any discount entered below.</p>
               </div>
 
               {/* Description */}
@@ -443,7 +492,7 @@ const SubscriptionPlans = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price (৳) *
+                    Price (£) *
                   </label>
                   <input
                     type="number"

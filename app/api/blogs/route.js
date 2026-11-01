@@ -247,7 +247,7 @@ export async function POST(req) {
       content,
       excerpt: excerpt || title,
       image: image || "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=1200&q=80",
-      category: category || "Parenting",
+      category: typeof category === "string" && category.trim() ? category.trim() : "Parenting",
       tags: Array.isArray(tags) ? tags : tags ? tags.split(",").map((t) => t.trim()) : [],
       author: author || "JungleZone Team",
       readTime: readTime || "4 min read",

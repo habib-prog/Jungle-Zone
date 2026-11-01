@@ -154,9 +154,9 @@ const TermsAndConditionsPage = () => {
               supervise, direct or control the provision of childcare services.
             </p>
             <p className="mt-2">
-              Users are responsible for agreeing rates, hours, duties,
-              cancellations and other childcare arrangements directly with each
-              other.
+              Users agree service hours, duties, availability and other
+              arrangements and payments directly with each other. Providers set
+              their own hourly rates.
             </p>
           </section>
 
@@ -166,16 +166,7 @@ const TermsAndConditionsPage = () => {
               7. Childcare Payments
             </h2>
             <p>
-              JungleZone does not collect, hold or process payments for
-              childcare services.
-            </p>
-            <p className="mt-2">
-              Parents and babysitters agree childcare fees and payment methods
-              directly with each other.
-            </p>
-            <p className="mt-2">
-              JungleZone is not responsible for unpaid childcare fees or payment
-              disputes between users.
+              JungleZone does not collect payment for hourly services. The provider sets the hourly rate, and users agree payment methods directly with each other. JungleZone charges separate platform access fees as described below.
             </p>
           </section>
 

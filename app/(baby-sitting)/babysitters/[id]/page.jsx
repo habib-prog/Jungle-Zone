@@ -152,11 +152,15 @@ const Page = () => {
 
         // Show all available fields
         const mergedProfile = {
+          serviceCategory: db.serviceCategory || "babysitting",
           name: textOrUnmentioned(db.fullName),
           email: textOrUnmentioned(db.email),
           phone: textOrUnmentioned(db.phoneNumber),
           gender: textOrUnmentioned(db.gender),
-          role: db.location ? `Babysitter in ${db.location}` : "Unmentioned",
+          role: db.location
+            ? `${({ babysitting: "Babysitter", cleaning: "Cleaner", cooking: "Cook / Chef" }[db.serviceCategory] || "Babysitter")} in ${db.location}`
+            : "Unmentioned",
+          categoryLabel: ({ babysitting: "Babysitter", cleaning: "Cleaner", cooking: "Cook / Chef" }[db.serviceCategory] || "Babysitter"),
           age: db.age ?? "Unmentioned",
           zipCode: db.zipCode ?? "Unmentioned",
           rate: db.hourlyRate ? `£ ${db.hourlyRate}/hr` : "Unmentioned",
@@ -171,11 +175,13 @@ const Page = () => {
           experience: db.yearsOfExperience
             ? `${db.yearsOfExperience} years`
             : "Unmentioned",
-          ages: arrayOrUnmentioned(db.comfortableWithAgeGroup),
+          ages: arrayOrUnmentioned(db.comfortableWith || db.comfortableWithAgeGroup),
           educationLevel: textOrUnmentioned(db.educationLevel),
           educationDetails: textOrUnmentioned(db.educationDetails),
           superpowers: arrayOrUnmentioned(db.skills),
-          comfortableWith: arrayOrUnmentioned(db.comfortableWithAgeGroup),
+          comfortableWith: arrayOrUnmentioned(db.comfortableWith || db.comfortableWithAgeGroup),
+          preferences: arrayOrUnmentioned(db.preferences),
+          providerStatements: Array.isArray(db.verificationDocs) ? db.verificationDocs : [],
           location: textOrUnmentioned(db.location),
           updated: formatUpdatedDate(db.updatedAt),
           memberSince: formatDate(db.createdAt),
@@ -249,13 +255,6 @@ const Page = () => {
                   : "Unmentioned",
               icon: <FiGlobe />,
             },
-            ...(Array.isArray(db.verificationDocs)
-              ? db.verificationDocs.map((doc, i) => ({
-                  label: `Declared Credential ${i + 1}`,
-                  value: doc,
-                  icon: <FiAward className="text-brandColor" />,
-                }))
-              : []),
           ],
           verifications: [
             db.governmentIdVerified ? "Government ID" : null,
@@ -321,7 +320,7 @@ const Page = () => {
   if (!profile) {
     return (
       <section className="min-h-screen bg-cyan-50 flex items-center justify-center">
-        <p className="text-lg text-gray-500">No babysitter found</p>
+        <p className="text-lg text-gray-500">No provider found</p>
       </section>
     );
   }
@@ -336,7 +335,7 @@ const Page = () => {
       <div className="border-b border-brandColor/20 bg-white px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="profile-hero-animate mb-4 break-words text-xs text-gray-500 sm:mb-6 sm:text-sm">
-            Babysits / Babysitter wanted / Babysitter / {profile.name}
+            {profile.categoryLabel} / {profile.name}
           </div>
 
           <div className="flex flex-col items-center gap-5 text-center md:flex-row md:items-center md:justify-between md:gap-6 md:text-left">
@@ -477,8 +476,8 @@ const Page = () => {
                           {!viewer.isLoggedIn
                             ? "Please register or log in to reveal contact details."
                             : viewer.hasActiveSubscription
-                              ? "Click the button to reveal the babysitter's contact details."
-                              : "Subscribe to reveal this babysitter's contact details."}
+                              ? "Click the button to reveal the provider's contact details."
+                              : "Subscribe to reveal this provider's contact details."}
                         </p>
                         <button
                           onClick={() => {
@@ -604,7 +603,7 @@ const Page = () => {
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-800">
-                      My babysitting superpowers
+                      {profile.categoryLabel} skills
                     </h3>
 
                     <div className="mt-4 rounded-2xl bg-gray-50 p-4">
@@ -634,6 +633,22 @@ const Page = () => {
                             key={item}
                             className="flex min-w-0 items-center gap-3 break-words text-sm font-medium text-gray-600"
                           >
+                            <FiCheckCircle className="text-brandColor" />
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      Preferences
+                    </h3>
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                      <div className="space-y-4">
+                        {profile.preferences.map((item) => (
+                          <div key={item} className="flex min-w-0 items-center gap-3 break-words text-sm font-medium text-gray-600">
                             <FiCheckCircle className="text-brandColor" />
                             {item}
                           </div>
@@ -687,12 +702,19 @@ const Page = () => {
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-800">
-                      Declared Credentials &amp; Account Status
+                      Provider statements &amp; account status
                     </h3>
 
                     <div className="mt-4 rounded-2xl bg-gray-50 p-4">
                       <div className="space-y-4">
-                        {profile.verifications.length > 0 ? (
+                        {profile.providerStatements.length > 0 ? (
+                          profile.providerStatements.map((statement) => (
+                            <div key={statement} className="flex items-start gap-3">
+                              <FiCheckCircle className="mt-0.5 flex-shrink-0 text-brandColor" />
+                              <span className="min-w-0 break-words text-sm font-medium text-gray-600">{statement}</span>
+                            </div>
+                          ))
+                        ) : profile.verifications.length > 0 ? (
                           profile.verifications.map((item) => (
                             <div
                               key={item}
@@ -710,13 +732,14 @@ const Page = () => {
                           ))
                         ) : (
                           <p className="text-sm text-gray-600">
-                            No declarations provided
+                            No provider statements provided
                           </p>
                         )}
                       </div>
                       <p className="mt-4 text-xs text-gray-400 border-t border-gray-200 pt-3">
-                        JungleZone does not perform DBS or background checks.
-                        Please inspect original documents before booking.
+                        These are statements made by the provider. JungleZone
+                        has not checked or verified them. Please ask the provider
+                        for relevant documents and carry out your own checks.
                       </p>
                     </div>
                   </div>
@@ -929,8 +952,8 @@ const Page = () => {
             services, does not employ or supply babysitters, does not carry out
             DBS or background checks, does not verify references or
             qualifications, and does not supervise childcare arrangements. All
-            childcare arrangements, checks, and payments are the sole
-            responsibility of the users involved.
+            childcare arrangements or checks. Parents and providers agree
+            service details, rates and payments directly between themselves.
           </p>
           <p className="text-amber-800 font-medium">
             Parents and guardians are strongly encouraged to inspect original

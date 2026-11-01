@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 
-const SearchBabySitter = () => {
+const SearchBabySitter = ({ category = "babysitting" }) => {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
   const [babysitters, setBabysitters] = useState([]);
@@ -31,6 +31,7 @@ const SearchBabySitter = () => {
 
   const buildQueryParams = () => {
     const params = new URLSearchParams();
+    params.set("category", category);
     if (location) params.append("zipCode", location);
     if (hourlyRate[0] > 0) params.append("minRate", hourlyRate[0]);
     if (hourlyRate[1] < 500) params.append("maxRate", hourlyRate[1]);
@@ -79,7 +80,7 @@ const SearchBabySitter = () => {
 
   useEffect(() => {
     fetchBabysitters(1);
-  }, []);
+  }, [category]);
 
   const handleSearch = () => {
     fetchBabysitters(1);
@@ -128,7 +129,7 @@ const SearchBabySitter = () => {
     <section className="py-5">
       <div className="container">
         <h2 className="font-poppins text-3xl font-semibold capitalize text-gray-500 mb-5">
-          Find the best
+          Find {category === "babysitting" ? "babysitters" : category === "cleaning" ? "cleaners" : "cooks and chefs"}
         </h2>
 
         <div className="flex flex-col lg:flex-row gap-6">
@@ -224,7 +225,7 @@ const SearchBabySitter = () => {
                   onClick={() =>
                     router.push(
                       accessError.status === 401
-                        ? "/login?redirect=%2Fbabysitters"
+                        ? `/login?redirect=${encodeURIComponent(`/babysitters?category=${category}`)}`
                         : "/pricing",
                     )
                   }
@@ -273,7 +274,7 @@ const SearchBabySitter = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500">No babysitter found</p>
+                  <p className="text-gray-500">No {category === "babysitting" ? "babysitters" : category === "cleaning" ? "cleaners" : "cooks or chefs"} found</p>
                 )}
               </div>
             )}

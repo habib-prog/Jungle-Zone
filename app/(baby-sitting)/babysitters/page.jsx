@@ -1,8 +1,11 @@
 import FIndChildCarePage from "@/app/components/FIndBabySitterPageComponents/FIndBabySitterPage"
 
-const page = () => {
+const page = async ({ searchParams }) => {
+    const params = await searchParams;
+    const requestedCategory = params?.category;
+    const category = ["babysitting", "cleaning", "cooking"].includes(requestedCategory) ? requestedCategory : "babysitting";
     return (
-        <FIndChildCarePage />
+        <FIndChildCarePage category={category} />
     )
 }
 

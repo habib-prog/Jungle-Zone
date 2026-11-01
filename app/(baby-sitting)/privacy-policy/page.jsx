@@ -127,9 +127,7 @@ const PrivacyPolicyPage = () => {
               or debit card numbers on its servers.
             </p>
             <p className="mt-2">
-              JungleZone does not collect, hold, or process payments for
-              childcare services. Any childcare fees are agreed and settled
-              directly between the parent and the independent babysitter.
+              Stripe processes platform access subscriptions. Hourly service payments are arranged directly between service takers and providers, so JungleZone does not process or store those payments.
             </p>
           </section>
 

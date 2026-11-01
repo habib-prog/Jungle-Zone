@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import gsap from "gsap";
-import { verificationDocuments } from "../api/fakeApi";
+import { getProviderCategoryOptions } from "@/app/lib/providerCategoryOptions";
 
 const BabysitterVerification = ({
   onNext,
@@ -15,6 +15,9 @@ const BabysitterVerification = ({
   const selectedDocs = Array.isArray(formData?.verificationDocs)
     ? formData.verificationDocs
     : [];
+  const categoryOptions = getProviderCategoryOptions(formData?.serviceCategory);
+  const requiredDeclarations = categoryOptions.declarations.filter((item) => item.required);
+  const canContinue = requiredDeclarations.every((item) => selectedDocs.includes(item.label));
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -78,41 +81,39 @@ const BabysitterVerification = ({
 
               <div className="mascot-bounce rounded-2xl bg-cyan-50 px-8 py-6 text-center shadow-sm sm:px-10 sm:py-8">
                 <h3 className="text-xl font-medium text-gray-800 sm:text-2xl">
-                  Credentials &amp; Documentation Declarations
+                  Category-specific declarations
                 </h3>
               </div>
             </div>
 
             <div className="step-fade mb-6 text-center">
               <p className="text-sm text-gray-600 sm:text-base">
-                Declare the documentation and credentials you hold and are
-                prepared to present to parents or guardians upon request:
+                Review the statements for your selected service. Required statements must be selected to continue.
               </p>
             </div>
 
             {/* Platform disclaimer notice */}
             <div className="step-fade mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-900">
               <p className="font-semibold uppercase tracking-wide mb-1 text-[11px]">
-                Notice to Babysitters
+                Provider notice
               </p>
               <p>
-                JungleZone is an online introduction platform. JungleZone does
-                not obtain, verify, or endorse DBS certificates, background
-                checks, or qualifications. You are responsible for the accuracy
-                of your declared credentials, and parents may ask to inspect
-                original documents before booking.
+                JungleZone does not collect or verify certificates, insurance,
+                registrations, or qualifications. These selections are your
+                statements only. Do not upload certificates here; clients may
+                ask you to show relevant documents directly to them.
               </p>
             </div>
 
             {/* UK Verification Documents Checklist */}
             <div className="step-fade">
               <h4 className="mb-4 text-base font-semibold text-gray-800">
-                Select documents you currently hold:
+                Requirements and credentials for {categoryOptions.label}:
               </h4>
               <div className="space-y-3">
-                {verificationDocuments.map((doc) => (
+                {categoryOptions.declarations.map((doc) => (
                   <label
-                    key={doc.id}
+                    key={doc.label}
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
                       isSelected(doc.label)
                         ? "border-brandColor bg-brandColor/10"
@@ -150,19 +151,20 @@ const BabysitterVerification = ({
                       </div>
                     </div>
 
-                    <span className="text-sm text-gray-700">{doc.label}</span>
+                    <span className="text-sm text-gray-700">
+                      {doc.label}
+                      {doc.required && <span className="ml-2 text-xs font-semibold text-rose-600">Required</span>}
+                    </span>
                   </label>
                 ))}
               </div>
               {selectedDocs.length > 0 ? (
                 <p className="mt-3 text-xs text-gray-500">
-                  {selectedDocs.length} credential
-                  {selectedDocs.length > 1 ? "s" : ""} declared
+                  {selectedDocs.length} statement{selectedDocs.length === 1 ? "" : "s"} selected
                 </p>
               ) : (
                 <p className="mt-3 text-xs text-gray-400">
-                  Optional: You can proceed without selecting documents now and
-                  update your profile later.
+                  Select any optional credentials you personally say you hold.
                 </p>
               )}
             </div>
@@ -182,7 +184,8 @@ const BabysitterVerification = ({
                 type="primary"
                 size="large"
                 onClick={onNext}
-                className="flex items-center gap-2 rounded px-6 py-2 bg-brandColor text-white cursor-pointer duration-200 hover:bg-brandColor/80"
+                disabled={!canContinue}
+                className="flex items-center gap-2 rounded px-6 py-2 bg-brandColor text-white cursor-pointer duration-200 hover:bg-brandColor/80 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 Next
                 <FiArrowRight />

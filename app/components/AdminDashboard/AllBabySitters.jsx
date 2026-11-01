@@ -6,6 +6,12 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getImageUrl } from "@/app/lib/imageUtils";
 
+const SERVICE_LABELS = {
+    babysitting: "Babysitting",
+    cleaning: "Cleaning",
+    cooking: "Cooking",
+};
+
 const AllBabySitters = () => {
     const [babysitters, setBabysitters] = useState([]);
     const [page, setPage] = useState(1);
@@ -13,8 +19,6 @@ const AllBabySitters = () => {
     const [loading, setLoading] = useState(false);
     const [selectedSitter, setSelectedSitter] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [approvalAction, setApprovalAction] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Filter states - separated input from actual search to trigger on button click
     const [emailInput, setEmailInput] = useState("");
@@ -51,35 +55,11 @@ const AllBabySitters = () => {
     const handleInfoClick = (sitter) => {
         setSelectedSitter(sitter);
         setShowModal(true);
-        setApprovalAction(sitter.isApproved ? "reject" : "approve");
-    };
-
-    const handleStatusSubmit = async () => {
-        if (!selectedSitter || !approvalAction) return;
-        setIsSubmitting(true);
-        try {
-            const res = await fetch(`/api/admin/babySitterInfo?babysitterId=${selectedSitter._id}&action=${approvalAction}`, {
-                method: "POST",
-            });
-            if (res.ok) {
-                setBabysitters((prev) =>
-                    prev.map((s) =>
-                        s._id === selectedSitter._id ? { ...s, isApproved: approvalAction === "approve" } : s
-                    )
-                );
-                setSelectedSitter((prev) => ({ ...prev, isApproved: approvalAction === "approve" }));
-            }
-        } catch (error) {
-            toast.error(error.message || "Failed to update status:");
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     const closeModal = () => {
         setShowModal(false);
         setSelectedSitter(null);
-        setApprovalAction("");
     };
 
     const handleClearFilters = () => {
@@ -99,7 +79,7 @@ const AllBabySitters = () => {
     return (
         <div className="bg-white p-4 sm:p-6 rounded-xl border">
             <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start mb-4">
-                <h2 className="font-semibold">All Babysitters</h2>
+                <h2 className="font-semibold">All Providers</h2>
 
                 {/* Filters */}
                 <div className="flex flex-wrap items-stretch gap-2 sm:gap-4">
@@ -120,7 +100,7 @@ const AllBabySitters = () => {
                         >
                             <option value="all">All Status</option>
                             <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
+                            <option value="pending">Pending approval</option>
                         </select>
                     </div>
                     <button
@@ -169,7 +149,14 @@ const AllBabySitters = () => {
                                                 className="w-12 h-12 object-cover rounded-full"
                                             />
                                         </td>
-                                        <td>{s.fullName}</td>
+                                        <td>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-slate-800">{s.fullName}</span>
+                                                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-800">
+                                                    {SERVICE_LABELS[s.serviceCategory] || s.serviceCategory || "Babysitting"}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td>{s.email}</td>
                                         <td>{s.zipCode}</td>
                                         <td>{s.location}</td>
@@ -187,10 +174,10 @@ const AllBabySitters = () => {
                                             <span
                                                 className={`px-2 py-1 rounded text-xs font-medium ${s.isApproved
                                                     ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-700"
+                                                    : s.isVerified ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"
                                                     }`}
                                             >
-                                                {s.isApproved ? "Approved" : "Rejected"}
+                                                {s.isApproved ? "Approved" : s.isVerified ? "Pending approval" : "Email not verified"}
                                             </span>
                                         </td>
                                         <td className="space-x-2 whitespace-nowrap">
@@ -226,7 +213,12 @@ const AllBabySitters = () => {
                                         className="w-12 h-12 object-cover rounded-full shrink-0"
                                     />
                                     <div className="min-w-0 flex-1">
-                                        <p className="font-medium truncate">{s.fullName}</p>
+                                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                            <p className="font-medium truncate">{s.fullName}</p>
+                                            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">
+                                                {SERVICE_LABELS[s.serviceCategory] || s.serviceCategory || "Babysitting"}
+                                            </span>
+                                        </div>
                                         <p className="text-sm text-gray-500 truncate">{s.email}</p>
                                         <p className="text-xs text-gray-400">#{i + 1} · {s.location} · {s.zipCode}</p>
                                     </div>
@@ -243,10 +235,10 @@ const AllBabySitters = () => {
                                     <span
                                         className={`px-2 py-1 rounded text-xs font-medium ${s.isApproved
                                             ? "bg-green-100 text-green-700"
-                                            : "bg-red-100 text-red-700"
+                                            : s.isVerified ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"
                                             }`}
                                     >
-                                        {s.isApproved ? "Approved" : "Rejected"}
+                                        {s.isApproved ? "Approved" : s.isVerified ? "Pending approval" : "Email not verified"}
                                     </span>
                                     <div className="ml-auto flex items-center gap-2">
                                         <button
@@ -294,7 +286,7 @@ const AllBabySitters = () => {
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-4 sm:p-6 mx-4 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4 gap-2">
-                            <h3 className="text-xl font-bold">Babysitter Details</h3>
+                            <h3 className="text-xl font-bold">Provider Details</h3>
                             <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 text-2xl cursor-pointer">
                                 <X />
                             </button>
@@ -315,10 +307,10 @@ const AllBabySitters = () => {
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm font-medium ${selectedSitter.isApproved
                                             ? "bg-green-100 text-green-700"
-                                            : "bg-red-100 text-red-700"
+                                            : selectedSitter.isVerified ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"
                                             }`}
                                     >
-                                        {selectedSitter.isApproved ? "Approved" : "Rejected"}
+                                        {selectedSitter.isApproved ? "Approved" : selectedSitter.isVerified ? "Pending approval" : "Email not verified"}
                                     </span>
                                     <span className="capitalize px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                                         {selectedSitter.subscription || "free"}
@@ -334,38 +326,6 @@ const AllBabySitters = () => {
                                 </div>
                             </div>
 
-                            {/* Approval Status Control */}
-                            <div className="bg-gray-50 rounded-lg mt-4 sm:mt-0 sm:shrink-0">
-                                <h4 className="font-semibold text-gray-700 mb-3 text-end">Approval Status</h4>
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={() => {
-                                            setApprovalAction("approve");
-                                            handleStatusSubmit();
-                                        }}
-                                        disabled={selectedSitter.isApproved || isSubmitting}
-                                        className={`px-4 py-2 rounded text-white font-medium cursor-pointer ${selectedSitter.isApproved
-                                            ? "bg-gray-300 cursor-none-allowed pointer-events-none"
-                                            : "bg-green-500 hover:bg-green-600"
-                                            }`}
-                                    >
-                                        Approve
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setApprovalAction("reject");
-                                            handleStatusSubmit();
-                                        }}
-                                        disabled={!selectedSitter.isApproved || isSubmitting}
-                                        className={`px-4 py-2 rounded text-white font-medium cursor-pointer ${!selectedSitter.isApproved
-                                            ? "bg-gray-300 cursor-none-allowed pointer-events-none"
-                                            : "bg-red-500 hover:bg-red-600"
-                                            }`}
-                                    >
-                                        Reject
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
                         {/* Basic Info */}

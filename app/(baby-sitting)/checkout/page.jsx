@@ -7,6 +7,15 @@ import { Loader } from "lucide-react";
 const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const displayedPlanPrice = planDetails
+    ? Math.round(
+        Number(planDetails.price) *
+          (planDetails.isDiscounted && planDetails.discountPercentage
+            ? 1 - planDetails.discountPercentage / 100
+            : 1) *
+          100,
+      ) / 100
+    : null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +57,7 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
           </div>
           <div className="text-right">
             <p className="text-2xl font-extrabold text-gray-900">
-              £{planDetails?.price?.toFixed(2)}
+              £{displayedPlanPrice?.toFixed(2)}
             </p>
             <p className="text-xs text-gray-500">
               per {cycleText} (incl. VAT where applicable)
@@ -97,17 +106,10 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
           Important Notice – Platform Fees
         </p>
         <p className="mb-1.5">
-          Any fee paid to JungleZone is a{" "}
-          <strong>platform access or membership fee</strong>. It gives you
-          access to the JungleZone platform and its features (such as messaging,
-          profile browsing, and booking requests).
+          This is the admin-set platform access fee for your role. Service takers pay to find and contact providers; service providers pay to reach customers.
         </p>
         <p>
-          This fee <strong>does NOT include childcare services</strong>. Any
-          fees for childcare are agreed separately between the parent/guardian
-          and the babysitter and are paid directly by the parent to the
-          babysitter. JungleZone does not set, collect, process, or guarantee
-          childcare payments.
+          This fee does not include or pay for hourly services. Providers set their own hourly rates, and users agree service arrangements and payments directly with each other.
         </p>
       </div>
 
@@ -130,8 +132,8 @@ const CheckoutForm = ({ planId, planDetails, billingCycle }) => {
             >
               Terms &amp; Conditions
             </a>{" "}
-            and acknowledge that this payment is solely for JungleZone platform
-            access and does not include or cover childcare fees.
+            and acknowledge that this payment is only for JungleZone platform
+            access and does not include a service booking.
           </span>
         </label>
       </div>

@@ -26,6 +26,12 @@ const BabySitterRegistrationSchema = new mongoose.Schema(
     comfortableWithAgeGroup: [{ type: String }],
     skills: [{ type: String }],
     role: { type: String, default: "sitter" },
+    serviceCategory: {
+      type: String,
+      enum: ["babysitting", "cleaning", "cooking"],
+      default: "babysitting",
+      index: true,
+    },
     characteristics: [{ type: String }],
     comfortableWith: [{ type: String }],
     educationDetails: { type: String, default: null },

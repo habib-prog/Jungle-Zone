@@ -65,6 +65,7 @@ export default function JungleZone() {
         const params = new URLSearchParams({
           page: String(page),
           limit: "3",
+          category: serviceSlug,
         });
 
         if (searchPostcode.trim()) {
@@ -90,21 +91,18 @@ export default function JungleZone() {
         setLoadingLatestBabysitters(false);
       }
     },
-    [],
+    [serviceSlug],
   );
 
   const selectedService = services.find((svc) => svc.slug === serviceSlug);
-  const comingSoon = selectedService && !selectedService.href;
-
   // Auto-search 600ms after the user stops typing (or changes the service).
   useEffect(() => {
-    if (comingSoon) return;
     const timer = setTimeout(
       () => fetchBabysitters(1, postcode),
       postcode.trim() ? 600 : 0,
     );
     return () => clearTimeout(timer);
-  }, [postcode, comingSoon, fetchBabysitters]);
+  }, [postcode, fetchBabysitters]);
 
   return (
     <>
@@ -151,11 +149,16 @@ export default function JungleZone() {
               />
             </label>
           </form>
-          {(comingSoon || postcodeError) && (
-            <p className="mt-2 text-xs text-red-100">
-              {comingSoon ? `${selectedService.title} is ${selectedService.status.toLowerCase()}.` : postcodeError}
-            </p>
+          {postcodeError && (
+            <p className="mt-2 text-xs text-red-100">{postcodeError}</p>
           )}
+          <Link
+            href={`/babysitters?category=${serviceSlug}`}
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brandColor"
+          >
+            Find {selectedService?.title}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
           </div>
         </HeroStack>
       </section>
@@ -204,8 +207,8 @@ export default function JungleZone() {
               <SectionHeader
                 dark
                 eyebrow="How it works"
-                parts={[{ text: "Three steps." }, { text: " No middleman.", className: "text-white/40" }]}
-                sub="Find a provider and agree everything directly with them. JungleZone takes no commission and never handles payment for a job."
+                parts={[{ text: "Three steps." }, { text: " Clear service pricing.", className: "text-white/40" }]}
+                sub="Find a provider, review their hourly rate, and agree service details and payment directly with them."
               />
               <a
                 href="#top"
@@ -220,21 +223,21 @@ export default function JungleZone() {
           <ol className="divide-y divide-white/10 border-y border-white/10 lg:col-span-7">
             <StepRow n="01" icon={Search} title="Search" desc="Choose a service and enter your postcode to find independent providers near you." />
             <StepRow n="02" icon={UserCheck} title="Compare" desc="Browse profiles and message providers or request quotes. What a provider says about themselves is their own statement, and JungleZone has not checked it." />
-            <StepRow n="03" icon={CalendarCheck} title="Connect" desc="Run your own checks, then agree price, scope and payment directly with the provider. The contract is between you and them only." />
+            <StepRow n="03" icon={CalendarCheck} title="Agree details" desc="Agree the hours, service details and payment directly with the provider." />
           </ol>
         </div>
       </section>
 
-      {/* LATEST BABYSITTERS */}
+      {/* LATEST PROVIDERS */}
       <section className="bg-white py-20 lg:py-28">
         <div className="container">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between lg:mb-12">
             <SectionHeader
-              eyebrow="Babysitting"
-              parts={[{ text: "Meet our latest" }, { text: " babysitters.", className: "text-gray-400" }]}
+              eyebrow={selectedService?.title || "Services"}
+              parts={[{ text: "Meet our latest" }, { text: ` ${selectedService?.title?.toLowerCase() || "providers"}.`, className: "text-gray-400" }]}
             />
             <Link
-              href="/babysitters"
+              href={`/babysitters?category=${serviceSlug}`}
               className="inline-flex items-center gap-2 self-start rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-brandColor hover:text-brandColor sm:self-auto"
             >
               View all
@@ -243,7 +246,7 @@ export default function JungleZone() {
           </div>
 
           {loadingLatestBabysitters ? (
-            <p className="text-sm text-gray-500">Loading latest sitters...</p>
+            <p className="text-sm text-gray-500">Loading latest providers...</p>
           ) : latestBabysitters.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {latestBabysitters.map((item) => (
@@ -259,13 +262,13 @@ export default function JungleZone() {
             </div>
           ) : (
             <p className="rounded-3xl bg-gray-50 p-10 text-center text-sm text-gray-500">
-              No sitters found. Try another postcode or check back later.
+              No providers found in this category. Try another postcode or check back later.
             </p>
           )}
 
           <p className="mt-8 max-w-3xl text-xs leading-6 text-gray-500">
             <strong className="font-semibold text-gray-700">Please note: </strong>
-            JungleZone is an online directory and introduction service. We do not check, verify or vet any provider, employ or supervise providers, supply the services, set prices, or guarantee any job. Providers are independent, self-employed people or businesses, and a live profile is not approval or endorsement by JungleZone.
+            JungleZone is an online directory and introduction service. We do not check, verify or vet any provider, employ or supervise providers, supply the services, or guarantee any job. Providers set their own hourly rates, and service payments are arranged directly between users. JungleZone charges platform access fees. Providers are independent, self-employed people or businesses, and a live profile is not approval or endorsement by JungleZone.
           </p>
         </div>
       </section>
@@ -420,7 +423,7 @@ const ctaTabs = [
     tab: "Get a service",
     image: "/img/cta-get.jpg",
     title: "Need a hand? Find it near you.",
-    text: "Search by postcode, message providers and compare profiles. You agree price, scope and payment directly with them.",
+    text: "Search by postcode, compare provider-set hourly rates, then arrange the service and payment directly.",
     primary: { label: "Find a service", href: "/babysitters" },
     secondary: { label: "Check before you hire", href: "#before-you-hire" },
   },
@@ -429,8 +432,8 @@ const ctaTabs = [
     tab: "Provide a service",
     image: "/img/cta-provide.jpg",
     title: "Offer a service? Earn on your terms.",
-    text: "Create a free profile, set your own rates and get found by people in your area. No commission on your jobs.",
-    primary: { label: "Become a provider", href: "/register-babysitter" },
+    text: "Create a profile, set your hourly rate, choose your service category and get found by local customers.",
+    primary: { label: "Become a provider", href: "/register" },
     secondary: { label: "How it works", href: "#how-it-works" },
   },
 ];

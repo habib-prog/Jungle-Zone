@@ -29,7 +29,15 @@ export async function PATCH(req) {
 
         const body = await req.json();
 
-        const allowed = ["fullName", "phoneNumber", "age", "location", "zipCode", "description", "certifications", "educationLevel", "languages", "yearsOfExperience", "hourlyRate", "comfortableWithAgeGroup", "skills", "availability"];
+        if (body.hourlyRate !== undefined && body.hourlyRate !== null) {
+            const rate = Number(body.hourlyRate);
+            if (!Number.isFinite(rate) || rate <= 0) {
+                return NextResponse.json({ message: "Hourly rate must be a positive amount" }, { status: 400 });
+            }
+            body.hourlyRate = rate;
+        }
+
+        const allowed = ["fullName", "phoneNumber", "age", "location", "zipCode", "hourlyRate", "description", "certifications", "educationLevel", "languages", "yearsOfExperience", "comfortableWith", "comfortableWithAgeGroup", "preferences", "skills", "availability"];
         const updates = {};
         for (const key of allowed) {
             if (body[key] !== undefined) updates[key] = body[key];

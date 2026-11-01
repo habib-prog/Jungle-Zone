@@ -59,7 +59,7 @@ const Page = () => {
   const handleNext = () => {
     if (!role) return;
 
-    if (role === "worker") router.push("/register-babysitter");
+    if (["babysitting", "cleaning", "cooking"].includes(role)) router.push(`/register-babysitter?category=${role}`);
     if (role === "parent") router.push("/register-parent");
   };
 
@@ -68,10 +68,10 @@ const Page = () => {
       <div className="w-full max-w-4xl">
         <div className="text-center" data-aos="fade-up" data-aos-once="true">
           <h1 className="font-poppins text-2xl md:text-3xl font-semibold text-gray-900">
-            Choose your role
+            How would you like to sign up?
           </h1>
           <p className="mt-2 font-nunito text-gray-600">
-            This helps us personalize your experience.
+            Choose what you want to do on JungleZone.
           </p>
         </div>
 
@@ -81,15 +81,13 @@ const Page = () => {
           data-aos-delay="120"
           data-aos-once="true"
         >
-          <Card
-            id="worker"
-            title="I'm a babysitter"
-            desc="Create a profile, discover local families, and arrange childcare directly."
-          />
+          <Card id="babysitting" title="I'm a babysitter or nanny" desc="Create a profile and connect with families looking for childcare." />
+          <Card id="cleaning" title="I'm a cleaner" desc="Create a profile and connect with people looking for cleaning services." />
+          <Card id="cooking" title="I'm a cook or chef" desc="Create a profile and connect with people looking for cooking services." />
           <Card
             id="parent"
-            title="I'm a parent"
-            desc="Browse babysitter profiles, discover local sitters, and connect directly."
+            title="I'm looking for a service"
+            desc="Find local providers and contact them directly."
           />
         </div>
 
@@ -105,13 +103,12 @@ const Page = () => {
           </p>
           <p>
             JungleZone is an online introduction platform that enables
-            parents/guardians and independent babysitters to discover and
-            connect with each other. JungleZone does not provide childcare
-            services, does not employ or supply babysitters, does not carry out
-            DBS or background checks, does not verify references or
-            qualifications, and does not supervise childcare arrangements. All
-            childcare arrangements, checks, and payments are the sole
-            responsibility of the users involved.
+            clients and independent service providers to discover and connect
+            with each other. JungleZone does not provide the services, employ
+            providers, or check or verify provider claims. Arrangements, checks,
+            and any payments made outside JungleZone checkout are the
+            responsibility of the users involved. Hourly service payments are
+            arranged directly between the service taker and provider.
           </p>
         </div>
 

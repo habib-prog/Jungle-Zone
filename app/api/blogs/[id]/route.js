@@ -54,6 +54,9 @@ export async function PUT(req, { params }) {
     if (body.tags && typeof body.tags === "string") {
       body.tags = body.tags.split(",").map((t) => t.trim());
     }
+    if (typeof body.category === "string") {
+      body.category = body.category.trim() || "Parenting";
+    }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,

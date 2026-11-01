@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { FiEdit2, FiSave, FiX, FiUser, FiPhone, FiMapPin, FiHash, FiCamera, FiDollarSign, FiClock, FiAward, FiBook, FiGlobe, FiBriefcase, FiTag, FiCalendar, FiCheck, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiSave, FiX, FiUser, FiPhone, FiMapPin, FiHash, FiCamera, FiClock, FiAward, FiBook, FiGlobe, FiBriefcase, FiTag, FiCalendar, FiCheck, FiPlus, FiTrash2, FiDollarSign } from "react-icons/fi";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 import { getImageUrl } from "@/app/lib/imageUtils";
+import { getProviderCategoryOptions } from "@/app/lib/providerCategoryOptions";
 
 const Field = ({ icon: Icon, label, name, value, onChange, editing, disabled = false, type = "text" }) => (
   <div className="flex flex-col gap-1">
@@ -203,13 +204,13 @@ const BabySitterProfile = () => {
     age: "",
     location: "",
     zipCode: "",
+    hourlyRate: "",
     description: "",
     certifications: [],
     educationLevel: "",
     languages: [],
     yearsOfExperience: "",
-    hourlyRate: "",
-    comfortableWithAgeGroup: [],
+    comfortableWith: [],
     skills: [],
     availability: [],
   });
@@ -226,13 +227,13 @@ const BabySitterProfile = () => {
             age: data.sitter.age?.toString() || "",
             location: data.sitter.location || "",
             zipCode: data.sitter.zipCode || "",
+            hourlyRate: data.sitter.hourlyRate?.toString() || "",
             description: data.sitter.description || "",
             certifications: data.sitter.certifications || [],
             educationLevel: data.sitter.educationLevel || "",
             languages: data.sitter.languages || [],
             yearsOfExperience: data.sitter.yearsOfExperience?.toString() || "",
-            hourlyRate: data.sitter.hourlyRate?.toString() || "",
-            comfortableWithAgeGroup: data.sitter.comfortableWithAgeGroup || [],
+            comfortableWith: data.sitter.comfortableWith || data.sitter.comfortableWithAgeGroup || [],
             skills: data.sitter.skills || [],
             availability: data.sitter.availability || [],
           });
@@ -260,7 +261,7 @@ const BabySitterProfile = () => {
         ...form,
         age: form.age ? parseInt(form.age) : undefined,
         yearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience) : undefined,
-        hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : undefined,
+        hourlyRate: form.hourlyRate ? Number(form.hourlyRate) : undefined,
       };
 
       const res = await fetch("/api/babysitters/profile", {
@@ -384,7 +385,7 @@ const BabySitterProfile = () => {
             <h2 className="text-xl font-semibold font-poppins text-gray-800">{form.fullName || "Your Name"}</h2>
             <p className="text-sm text-gray-500 font-poppins">{sitter?.email || "No email"}</p>
             <span className="inline-block mt-1 text-xs bg-brandColor/10 text-brandColor font-poppins px-2 py-0.5 rounded-full">
-              Babysitter
+              {getProviderCategoryOptions(sitter?.serviceCategory).label}
             </span>
           </div>
         </div>
@@ -398,8 +399,8 @@ const BabySitterProfile = () => {
             <Field icon={FiHash} label="Age" name="age" value={form.age} onChange={handleChange} editing={editing} type="number" />
             <Field icon={FiMapPin} label="Location" name="location" value={form.location} onChange={handleChange} editing={editing} />
             <Field icon={FiHash} label="Post Code" name="zipCode" value={form.zipCode} onChange={handleChange} editing={editing} />
+            <Field icon={FiDollarSign} label="Hourly Rate (£/hour)" name="hourlyRate" value={form.hourlyRate} onChange={handleChange} editing={editing} type="number" />
             <Field icon={FiBriefcase} label="Years of Experience" name="yearsOfExperience" value={form.yearsOfExperience} onChange={handleChange} editing={editing} type="number" />
-            <Field icon={FiDollarSign} label="Hourly Rate ($)" name="hourlyRate" value={form.hourlyRate} onChange={handleChange} editing={editing} type="number" step="0.01" />
             <Field icon={FiBook} label="Education Level" name="educationLevel" value={form.educationLevel} onChange={handleChange} editing={editing} />
           </div>
         </div>
@@ -440,10 +441,10 @@ const BabySitterProfile = () => {
           <ArrayField icon={FiTag} label="Skills" name="skills" value={form.skills} onChange={handleArrayChange} editing={editing} />
         </div>
 
-        {/* Comfortable Age Groups */}
+        {/* Category-specific comfort */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold font-poppins text-gray-700 mb-4 uppercase tracking-wide">Comfortable With Age Groups</h3>
-          <ArrayField icon={FiCheck} label="Age Groups" name="comfortableWithAgeGroup" value={form.comfortableWithAgeGroup} onChange={handleArrayChange} editing={editing} />
+          <h3 className="text-sm font-semibold font-poppins text-gray-700 mb-4 uppercase tracking-wide">{getProviderCategoryOptions(sitter?.serviceCategory).comfortableWithLabel}</h3>
+          <ArrayField icon={FiCheck} label="Comfortable with" name="comfortableWith" value={form.comfortableWith} onChange={handleArrayChange} editing={editing} />
         </div>
 
         {/* Availability */}

@@ -86,7 +86,10 @@ const AllParents = () => {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-xl border">
       <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start mb-4">
-        <h2 className="font-semibold">All Parents</h2>
+        <div>
+          <h2 className="font-semibold text-slate-900">All Users</h2>
+          <p className="mt-1 text-xs text-slate-500">View account details and selected services</p>
+        </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-stretch gap-2 sm:gap-4">
@@ -126,6 +129,7 @@ const AllParents = () => {
                   <th className="py-2">ID</th>
                   <th>Photo</th>
                   <th>Name</th>
+                  <th>Service</th>
                   <th>Email</th>
                   <th>Subscription</th>
                   <th>TotalDeals</th>
@@ -149,7 +153,12 @@ const AllParents = () => {
                         className="w-12 h-12 object-cover rounded-full"
                       />
                     </td>
-                    <td>{u.fullName || u.name}</td>
+                    <td className="font-medium text-slate-800">{u.fullName || u.name}</td>
+                    <td>
+                      <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                        {u.paidService || "No paid service"}
+                      </span>
+                    </td>
                     <td>{u.email}</td>
                     <td>{u.subscription}</td>
                     <td>{u.totalDeals}</td>
@@ -192,7 +201,12 @@ const AllParents = () => {
                     className="w-12 h-12 object-cover rounded-full shrink-0"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium truncate">{u.fullName || u.name}</p>
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <p className="font-medium truncate">{u.fullName || u.name}</p>
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">
+                        {u.paidService || "No paid service"}
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-500 truncate">{u.email}</p>
                     <p className="text-xs text-gray-400">
                       #{i + 1} · {u.subscription} · {u.totalDeals} deals · ${u.totalSpent}

@@ -17,6 +17,7 @@ const Page = () => {
   // ========== form data state ==========
   const [formData, setFormData] = useState({
     fullName: "",
+    serviceCategory: "babysitting",
     email: "",
     phoneNumber: "",
     password: "",
@@ -33,8 +34,10 @@ const Page = () => {
     languages: [],
     yearsOfExperience: "",
     hourlyRate: "",
+    comfortableWith: [],
     comfortableWithAgeGroup: [],
     skills: [],
+    preferences: [],
     availability: [],
     verificationDocs: []
   });
@@ -65,6 +68,13 @@ const Page = () => {
   // ========== progress calculation ==========
   const totalSteps = stepsHeaiding.length;
   const progressWidth = `${((current + 1) / totalSteps) * 100}%`;
+
+  useEffect(() => {
+    const category = new URLSearchParams(window.location.search).get("category");
+    if (["babysitting", "cleaning", "cooking"].includes(category)) {
+      setFormData((prev) => ({ ...prev, serviceCategory: category }));
+    }
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {

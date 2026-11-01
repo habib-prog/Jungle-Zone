@@ -20,6 +20,7 @@ const BabySitterDashboardSection = () => {
         if (data.subscription) setActiveSub(data.subscription);
       })
       .catch(() => {});
+
   }, []);
 
   const renderPlanBadge = () => {
@@ -27,13 +28,7 @@ const BabySitterDashboardSection = () => {
       return `Active: ${activeSub.plan} (${activeSub.billingCycle})`;
     }
     if (profile?.subscription === "trial") {
-      const remaining = profile.subscriptionExpiry
-        ? Math.ceil(
-            (new Date(profile.subscriptionExpiry).getTime() - Date.now()) /
-              (1000 * 60 * 60 * 24),
-          )
-        : 0;
-      return `Free Trial ${remaining > 0 ? "(" + remaining + " days left)" : "(Expired)"}`;
+      return "Free Trial";
     }
     return `Free Plan`;
   };
@@ -41,13 +36,14 @@ const BabySitterDashboardSection = () => {
   const avatarSrc =
     getImageUrl(profile?.profilePhoto) ??
     `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || "S")}&background=random`;
+  const categoryLabel = { babysitting: "Babysitter", cleaning: "Cleaner", cooking: "Cook / Chef" }[profile?.serviceCategory] || "Babysitter";
   return (
     <div className="min-h-screen">
       {/* Header */}
       <div className="bg-gray-100 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-8 py-4 xl:py-6">
           <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold font-poppins text-gray-800">
-            Baby Sitter Dashboard
+            {categoryLabel} Dashboard
           </h1>
           <p className="text-sm xl:text-base text-gray-500 font-poppins">
             Overview of your profile & performance
@@ -60,7 +56,7 @@ const BabySitterDashboardSection = () => {
           <div className="mb-6 rounded-2xl border border-yellow-300 bg-yellow-50 p-4 text-yellow-900">
             <p className="font-semibold text-base">Waiting for verification</p>
             <p className="text-sm text-yellow-800 mt-1">
-              Your babysitter account is pending approval. Please check back
+              Your provider account is pending approval. Please check back
               within 72 hours.
             </p>
           </div>
@@ -142,10 +138,10 @@ const BabySitterDashboardSection = () => {
 
               <div className="mt-3 flex items-end justify-between gap-3">
                 <p className="text-2xl xl:text-3xl font-semibold font-poppins text-gray-800">
-                  {/* ${stats.totalEarnings.toLocaleString()} */}
+                  —
                 </p>
                 <span className="text-xs xl:text-sm text-gray-400 font-poppins">
-                  updated today
+                  Service bookings are arranged directly
                 </span>
               </div>
             </div>

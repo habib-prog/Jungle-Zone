@@ -7,10 +7,12 @@ import gsap from "gsap";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { getProviderCategoryOptions } from "@/app/lib/providerCategoryOptions";
 
 const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
   const sectionRef = useRef(null);
   const router = useRouter();
+  const categoryOptions = getProviderCategoryOptions(formData?.serviceCategory);
 
   const [agree, setAgree] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
@@ -22,6 +24,8 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
+  const [emailDeliveryFailed, setEmailDeliveryFailed] = useState(false);
+  const [resumedExistingAccount, setResumedExistingAccount] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [approvalWaitHours, setApprovalWaitHours] = useState(72);
 
@@ -62,6 +66,7 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
       const payload = new FormData();
       payload.append("profilePhoto", formData.profilePhoto);
       payload.append("fullName", formData.fullName || "");
+      payload.append("serviceCategory", formData.serviceCategory || "babysitting");
       payload.append("email", formData.email || "");
       payload.append("phoneNumber", formData.phoneNumber || "");
       payload.append("password", formData.password || "");
@@ -86,8 +91,8 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
       payload.append("yearsOfExperience", formData.yearsOfExperience || "");
       payload.append("hourlyRate", formData.hourlyRate || "");
       payload.append(
-        "comfortableWithAgeGroup",
-        formData.comfortableWithAgeGroup?.join(",") || "",
+        "comfortableWith",
+        formData.comfortableWith?.join(",") || "",
       );
       payload.append("skills", formData.skills?.join(",") || "");
       payload.append(
@@ -111,13 +116,23 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
         toast.error(result.error || "Registration failed");
       } else if (response.ok && result.requiresVerification) {
         setRegEmail(result.email || formData.email || "");
+        setEmailDeliveryFailed(result.emailSent === false);
+        setResumedExistingAccount(result.resumedExistingAccount === true);
         setOtp("");
         setOtpError("");
         setStep("otp");
-        toast.success("Verification code sent to your email");
+        if (result.emailSent === false) {
+          toast.error(result.resumedExistingAccount
+            ? "Your unverified account is saved, but the verification email could not be sent. Check the email service settings, then use Resend code."
+            : "Your account was created, but the verification email could not be sent. Check the email service settings, then use Resend code.");
+        } else {
+          toast.success(result.resumedExistingAccount
+            ? "Your account is not verified yet. A new verification code has been sent."
+            : "Verification code sent to your email");
+        }
       } else if (response.ok) {
         toast.success(
-          "Registration successful. Your sitter account is pending approval and may take up to 72 hours.",
+          "Registration successful. Your provider account is pending approval and may take up to 72 hours.",
         );
         router.push("/login?pendingApproval=true");
       }
@@ -166,6 +181,7 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to resend");
+      setEmailDeliveryFailed(false);
       toast.success("A new code has been sent");
       setOtp("");
     } catch (err) {
@@ -193,7 +209,7 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
               <div className="mt-4 flex items-center gap-3 rounded-xl bg-amber-50 px-5 py-4 text-amber-800">
                 <FiClock className="text-2xl" />
                 <p className="text-left text-sm">
-                  Your sitter account is now pending admin approval. This
+              Your provider account is now pending admin approval. This
                   usually takes up to <strong>{approvalWaitHours} hours</strong>
                   . We&apos;ll notify you by email once you&apos;re approved.
                 </p>
@@ -215,10 +231,15 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
                   Verify your email
                 </h3>
                 <p className="mt-2 text-sm text-gray-500">
-                  We&apos;ve sent a 6-digit code to{" "}
+                  {emailDeliveryFailed ? "A 6-digit code could not be sent to " : "We sent a 6-digit code to "}
                   <span className="font-medium text-gray-700">{regEmail}</span>.
-                  Enter it below to continue.
+                  {!emailDeliveryFailed && " Enter it below to continue."}
                 </p>
+                {emailDeliveryFailed && (
+                  <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-left text-sm text-red-700">
+                    {resumedExistingAccount ? "Your unverified account is saved" : "Your account is saved"}, but the email service rejected the sign-in credentials. The code was not delivered. Fix the SMTP settings, then select Resend code.
+                  </p>
+                )}
               </div>
 
               <form onSubmit={onVerify} className="step-fade w-full space-y-6">
@@ -411,16 +432,16 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
                         Hourly Rate
                       </label>
                       <p className="mt-2 border-b-2 border-gray-300 pb-3 text-base text-gray-800">
-                        {formData.hourlyRate || "-"}
+                        £{formData.hourlyRate || "-"}/hour
                       </p>
                     </div>
 
                     <div>
                       <label className="text-lg font-semibold text-gray-400">
-                        Comfortable with age group
+                        {categoryOptions.comfortableWithLabel}
                       </label>
                       <p className="mt-2 border-b-2 border-gray-300 pb-3 text-base text-gray-800">
-                        {formData.comfortableWithAgeGroup?.join(", ") || "-"}
+                        {formData.comfortableWith?.join(", ") || "-"}
                       </p>
                     </div>
 
@@ -494,7 +515,7 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
                   <div className="step-fade mb-10">
                     <div className="mb-5 flex items-center justify-between gap-4">
                       <h4 className="text-lg font-semibold text-gray-400">
-                        Declared Credentials &amp; Documents
+                        Service declarations
                       </h4>
 
                       <button
@@ -514,6 +535,10 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
                         </div>
                       ))}
                     </div>
+
+                    <p className="mt-3 text-xs text-gray-500">
+                      These are your own statements. JungleZone has not checked or verified them.
+                    </p>
                   </div>
                 )}
 
@@ -530,8 +555,8 @@ const ReviewSubmitStep = ({ onBack, goToStep, formData }) => {
                     does not carry out DBS or background checks, does not verify
                     references or qualifications, and does not supervise
                     childcare arrangements. All childcare arrangements, checks,
-                    and payments are the sole responsibility of the users
-                    involved.
+                    and payments made outside JungleZone checkout are the
+                    responsibility of the users involved. Hourly service payments are arranged directly between you and the service taker. Your platform access fee is separate.
                   </p>
                 </div>
 

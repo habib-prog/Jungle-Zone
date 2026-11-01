@@ -111,8 +111,7 @@ const AboutUsPage = () => {
                 Direct Agreements
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Rates, hours, and payments are agreed and transacted directly
-                between parents and babysitters with no childcare commission.
+                Providers set their own hourly rates. Service takers and providers agree availability, service details and payment directly; JungleZone charges platform access fees.
               </p>
             </div>
           </div>
@@ -138,7 +137,7 @@ const AboutUsPage = () => {
               Browse Babysitters
             </Link>
             <Link
-              href="/register-babysitter"
+              href="/register"
               className="px-8 py-3.5 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-all text-sm sm:text-base"
             >
               Join as a Babysitter

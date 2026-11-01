@@ -99,7 +99,7 @@ export const verifiedEmail = ({ name = "there" }) => {
   return wrap(inner);
 };
 
-export const sitterApprovedEmail = ({ name = "there" }) => {
+export const sitterApprovedEmail = ({ name = "there", serviceName = "Babysitter" }) => {
   const inner = `
     <tr>
       <td style="background:${BRAND};padding:22px 32px;border-radius:16px 16px 0 0;">
@@ -111,8 +111,8 @@ export const sitterApprovedEmail = ({ name = "there" }) => {
         <div style="width:64px;height:64px;border-radius:50%;background:#eaf5e1;display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px;">🎉</div>
         <h1 style="margin:0 0 8px;font-size:22px;color:#1f2933;font-weight:700;">You're approved!</h1>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#52606d;">
-          Hi ${name}, great news! Your JungleZone babysitter account has been approved by our team.
-          You can now sign in and start receiving bookings from parents.
+          Hi ${name}, great news! Your JungleZone ${serviceName.toLowerCase()} provider account has been approved.
+          You can now sign in and connect with clients.
         </p>
         <a href="https://junglezone.uk/login" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Go to login</a>
       </td>
@@ -123,7 +123,7 @@ export const sitterApprovedEmail = ({ name = "there" }) => {
   return wrap(inner);
 };
 
-export const sitterRejectedEmail = ({ name = "there" }) => {
+export const sitterRejectedEmail = ({ name = "there", serviceName = "Babysitter" }) => {
   const inner = `
     <tr>
       <td style="background:${BRAND};padding:22px 32px;border-radius:16px 16px 0 0;">
@@ -135,7 +135,7 @@ export const sitterRejectedEmail = ({ name = "there" }) => {
         <div style="width:64px;height:64px;border-radius:50%;background:#fdeaea;display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px;">⚠️</div>
         <h1 style="margin:0 0 8px;font-size:22px;color:#1f2933;font-weight:700;">Application not approved</h1>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#52606d;">
-          Hi ${name}, unfortunately your JungleZone babysitter application could not be approved at this time.
+          Hi ${name}, unfortunately your JungleZone ${serviceName.toLowerCase()} application could not be approved at this time.
           If you think this was a mistake, please contact our support team.
         </p>
         <a href="mailto:support@junglezone.co.uk" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border-radius:10px;">Contact support</a>

@@ -14,7 +14,7 @@ export default function SafetyVerification() {
     },
     {
       title: "Direct Arrangements",
-      desc: "Agree on rates, hours, and working arrangements directly with independent babysitters.",
+      desc: "Review each provider's own hourly rate and agree availability, service details and payment directly with them.",
     },
   ];
 

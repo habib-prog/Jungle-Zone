@@ -56,6 +56,12 @@ export default function BlogsPage() {
   }, [searchQuery, selectedCategory]);
 
   // Filtered blogs
+  const availableCategories = [...new Set([
+    ...CATEGORIES.filter((category) => category !== "All"),
+    ...blogs.map((blog) => blog.category?.trim()).filter(Boolean),
+  ])].sort((a, b) => a.localeCompare(b));
+  const categoryOptions = ["All", ...availableCategories];
+
   const filteredBlogs = blogs.filter((blog) => {
     const matchesCategory =
       selectedCategory === "All" || blog.category === selectedCategory;
@@ -118,7 +124,7 @@ export default function BlogsPage() {
         {/* Category Pills Filter */}
         <div className="mt-4 mb-8 -mx-4 overflow-x-auto px-4 pb-2 no-scrollbar scroll-smooth sm:mx-0 sm:mb-10 sm:px-0">
           <div className="flex min-w-max items-center gap-2 sm:flex-wrap sm:justify-center">
-            {CATEGORIES.map((category) => {
+            {categoryOptions.map((category) => {
               const isActive = selectedCategory === category;
               return (
                 <button

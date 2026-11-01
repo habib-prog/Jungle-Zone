@@ -22,6 +22,7 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const role = searchParams.get("role");
+    const serviceCategory = searchParams.get("serviceCategory");
     let categoryFilter = ["parent", "babysitter", "both"];
 
     if (role === "parent") {
@@ -30,10 +31,24 @@ export async function GET(req) {
       categoryFilter = ["babysitter", "both"];
     }
 
-    const plans = await subscriptionPlans.find({
+    const baseFilter = {
       isActive: true,
       category: { $in: categoryFilter },
-    }).sort({ price: 1, duration: 1 });
+    };
+
+    let plans;
+    if (["parent", "babysitter"].includes(role) && ["babysitting", "cleaning", "cooking"].includes(serviceCategory)) {
+      plans = await subscriptionPlans.find({
+        ...baseFilter,
+        $or: [
+          { serviceCategory },
+          { serviceCategory: "all" },
+          { serviceCategory: { $exists: false } },
+        ],
+      }).sort({ price: 1, duration: 1 });
+    } else {
+      plans = await subscriptionPlans.find(baseFilter).sort({ price: 1, duration: 1 });
+    }
 
     return NextResponse.json({ plans }, { status: 200 });
   } catch (error) {

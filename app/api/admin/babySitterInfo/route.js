@@ -1,8 +1,6 @@
 import { connectDB } from "@/config/db";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import { verifyAdmin } from "../auth";
-import { sendEmail } from "@/app/lib/mailer";
-import { sitterApprovedEmail, sitterRejectedEmail } from "@/app/lib/emailTemplates";
 
 export async function GET(req) {
   try {
@@ -41,44 +39,6 @@ export async function GET(req) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
-  }
-}
-
-export async function POST(req){
-  try {
-    await verifyAdmin();
-    await connectDB();
-
-    const { searchParams } = new URL(req.url);
-    const babysitterId = searchParams.get("babysitterId");
-    const action = searchParams.get("action");
-
-    if (!babysitterId || !["approve", "reject"].includes(action)) {
-      return Response.json({ error: "babysitterId and valid action required" }, { status: 400 });
-    }
-
-    const updateData = action === "approve" ? { isApproved: true } : { isApproved: false };
-    const updated = await BabySitterRegistration.findByIdAndUpdate(babysitterId, updateData, { new: true });
-
-    if (!updated) {
-      return Response.json({ error: "Babysitter not found" }, { status: 404 });
-    }
-
-    try {
-      await sendEmail({
-        to: updated.email,
-        subject: `Your JungleZone babysitter account was ${action === "approve" ? "approved" : "not approved"}`,
-        html: action === "approve"
-          ? sitterApprovedEmail({ name: updated.fullName || "there" })
-          : sitterRejectedEmail({ name: updated.fullName || "there" }),
-      });
-    } catch (mailErr) {
-      console.error("Failed to send approval email:", mailErr);
-    }
-
-    return Response.json({ message: `Babysitter ${action}d`, babysitter: updated });
   } catch (error) {
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }

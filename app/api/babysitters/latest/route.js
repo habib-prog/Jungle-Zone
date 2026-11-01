@@ -9,8 +9,17 @@ export async function GET(req) {
     const rawLimit = Number(searchParams.get("limit")) || 3;
     const limit = Math.min(Math.max(rawLimit, 1), 6);
     const zipCode = searchParams.get("zipCode");
+    const serviceCategory = searchParams.get("category") || "babysitting";
+    if (!["babysitting", "cleaning", "cooking"].includes(serviceCategory)) {
+      return Response.json({ error: "Invalid service category" }, { status: 400 });
+    }
 
-    const filter = { isApproved: true };
+    const filter = {
+      isApproved: true,
+      $or: serviceCategory === "babysitting"
+        ? [{ serviceCategory }, { serviceCategory: { $exists: false } }]
+        : [{ serviceCategory }],
+    };
 
     if (zipCode) {
       const normalizedZipCode = zipCode.replace(/\s+/g, "").trim();

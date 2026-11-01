@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const paymentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, required: true },
   category: { type: String, enum: ["parent", "babysitter"], required: true },
+  serviceCategory: { type: String, enum: ["babysitting", "cleaning", "cooking"], default: null },
   subscriptionPlanId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlans', required: true },
   planName: { type: String, required: true },
   amount: { type: Number, required: true },

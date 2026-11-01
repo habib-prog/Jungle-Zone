@@ -84,6 +84,15 @@ export async function POST(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const paidServiceCategory = normalizedRole === "babysitter"
+      ? (plan.serviceCategory && plan.serviceCategory !== "all"
+          ? plan.serviceCategory
+          : userDoc.serviceCategory || "babysitting")
+      : (plan.serviceCategory && plan.serviceCategory !== "all" ? plan.serviceCategory : null);
+    if (normalizedRole === "babysitter" && plan.serviceCategory && plan.serviceCategory !== "all" && userDoc.serviceCategory !== plan.serviceCategory) {
+      return NextResponse.json({ error: "This price is for a different provider service" }, { status: 403 });
+    }
+
     const isTestMode = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith("sk_test_");
 
     const getStripeProductId = async () => {
@@ -95,6 +104,7 @@ export async function POST(req) {
         metadata: {
           planId: plan._id.toString(),
           category: plan.category,
+          serviceCategory: paidServiceCategory || "",
         },
       };
       if (plan.description && plan.description.trim()) {
@@ -119,17 +129,16 @@ export async function POST(req) {
 
     const createStripePrice = async (productId, cycle) => {
       const unitAmount = getPriceAmount();
-      const recurringAmount =
-        cycle === "yearly" ? Math.round(unitAmount * 12 * 0.75) : unitAmount;
 
       const price = await stripe.prices.create({
         product: productId,
-        unit_amount: recurringAmount,
+        unit_amount: unitAmount,
         currency: "gbp",
         recurring: { interval: cycle === "yearly" ? "year" : "month" },
         metadata: {
           planId: plan._id.toString(),
           billingCycle: cycle,
+          serviceCategory: paidServiceCategory || "",
         },
       });
 
@@ -152,14 +161,27 @@ export async function POST(req) {
       : (billingCycle === "yearly" ? "stripeYearlyPriceId" : "stripeMonthlyPriceId");
     
     let priceId = plan[priceField];
+    if (priceId) {
+      try {
+        const existingStripePrice = await stripe.prices.retrieve(priceId);
+        const expectedInterval = billingCycle === "yearly" ? "year" : "month";
+        if (
+          !existingStripePrice.active ||
+          existingStripePrice.unit_amount !== getPriceAmount() ||
+          existingStripePrice.currency !== "gbp" ||
+          existingStripePrice.recurring?.interval !== expectedInterval
+        ) {
+          priceId = null;
+        }
+      } catch {
+        priceId = null;
+      }
+    }
     if (!priceId) {
       priceId = await createStripePrice(productId, billingCycle);
     }
 
-    const finalAmount =
-      billingCycle === "yearly"
-        ? Math.round(getPriceAmount() * 12 * 0.75) / 100
-        : getPriceAmount() / 100;
+    const finalAmount = getPriceAmount() / 100;
 
     const hasActiveTrial =
       userDoc.subscription === "trial" &&
@@ -197,6 +219,7 @@ export async function POST(req) {
           planId: plan._id.toString(),
           planName: plan.name,
           category: normalizedRole,
+          serviceCategory: paidServiceCategory || "",
           billingCycle,
         },
       },
@@ -205,6 +228,7 @@ export async function POST(req) {
         planId: plan._id.toString(),
         planName: plan.name,
         category: normalizedRole,
+        serviceCategory: paidServiceCategory || "",
         billingCycle,
       },
     };
@@ -220,6 +244,7 @@ export async function POST(req) {
       userId: user.id,
       category: normalizedRole,
       subscriptionPlanId: plan._id,
+      serviceCategory: paidServiceCategory,
       planName: plan.name,
       amount: finalAmount,
       currency: "gbp",

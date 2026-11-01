@@ -9,8 +9,48 @@ export async function GET(req) {
     await verifyAdmin();
     await connectDB();
 
-    const pending = await BabySitterRegistration.find({ isApproved: false }).select("-password").sort({ createdAt: -1 });
-    return Response.json(pending);
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get("category");
+    const page = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(24, Math.max(1, Number.parseInt(searchParams.get("limit") || "8", 10)));
+    if (category && !["all", "babysitting", "cleaning", "cooking"].includes(category)) {
+      return Response.json({ error: "Invalid service category" }, { status: 400 });
+    }
+    const categoryFilter = (value) => {
+      const categoryQuery = { isApproved: false };
+      if (value === "babysitting") {
+        categoryQuery.$or = [
+          { serviceCategory: "babysitting" },
+          { serviceCategory: { $exists: false } },
+          { serviceCategory: null },
+        ];
+      } else if (value !== "all") {
+        categoryQuery.serviceCategory = value;
+      }
+      return categoryQuery;
+    };
+
+    const [pending, totalCount, allCount, counts] = await Promise.all([
+      BabySitterRegistration.find(categoryFilter(category || "all"))
+        .select("-password")
+        .sort({ createdAt: -1, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      BabySitterRegistration.countDocuments(categoryFilter(category || "all")),
+      BabySitterRegistration.countDocuments({ isApproved: false }),
+      Promise.all(["babysitting", "cleaning", "cooking"].map(async (value) => [
+        value,
+        await BabySitterRegistration.countDocuments(categoryFilter(value)),
+      ])),
+    ]);
+    return Response.json({
+      requests: pending,
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+      counts: { all: allCount, ...Object.fromEntries(counts) },
+    });
   } catch (error) {
     return Response.json({ error: error.message || "Server error" }, { status: error.message?.includes("Unauthorized") ? 403 : 500 });
   }
@@ -28,6 +68,12 @@ export async function POST(req) {
       return Response.json({ error: "babysitterId and action required" }, { status: 400 });
     }
 
+    const categoryLabel = (category) => ({
+      babysitting: "Babysitter",
+      cleaning: "Cleaner",
+      cooking: "Cook / Chef",
+    }[category] || "Babysitter");
+
     if (action === "approve") {
       const updated = await BabySitterRegistration.findByIdAndUpdate(
         babysitterId,
@@ -40,8 +86,8 @@ export async function POST(req) {
       try {
         await sendEmail({
           to: updated.email,
-          subject: "Your JungleZone babysitter account was approved",
-          html: sitterApprovedEmail({ name: updated.fullName || "there" }),
+          subject: `Your JungleZone ${categoryLabel(updated.serviceCategory).toLowerCase()} account was approved`,
+          html: sitterApprovedEmail({ name: updated.fullName || "there", serviceName: categoryLabel(updated.serviceCategory) }),
         });
       } catch (mailErr) {
         console.error("Failed to send approval email:", mailErr);
@@ -57,8 +103,8 @@ export async function POST(req) {
       try {
         await sendEmail({
           to: existing.email,
-          subject: "Your JungleZone babysitter account was not approved",
-          html: sitterRejectedEmail({ name: existing.fullName || "there" }),
+          subject: `Your JungleZone ${categoryLabel(existing.serviceCategory).toLowerCase()} account was not approved`,
+          html: sitterRejectedEmail({ name: existing.fullName || "there", serviceName: categoryLabel(existing.serviceCategory) }),
         });
       } catch (mailErr) {
         console.error("Failed to send rejection email:", mailErr);

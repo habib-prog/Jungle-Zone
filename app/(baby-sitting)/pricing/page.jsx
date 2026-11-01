@@ -43,6 +43,7 @@ const ActionModal = ({ open, onClose, title, children }) => {
 /* ─── Main page ─── */
 const SubscriptionPage = () => {
   const [selectedRole, setSelectedRole] = useState("parent");
+  const [selectedServiceCategory, setSelectedServiceCategory] = useState("babysitting");
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -61,7 +62,7 @@ const SubscriptionPage = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/parent/subscription?role=${selectedRole}`,
+          `/api/parent/subscription?role=${selectedRole}&serviceCategory=${selectedServiceCategory}`,
         );
         const { plans } = await res.json();
         setPlans(plans || []);
@@ -72,7 +73,7 @@ const SubscriptionPage = () => {
       }
     };
     fetchPlans();
-  }, [selectedRole]);
+  }, [selectedRole, selectedServiceCategory]);
 
   /* fetch user profile + active subscription */
   const fetchUserState = useCallback(async () => {
@@ -90,6 +91,10 @@ const SubscriptionPage = () => {
         profile = d.sitter;
       }
       setUserProfile(profile);
+      if (profile) {
+        setSelectedRole(profile.role === "parent" ? "parent" : "babysitter");
+        if (profile.serviceCategory) setSelectedServiceCategory(profile.serviceCategory);
+      }
 
       // Fetch active subscription
       const subRes = await fetch("/api/payment/subscription");
@@ -213,34 +218,56 @@ const SubscriptionPage = () => {
     (p) => p.category === selectedRole || p.category === "both",
   );
 
-  const monthlyPlanObj =
-    filteredPlans.find((p) => p.name.toLowerCase() === "monthly") ||
-    filteredPlans[0];
-  const yearlyPlanObj =
-    filteredPlans.find((p) => p.name.toLowerCase() === "yearly") ||
-    filteredPlans[1];
+  const getBillingCycle = (plan) => {
+    if (/year|annual/i.test(plan.name)) return "yearly";
+    if (/month/i.test(plan.name)) return "monthly";
+    if (plan.durationUnit === "years" || Number(plan.duration) >= 12) return "yearly";
+    if (plan.durationUnit === "months" && Number(plan.duration) > 0) return "monthly";
+    return null;
+  };
+  const getPlanForCycle = (cycle) => {
+    const cyclePlans = filteredPlans.filter((plan) => getBillingCycle(plan) === cycle);
+    const specificPlans = cyclePlans.filter(
+      (plan) => plan.serviceCategory === selectedServiceCategory,
+    );
+    const sharedPlans = cyclePlans.filter(
+      (plan) => !plan.serviceCategory || plan.serviceCategory === "all",
+    );
+    return (specificPlans.length ? specificPlans : sharedPlans)
+      .sort((a, b) => Number(a.price) - Number(b.price))[0] || null;
+  };
+  const monthlyPlanObj = getPlanForCycle("monthly");
+  const yearlyPlanObj = getPlanForCycle("yearly");
 
-  const monthlyPrice = monthlyPlanObj?.price || 2.99;
-  const yearlyPrice = yearlyPlanObj?.price || 26.91;
-  const savings = monthlyPrice * 12 - yearlyPrice;
+  const getDisplayedPrice = (plan) => {
+    if (!plan) return null;
+    const price = Number(plan.price) || 0;
+    const finalPrice = plan.isDiscounted && plan.discountPercentage
+      ? price * (1 - plan.discountPercentage / 100)
+      : price;
+    return Math.round(finalPrice * 100) / 100;
+  };
+  const monthlyPrice = getDisplayedPrice(monthlyPlanObj);
+  const yearlyPrice = getDisplayedPrice(yearlyPlanObj);
+  const savings = monthlyPrice != null && yearlyPrice != null ? monthlyPrice * 12 - yearlyPrice : null;
 
   const data = {
-    parent: { name: "Parent", icon: "👨‍👩‍👧" },
-    babysitter: { name: "Babysitter", icon: "👩‍🍼" },
+    parent: { name: "Service Taker", icon: "🧑‍💼" },
+    babysitter: { name: "Service Provider", icon: "🧰" },
   };
 
   const features = {
     parent: [
-      "Discover independent babysitters near you",
-      "UNLIMITED babysitter searches & profile browsing",
-      "Direct messaging and contact details reveal",
+      "Discover independent providers across service categories",
+      "Browse and compare provider profiles",
+      "Connect directly with the provider you choose",
       "Online subscription management & cancellation",
     ],
     babysitter: [
-      "Connect with local families",
-      "Profile visibility boost in your area",
-      "Pro Member badge on your profile",
-      "Direct messaging access with parents",
+      "Create a profile for your selected service",
+      "Connect with customers looking for your service",
+      "Show your profile to local customers",
+      "Manage your service provider access subscription",
     ],
   };
 
@@ -348,29 +375,14 @@ const SubscriptionPage = () => {
             Simple, Transparent Pricing
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Select your role to see the subscription options available.
+            Choose whether you want to find a provider or offer a service. Admin-set platform access prices are shown below.
           </p>
         </div>
 
-        {/* Platform Fees Notice */}
-        <div className="mb-10 max-w-4xl mx-auto rounded-2xl bg-amber-50 border border-amber-200 p-5 sm:p-6 text-xs sm:text-sm text-gray-700 leading-relaxed shadow-xs">
-          <h3 className="font-bold text-amber-900 text-sm sm:text-base mb-2">
-            Platform Fees Notice
-          </h3>
-          <p className="mb-2">
-            JungleZone may charge a membership, subscription or platform access
-            fee for access to certain features.
-          </p>
-          <p className="mb-2">
-            Any fee paid to JungleZone is solely for access to or use of the
-            JungleZone platform and its features. It is not payment for
-            childcare services. JungleZone does not receive or hold payments for
-            childcare services provided by babysitters.
-          </p>
-          <p>
-            Babysitters determine their own rates. Parents and babysitters agree
-            childcare fees and payment arrangements directly with each other.
-          </p>
+        <div className="mb-10 mx-auto max-w-4xl rounded-2xl border border-amber-200 bg-amber-50 p-5 text-xs leading-relaxed text-gray-700 shadow-xs sm:p-6 sm:text-sm">
+          <h3 className="mb-2 text-sm font-bold text-amber-900 sm:text-base">Platform access fees</h3>
+          <p className="mb-2">The Service Taker price gives customers access to find and connect with providers. The Service Provider price gives providers access to reach customers.</p>
+          <p>Hourly service rates are set by each provider and agreed directly with the customer. JungleZone charges for platform access, not for the provider&apos;s hourly service.</p>
         </div>
 
         {/* Trial banner */}
@@ -389,9 +401,8 @@ const SubscriptionPage = () => {
               you subscribe to a paid plan now, you will pay{" "}
               <strong className="text-gray-900">£0.00 today</strong>, and you
               will only be charged{" "}
-              <strong className="text-gray-900">£2.99/month</strong> or{" "}
-              <strong className="text-gray-900">£26.91/year</strong> when your
-              trial ends, unless you cancel beforehand.
+              <strong className="text-gray-900">{monthlyPrice == null ? "the monthly rate shown above" : `£${monthlyPrice.toFixed(2)}/month`}</strong> or{" "}
+              <strong className="text-gray-900">{yearlyPrice == null ? "the yearly rate shown above" : `£${yearlyPrice.toFixed(2)}/year`}</strong> when your trial ends, unless you cancel beforehand.
             </div>
           </div>
         )}
@@ -430,6 +441,24 @@ const SubscriptionPage = () => {
           </div>
         </div>
 
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-2">
+            <span className="mr-1 text-sm font-medium text-gray-600">Choose a service:</span>
+            {[
+              ["babysitting", "Babysitting"],
+              ["cleaning", "Cleaning"],
+              ["cooking", "Cooking"],
+            ].map(([service, label]) => (
+              <button
+                key={service}
+                type="button"
+                onClick={() => setSelectedServiceCategory(service)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${selectedServiceCategory === service ? "border-brandColor bg-brandColor text-white" : "border-gray-200 bg-white text-gray-600 hover:border-brandColor"}`}
+              >
+                {label}
+              </button>
+            ))}
+        </div>
+
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {/* Monthly Card */}
@@ -443,7 +472,7 @@ const SubscriptionPage = () => {
                 <div className="flex flex-col items-center justify-center mb-4">
                   <div className="flex items-center justify-center">
                     <span className="text-5xl font-bold text-gray-900">
-                      £{monthlyPrice.toFixed(2)}
+                      {monthlyPrice == null ? "Not set" : `£${monthlyPrice.toFixed(2)}`}
                     </span>
                     <span className="text-gray-500 text-lg ml-1">/month</span>
                   </div>
@@ -470,7 +499,8 @@ const SubscriptionPage = () => {
               </div>
             </div>
             <div className="p-8 pt-0">
-              <PlanButton
+                  {!monthlyPlanObj && <p className="mb-3 text-center text-xs text-amber-700">This service does not have a monthly price yet.</p>}
+                  <PlanButton
                 billingCycle="monthly"
                 planId={monthlyPlanObj?._id}
                 baseColor="bg-brandColor"
@@ -487,18 +517,18 @@ const SubscriptionPage = () => {
               </div>
               <div className="bg-linear-to-r from-[#ff9800] to-[#ffb74d] p-6 text-white text-center">
                 <h3 className="text-xl font-bold mb-1">Yearly</h3>
-                <p className="opacity-90 text-sm">Billed annually (25% off)</p>
+                <p className="opacity-90 text-sm">Pay once per year</p>
               </div>
               <div className="p-8 text-center pb-2">
                 <div className="flex flex-col items-center justify-center mb-2">
                   <div className="flex items-center justify-center">
                     <span className="text-5xl font-bold text-gray-900">
-                      £{yearlyPrice.toFixed(2)}
+                      {yearlyPrice == null ? "Not set" : `£${yearlyPrice.toFixed(2)}`}
                     </span>
                     <span className="text-gray-500 text-lg ml-1">/year</span>
                   </div>
                   <p className="text-gray-500 text-sm mt-1">
-                    £{(yearlyPrice / 12).toFixed(2)} per month
+                    {yearlyPrice == null ? "Yearly price unavailable" : `£${(yearlyPrice / 12).toFixed(2)} per month`}
                   </p>
                   {showTrialBadge && (
                     <span className="mt-2 inline-block px-3 py-1 bg-green-50 text-brandColor text-xs font-semibold rounded-full border border-green-200">
@@ -508,9 +538,11 @@ const SubscriptionPage = () => {
                     </span>
                   )}
                 </div>
-                <div className="mb-4 inline-flex items-center gap-1 bg-green-100 text-brandColor px-3 py-1 rounded-full text-sm font-medium">
-                  <Check size={16} /> You save £{savings.toFixed(2)}!
-                </div>
+                {savings != null && savings > 0 && (
+                  <div className="mb-4 inline-flex items-center gap-1 bg-green-100 text-brandColor px-3 py-1 rounded-full text-sm font-medium">
+                    <Check size={16} /> You save £{savings.toFixed(2)}!
+                  </div>
+                )}
                 <ul className="space-y-3 mb-8 text-left">
                   {features[selectedRole].map((f, i) => (
                     <li key={i} className="flex items-start gap-3">
@@ -526,6 +558,7 @@ const SubscriptionPage = () => {
               </div>
             </div>
             <div className="p-8 pt-0">
+              {!yearlyPlanObj && <p className="mb-3 text-center text-xs text-amber-700">This service does not have a yearly price yet.</p>}
               <PlanButton
                 billingCycle="yearly"
                 planId={yearlyPlanObj?._id}
@@ -639,7 +672,7 @@ const SubscriptionPage = () => {
         title="Switch Billing Cycle"
       >
         <p className="text-sm text-gray-600 font-poppins mb-2">
-          Your current plan will be <strong>cancelled</strong> and you'll be
+          Your current plan will be <strong>cancelled</strong> and you&apos;ll be
           charged for the new{" "}
           <strong className="capitalize">{modal?.billingCycle}</strong> plan
           immediately.

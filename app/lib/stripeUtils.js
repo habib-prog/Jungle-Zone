@@ -44,6 +44,7 @@ export const fulfillSubscription = async ({
   const category = metadata?.category;
   const planId = metadata?.planId;
   const planName = metadata?.planName;
+  const serviceCategory = metadata?.serviceCategory || payment?.serviceCategory || null;
   const billingCycle = metadata?.billingCycle || "monthly";
 
   // If no payment was found, but we have metadata, locate the pending payment record
@@ -86,6 +87,9 @@ export const fulfillSubscription = async ({
     console.error("[Fulfillment] Failed: Plan not found in DB:", finalPlanId);
     return;
   }
+  const recordedAmount = Math.round(
+    plan.price * (plan.isDiscounted && plan.discountPercentage ? 1 - plan.discountPercentage / 100 : 1) * 100,
+  ) / 100;
 
   // 4. Calculate start & expiry dates
   let startDate = new Date();
@@ -191,9 +195,10 @@ export const fulfillSubscription = async ({
     const newPayment = await Payment.create({
       userId: finalUserId,
       category: finalCategory,
+      serviceCategory,
       subscriptionPlanId: finalPlanId,
       planName: finalPlanName,
-      amount: plan.price,
+      amount: recordedAmount,
       currency: "gbp",
       stripePaymentIntentId: paymentIntentId,
       stripeSessionId: stripeSessionId,

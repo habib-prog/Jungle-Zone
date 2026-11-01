@@ -17,7 +17,7 @@ const page = () => {
   ];
 
   return (
-    <DashboardLayout items={sideNav_items} title="Babysitter Dashboard" />
+    <DashboardLayout items={sideNav_items} title="Provider Dashboard" />
   );
 };
 

@@ -44,7 +44,7 @@ const Footer = () => {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/register-babysitter"
+              href="/register"
               className="inline-flex items-center justify-center rounded-full border border-brandColor px-7 py-3.5 text-base font-semibold text-brandColor transition hover:bg-brandColor hover:text-white"
             >
               Become a provider
@@ -120,7 +120,7 @@ const Footer = () => {
         <div className="container space-y-5 py-10 text-sm leading-7 text-gray-600">
           <p>
             <strong className="font-semibold text-gray-900">Platform Notice:</strong>{" "}
-            JungleZone is an online directory and introduction service. It does not check, verify or vet any provider, does not employ, engage or supervise providers, does not supply the services itself, does not set prices or guarantee any job, and does not take payment for jobs or commission. Providers are independent, self-employed people or businesses, and anything a provider says about themselves is their own statement. Clients should carry out their own checks before hiring. Arrangements, checks and payments are the sole responsibility of the users involved.
+            JungleZone is an online directory and introduction service. It does not check, verify or vet any provider, employ or supervise providers, supply services itself, or guarantee any job. Providers set their own hourly rates, and users agree service arrangements and payments directly. JungleZone charges separate platform access fees. Providers are independent, self-employed people or businesses, and anything a provider says about themselves is their own statement. Clients should carry out their own checks before hiring. Service arrangements and any payments made outside JungleZone checkout remain the users&apos; responsibility.
           </p>
           <div className="flex flex-col gap-3 border-t border-gray-200 pt-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-1">

@@ -328,8 +328,8 @@ const Page = () => {
                     does not carry out DBS or background checks, does not verify
                     references or qualifications, and does not supervise
                     childcare arrangements. All childcare arrangements, checks,
-                    and payments are the sole responsibility of the users
-                    involved.
+                    and payments made outside JungleZone checkout are the
+                    responsibility of the users involved. Hourly service payments are arranged directly with the provider. Your JungleZone platform access fee is separate.
                   </p>
                 </div>
 

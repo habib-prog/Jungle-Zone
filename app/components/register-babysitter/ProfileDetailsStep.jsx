@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { Button, Select } from "antd";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import gsap from "gsap";
+import { getProviderCategoryOptions } from "@/app/lib/providerCategoryOptions";
 
 const getDobError = (value) => {
   if (!value) return "";
@@ -19,6 +20,7 @@ const getDobError = (value) => {
 
 const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
   const sectionRef = useRef(null);
+  const categoryOptions = getProviderCategoryOptions(formData.serviceCategory);
 
   const dobError = getDobError(formData.dateOfBirth);
 
@@ -30,7 +32,7 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
     ? "Post code must contain letters and numbers only"
     : "";
 
-  const expError = formData.yearsOfExperience && (!/^\d+$/.test(formData.yearsOfExperience) || Number(formData.yearsOfExperience) < 0)
+  const expError = formData.yearsOfExperience && (!Number.isFinite(Number(formData.yearsOfExperience)) || Number(formData.yearsOfExperience) < 0)
     ? "Experience must be a positive number of years"
     : "";
 
@@ -50,9 +52,8 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
     formData.languages?.length > 0 &&
     formData.yearsOfExperience !== "" && !expError &&
     formData.hourlyRate !== "" && !rateError &&
-    formData.comfortableWithAgeGroup?.length > 0 &&
+    formData.comfortableWith?.length > 0 &&
     formData.skills?.length > 0 &&
-    formData.preferences?.length > 0 &&
     formData.description && !bioError;
 
   useEffect(() => {
@@ -219,45 +220,39 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                   )}
               </div>
 
-              {/* ========== hourly rate ========== */}
+              {/* ========== provider hourly rate ========== */}
               <div className="step-fade">
                 <label className="mb-2 block text-lg font-semibold text-gray-400">
-                  Hourly rate
+                  Your hourly rate
                 </label>
-                  <input
-                    type="number"
-                    placeholder="Enter your hourly rate"
-                    value={formData.hourlyRate}
-                    onChange={(e) =>
-                      updateFormData({ hourlyRate: e.target.value })
-                    }
-                    className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
-                  />
-                  {rateError && (
-                    <p className="mt-1 text-sm text-red-500 font-poppins">{rateError}</p>
-                  )}
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Set your hourly service rate"
+                  value={formData.hourlyRate}
+                  onChange={(e) => updateFormData({ hourlyRate: e.target.value })}
+                  className="h-14 w-full border-b-2 border-gray-400 bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
+                />
+                <p className="mt-1 text-xs text-gray-500">You set this rate; customers arrange payment with you directly.</p>
+                {rateError && <p className="mt-1 text-sm text-red-500 font-poppins">{rateError}</p>}
               </div>
 
-              {/* ========== kids age group ========== */}
+              {/* ========== service comfort ========== */}
               <div className="step-fade">
                 <label className="mb-2 block text-lg font-semibold text-gray-400">
-                  Comfortable with age group
+                  {categoryOptions.comfortableWithLabel}
                 </label>
                 <Select
                   mode="multiple"
                   size="large"
-                  placeholder="Select age group"
+                  placeholder={categoryOptions.comfortableWithPlaceholder}
                   className="w-full"
-                  value={formData.comfortableWithAgeGroup}
+                  value={formData.comfortableWith}
                   onChange={(value) =>
-                    updateFormData({ comfortableWithAgeGroup: value })
+                    updateFormData({ comfortableWith: value })
                   }
-                  options={[
-                    { value: "Baby", label: "Baby" },
-                    { value: "Toddler", label: "Toddler" },
-                    { value: "Preschool", label: "Preschooler" },
-                    { value: "Grade School", label: "Grade schooler" },
-                  ]}
+                  options={categoryOptions.comfortableWith.map((item) => ({ value: item, label: item }))}
                 />
               </div>
 
@@ -273,21 +268,14 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                   className="w-full"
                   value={formData.skills}
                   onChange={(value) => updateFormData({ skills: value })}
-                  options={[
-                    { value: "Drawing", label: "Drawing" },
-                    { value: "Reading", label: "Reading" },
-                    { value: "Music", label: "Music" },
-                    { value: "Storytelling", label: "Storytelling" },
-                    { value: "Homework Help", label: "Homework Help" },
-                    { value: "Light Cooking", label: "Light Cooking" },
-                  ]}
+                  options={categoryOptions.skills.map((item) => ({ value: item, label: item }))}
                 />
               </div>
 
               {/* ========== preferences ========== */}
               <div className="step-fade">
                 <label className="mb-2 block text-lg font-semibold text-gray-400">
-                  Preferences
+                  Preferences (optional)
                 </label>
                 <Select
                   mode="multiple"
@@ -296,14 +284,13 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
                   className="w-full"
                   value={formData.preferences}
                   onChange={(value) => updateFormData({ preferences: value })}
-                  options={[
-                    { value: "pets", label: "Comfortable with pets" },
-                    { value: "chores", label: "Light chores" },
-                    { value: "tutoring", label: "Tutoring" },
-                    { value: "special-needs", label: "Special needs care" },
-                  ]}
+                  options={categoryOptions.preferences.map((item) => ({ value: item, label: item }))}
                 />
               </div>
+
+              <p className="step-fade text-xs text-gray-500">
+                To continue, complete your date of birth, gender, location, postcode, languages, experience, hourly rate, at least one “comfortable with” option, at least one skill, and a bio of 10 or more characters. Preferences are optional.
+              </p>
 
               {/* ========== bio ========== */}
               <div className="step-fade">
@@ -327,8 +314,8 @@ const ProfileDetailsStep = ({ onNext, onBack, formData, updateFormData }) => {
               {/* ========== helper text ========== */}
               <div className="step-fade">
                 <p className="text-sm text-gray-500 sm:text-base">
-                  Add clear and honest details so parents can understand your
-                  experience and profile better.
+                  Add clear and honest details so clients can understand your
+                  experience, work types, and preferences.
                 </p>
               </div>
             </div>

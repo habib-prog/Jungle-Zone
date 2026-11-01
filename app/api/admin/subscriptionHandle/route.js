@@ -28,6 +28,7 @@ export async function POST(req) {
     const {
       name,
       category,
+      serviceCategory,
       description,
       price,
       duration,
@@ -50,6 +51,10 @@ export async function POST(req) {
       return Response.json({ error: "Invalid category" }, { status: 400 });
     }
 
+    if (serviceCategory && !["all", "babysitting", "cleaning", "cooking"].includes(serviceCategory)) {
+      return Response.json({ error: "Invalid serviceCategory" }, { status: 400 });
+    }
+
     if (durationUnit && !["free", "months", "years"].includes(durationUnit)) {
       return Response.json({ error: "Invalid durationUnit" }, { status: 400 });
     }
@@ -65,6 +70,7 @@ export async function POST(req) {
     const newPlan = await subscriptionPlans.create({
       name,
       category,
+      serviceCategory: serviceCategory || "all",
       description: description || "",
       price,
       duration,
@@ -103,6 +109,7 @@ export async function PUT(req) {
     const allowedFields = [
       "name",
       "category",
+      "serviceCategory",
       "description",
       "price",
       "duration",
@@ -129,10 +136,31 @@ export async function PUT(req) {
     }
 
     if (
+      updateData.serviceCategory &&
+      !["all", "babysitting", "cleaning", "cooking"].includes(updateData.serviceCategory)
+    ) {
+      return Response.json({ error: "Invalid serviceCategory" }, { status: 400 });
+    }
+
+    if (Object.hasOwn(updateFields, "serviceCategory")) {
+      updateData.serviceCategory = updateFields.serviceCategory || "all";
+    }
+
+    if (
       updateData.durationUnit &&
       !["free", "months", "years"].includes(updateData.durationUnit)
     ) {
       return Response.json({ error: "Invalid durationUnit" }, { status: 400 });
+    }
+
+    if (["price", "discountPercentage", "isDiscounted"].some((field) => updateData[field] !== undefined)) {
+      // Stripe prices are immutable, so changed admin pricing must get fresh IDs.
+      Object.assign(updateData, {
+        stripeMonthlyPriceId: null,
+        stripeYearlyPriceId: null,
+        stripeTestMonthlyPriceId: null,
+        stripeTestYearlyPriceId: null,
+      });
     }
 
     if (updateData.name) {
@@ -151,7 +179,7 @@ export async function PUT(req) {
     const updatedPlan = await subscriptionPlans.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!updatedPlan) {

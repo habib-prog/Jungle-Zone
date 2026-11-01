@@ -2,7 +2,7 @@ import { connectDB } from "@/config/db";
 import parentSchema from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import { verifyAdmin } from "../auth";
-import subscriptionSchema from "@/models/subscriptionSchema";
+import Payment from "@/models/paymentSchema";
 
 export async function GET(req) {
   try {
@@ -13,8 +13,11 @@ export async function GET(req) {
     const totalBabysitters = await BabySitterRegistration.countDocuments();
     const pendingApprovals = await BabySitterRegistration.countDocuments({ isApproved: false });
 
-    const totalSubscribed = await subscriptionSchema.find().select("price").lean();
-    const totalRevenue = totalSubscribed.reduce((sum, subscription) => sum + (subscription.price || 0), 0);
+    const [revenue] = await Payment.aggregate([
+      { $match: { status: "completed" } },
+      { $group: { _id: null, amount: { $sum: "$amount" } } },
+    ]);
+    const totalRevenue = revenue?.amount || 0;
 
     return Response.json({
       totalParents,

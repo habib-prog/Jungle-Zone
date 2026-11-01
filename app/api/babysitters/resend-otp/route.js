@@ -47,8 +47,8 @@ export async function POST(req) {
     } catch (mailErr) {
       console.error("Failed to send OTP email:", mailErr);
       return NextResponse.json(
-        { message: "Failed to send code. Please try again." },
-        { status: 500 },
+        { message: "Email delivery failed. Check the SMTP credentials; Gmail requires a valid app password." },
+        { status: 503 },
       );
     }
 

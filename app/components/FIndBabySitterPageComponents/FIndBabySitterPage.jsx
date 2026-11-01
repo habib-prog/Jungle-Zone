@@ -1,11 +1,11 @@
 import FIndChildCareBanner from "./FIndBabySitterBanner"
 import SearchChildCare from "./SearchBabySitter"
 
-const FIndBabySitterPage = () => {
+const FIndBabySitterPage = ({ category = "babysitting" }) => {
     return (
         <>
-            <FIndChildCareBanner />
-            <SearchChildCare />
+            <FIndChildCareBanner category={category} />
+            <SearchChildCare category={category} />
         </>
     )
 }

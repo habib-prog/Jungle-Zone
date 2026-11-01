@@ -9,6 +9,7 @@ import { sendEmail } from "@/app/lib/mailer";
 import { otpEmail } from "@/app/lib/emailTemplates";
 import { generateOtp, OTP_EXPIRY_MINUTES } from "@/app/lib/otp";
 import { saveProfilePhoto } from "@/app/lib/imageUpload";
+import { getProviderCategoryOptions } from "@/app/lib/providerCategoryOptions";
 
 export const runtime = "nodejs";
 
@@ -41,6 +42,7 @@ export async function POST(req) {
 
     const {
       fullName,
+      serviceCategory = "babysitting",
       email,
       phoneNumber,
       password,
@@ -56,12 +58,28 @@ export async function POST(req) {
       languages = [],
       yearsOfExperience,
       hourlyRate,
+      comfortableWith,
       comfortableWithAgeGroup,
       skills = [],
       availability = [],
       verificationDocs,
       preferences = [],
     } = mockReq.body;
+
+    if (!["babysitting", "cleaning", "cooking"].includes(serviceCategory)) {
+      return NextResponse.json({ error: "Please choose a valid service category" }, { status: 400 });
+    }
+
+    const selectedDeclarations = Array.isArray(verificationDocs)
+      ? verificationDocs
+      : typeof verificationDocs === "string"
+        ? verificationDocs.split(",").map((value) => value.trim()).filter(Boolean)
+        : [];
+    const requiredDeclarations = getProviderCategoryOptions(serviceCategory)
+      .declarations.filter((item) => item.required).map((item) => item.label);
+    if (!requiredDeclarations.every((declaration) => selectedDeclarations.includes(declaration))) {
+      return NextResponse.json({ error: "Please confirm all required service declarations" }, { status: 400 });
+    }
 
     if (
       !fullName ||
@@ -87,8 +105,9 @@ export async function POST(req) {
       );
     }
 
+    const normalizedEmail = String(email).trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 },
@@ -171,8 +190,46 @@ export async function POST(req) {
 
     await connectDB();
 
-    const existingUser = await BabySitterRegistration.findOne({ email });
+    const escapedEmail = normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const existingUser = await BabySitterRegistration.findOne({
+      email: { $regex: `^${escapedEmail}$`, $options: "i" },
+    });
     if (existingUser) {
+      if (!existingUser.isVerified) {
+        existingUser.otp = generateOtp();
+        existingUser.otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+        await existingUser.save();
+
+        let emailSent = true;
+        try {
+          await sendEmail({
+            to: normalizedEmail,
+            subject: "Your JungleZone verification code",
+            html: otpEmail({
+              name: existingUser.fullName || "there",
+              otp: existingUser.otp,
+              expiryMinutes: OTP_EXPIRY_MINUTES,
+            }),
+          });
+        } catch (mailErr) {
+          emailSent = false;
+          console.error("Failed to resend OTP during registration:", mailErr);
+        }
+
+        return NextResponse.json(
+          {
+            message: emailSent
+              ? "This email has an unverified account. A new verification code has been sent."
+              : "This email has an unverified account, but we could not send a new code. Check the email service settings, then use Resend code.",
+            requiresVerification: true,
+            emailSent,
+            resumedExistingAccount: true,
+            email: normalizedEmail,
+          },
+          { status: 200 },
+        );
+      }
+
       return NextResponse.json(
         { error: "Email already exists" },
         { status: 400 },
@@ -188,8 +245,9 @@ export async function POST(req) {
     );
 
     const newBabysitter = new BabySitterRegistration({
+      serviceCategory,
       fullName,
-      email,
+      email: normalizedEmail,
       phoneNumber,
       password: hashedPassword,
       profilePhoto: picturePath,
@@ -219,13 +277,18 @@ export async function POST(req) {
           : [],
       yearsOfExperience: Number(yearsOfExperience) || null,
       hourlyRate: Number(hourlyRate) || null,
-      comfortableWithAgeGroup: Array.isArray(comfortableWithAgeGroup)
-        ? comfortableWithAgeGroup
-        : typeof comfortableWithAgeGroup === "string"
-          ? comfortableWithAgeGroup
+      comfortableWith: Array.isArray(comfortableWith)
+        ? comfortableWith
+        : typeof comfortableWith === "string"
+          ? comfortableWith
               .split(",")
               .map((a) => a.trim())
               .filter(Boolean)
+          : [],
+      comfortableWithAgeGroup: Array.isArray(comfortableWithAgeGroup)
+        ? comfortableWithAgeGroup
+        : typeof comfortableWithAgeGroup === "string"
+          ? comfortableWithAgeGroup.split(",").map((value) => value.trim()).filter(Boolean)
           : [],
       skills: Array.isArray(skills)
         ? skills
@@ -239,14 +302,7 @@ export async function POST(req) {
         typeof availability === "string"
           ? JSON.parse(availability || "[]")
           : [],
-      verificationDocs: Array.isArray(verificationDocs)
-        ? verificationDocs
-        : typeof verificationDocs === "string"
-          ? verificationDocs
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
+      verificationDocs: selectedDeclarations,
       preferences: Array.isArray(preferences)
         ? preferences
         : typeof preferences === "string"
@@ -265,10 +321,11 @@ export async function POST(req) {
 
     const savedData = await newBabysitter.save();
 
+    let emailSent = true;
     try {
       await sendEmail({
         to: savedData.email,
-        subject: "Verify your JungleZone babysitter account",
+        subject: "Verify your JungleZone provider account",
         html: otpEmail({
           name: savedData.fullName || "there",
           otp: savedData.otp,
@@ -276,14 +333,18 @@ export async function POST(req) {
         }),
       });
     } catch (mailErr) {
+      emailSent = false;
       console.error("Failed to send OTP email:", mailErr);
     }
 
     return NextResponse.json(
       {
         message:
-          "Registration successful. Please verify your email to continue.",
+          emailSent
+            ? "Registration successful. Please verify your email to continue."
+            : "Your account was created, but we could not send the verification email. Check the email service settings, then use Resend code.",
         requiresVerification: true,
+        emailSent,
         email: savedData.email,
       },
       { status: 201 },
