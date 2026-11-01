@@ -41,7 +41,7 @@ export async function GET(req, context) {
       });
     }
 
-    if (!access.canUseFacilities) {
+    if (!access.hasPaidSubscription) {
       data.phoneNumber = "Hidden";
       data.email = "Hidden";
     }
@@ -52,7 +52,7 @@ export async function GET(req, context) {
         data,
         viewer: {
           ...access,
-          canSeeContact: access.canUseFacilities,
+          canSeeContact: access.hasPaidSubscription,
         },
       }),
       { status: 200 },

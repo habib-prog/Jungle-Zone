@@ -20,7 +20,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Typewriter from "./components/Home/Typewriter";
 import HeroStack from "./components/Home/HeroStack";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion, AccordionItem } from "@szhsin/react-accordion";
 import gsap from "gsap";
 import Footer from "./components/common/Footer";
@@ -30,7 +30,7 @@ import { faqData } from "./components/api/fakeApi";
 import { services, serviceHref } from "@/app/lib/services";
 
 export default function JungleZone() {
-  const [latestBabysitters, setLatestBabysitters] = useState([]);
+  const [featuredProviders, setFeaturedProviders] = useState({});
   const [loadingLatestBabysitters, setLoadingLatestBabysitters] =
     useState(false);
   const [postcode, setPostcode] = useState("");
@@ -38,6 +38,10 @@ export default function JungleZone() {
   const [serviceSlug, setServiceSlug] = useState(services[0].slug);
   const [checkTab, setCheckTab] = useState("babysitting");
   const [ctaTab, setCtaTab] = useState("get");
+  const [activeStep, setActiveStep] = useState(0);
+  const [stepsInView, setStepsInView] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const stepsSectionRef = useRef(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -58,51 +62,66 @@ export default function JungleZone() {
     return () => ctx.revert();
   }, []);
 
-  const fetchBabysitters = useCallback(
-    async (page = 1, searchPostcode = "") => {
+  useEffect(() => {
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotionPreference = () => setReducedMotion(motionPreference.matches);
+    updateMotionPreference();
+    motionPreference.addEventListener?.("change", updateMotionPreference);
+
+    const section = stepsSectionRef.current;
+    if (!section) return () => motionPreference.removeEventListener?.("change", updateMotionPreference);
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setStepsInView(entry.isIntersecting);
+    }, { threshold: 0.25 });
+    observer.observe(section);
+    return () => {
+      observer.disconnect();
+      motionPreference.removeEventListener?.("change", updateMotionPreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!stepsInView || reducedMotion) return;
+    const interval = window.setInterval(() => {
+      setActiveStep((current) => (current + 1) % 3);
+    }, 2000);
+    return () => window.clearInterval(interval);
+  }, [stepsInView, reducedMotion]);
+
+  const fetchFeaturedProviders = useCallback(
+    async (searchPostcode = "") => {
       try {
         setLoadingLatestBabysitters(true);
-        const params = new URLSearchParams({
-          page: String(page),
-          limit: "3",
-          category: serviceSlug,
-        });
-
-        if (searchPostcode.trim()) {
-          params.set("zipCode", searchPostcode.trim());
-        }
-
-        const res = await fetch(`/api/babysitters/latest?${params.toString()}`);
-        const result = await res.json();
-
-        if (res.ok) {
-          setLatestBabysitters(result.data || []);
-          setPostcodeError("");
-        } else {
-          setPostcodeError(
-            result.error || "Failed to fetch latest babysitters",
-          );
-          setLatestBabysitters([]);
-        }
+        const results = await Promise.all(services.map(async (service) => {
+          const params = new URLSearchParams({ limit: "3", category: service.slug });
+          if (searchPostcode.trim()) params.set("zipCode", searchPostcode.trim());
+          const response = await fetch(`/api/babysitters/latest?${params.toString()}`);
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || `Failed to fetch ${service.title.toLowerCase()}`);
+          return [service.slug, result.data || []];
+        }));
+        setFeaturedProviders(Object.fromEntries(results));
+        setPostcodeError("");
       } catch (error) {
-        setPostcodeError(error.message || "Failed to fetch latest babysitters");
-        setLatestBabysitters([]);
+        setPostcodeError(error.message || "Failed to fetch featured providers");
+        setFeaturedProviders({});
       } finally {
         setLoadingLatestBabysitters(false);
       }
     },
-    [serviceSlug],
+    [],
   );
 
   const selectedService = services.find((svc) => svc.slug === serviceSlug);
   // Auto-search 600ms after the user stops typing (or changes the service).
   useEffect(() => {
     const timer = setTimeout(
-      () => fetchBabysitters(1, postcode),
+      () => fetchFeaturedProviders(postcode),
       postcode.trim() ? 600 : 0,
     );
     return () => clearTimeout(timer);
-  }, [postcode, fetchBabysitters]);
+  }, [postcode, fetchFeaturedProviders]);
 
   return (
     <>
@@ -200,7 +219,7 @@ export default function JungleZone() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="scroll-mt-20 bg-[#07140b] py-20 text-white lg:py-28">
+      <section ref={stepsSectionRef} id="how-it-works" className="scroll-mt-20 bg-[#07140b] py-20 text-white lg:py-28">
         <div className="container grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-28">
@@ -221,49 +240,61 @@ export default function JungleZone() {
           </div>
 
           <ol className="divide-y divide-white/10 border-y border-white/10 lg:col-span-7">
-            <StepRow n="01" icon={Search} title="Search" desc="Choose a service and enter your postcode to find independent providers near you." />
-            <StepRow n="02" icon={UserCheck} title="Compare" desc="Browse profiles and message providers or request quotes. What a provider says about themselves is their own statement, and JungleZone has not checked it." />
-            <StepRow n="03" icon={CalendarCheck} title="Agree details" desc="Agree the hours, service details and payment directly with the provider." />
+            <StepRow active={!reducedMotion && stepsInView && activeStep === 0} n="01" icon={Search} title="Search" desc="Choose a service and enter your postcode to find independent providers near you." />
+            <StepRow active={!reducedMotion && stepsInView && activeStep === 1} n="02" icon={UserCheck} title="Compare" desc="Browse profiles and message providers or request quotes. What a provider says about themselves is their own statement, and JungleZone has not checked it." />
+            <StepRow active={!reducedMotion && stepsInView && activeStep === 2} n="03" icon={CalendarCheck} title="Agree details" desc="Agree the hours, service details and payment directly with the provider." />
           </ol>
         </div>
       </section>
 
-      {/* LATEST PROVIDERS */}
+      {/* FEATURED PROVIDERS BY SERVICE */}
       <section className="bg-white py-20 lg:py-28">
         <div className="container">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between lg:mb-12">
             <SectionHeader
-              eyebrow={selectedService?.title || "Services"}
-              parts={[{ text: "Meet our latest" }, { text: ` ${selectedService?.title?.toLowerCase() || "providers"}.`, className: "text-gray-400" }]}
+              eyebrow="Local professionals"
+              parts={[{ text: "Meet providers for" }, { text: " every service.", className: "text-gray-400" }]}
+              sub="Browse recently approved profiles for babysitting, cleaning and cooking."
             />
-            <Link
-              href={`/babysitters?category=${serviceSlug}`}
-              className="inline-flex items-center gap-2 self-start rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-brandColor hover:text-brandColor sm:self-auto"
-            >
-              View all
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
 
           {loadingLatestBabysitters ? (
-            <p className="text-sm text-gray-500">Loading latest providers...</p>
-          ) : latestBabysitters.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {latestBabysitters.map((item) => (
-                <Sitter
-                  key={item._id}
-                  id={item._id}
-                  name={item.fullName}
-                  loc={item.zipCode ? `PostCode ${item.zipCode}` : "UK"}
-                  rate={item.hourlyRate ? `£${item.hourlyRate}/hr` : "Contact"}
-                  img={item.profilePhoto}
-                />
-              ))}
-            </div>
+            <p className="text-sm text-gray-500">Loading featured providers…</p>
           ) : (
-            <p className="rounded-3xl bg-gray-50 p-10 text-center text-sm text-gray-500">
-              No providers found in this category. Try another postcode or check back later.
-            </p>
+            <div className="space-y-12">
+              {services.map((service) => {
+                const providers = featuredProviders[service.slug] || [];
+                return (
+                  <div key={service.slug}>
+                    <div className="mb-5 flex items-center justify-between gap-4">
+                      <h3 className="font-poppins text-xl font-semibold text-gray-900 sm:text-2xl">{service.title}</h3>
+                      <Link
+                        href={`/babysitters?category=${service.slug}`}
+                        className="inline-flex shrink-0 items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-brandColor hover:text-brandColor"
+                      >View all <ArrowRight className="h-4 w-4" /></Link>
+                    </div>
+                    {providers.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {providers.map((item) => (
+                          <Sitter
+                            key={item._id}
+                            id={item._id}
+                            name={item.fullName}
+                            loc={item.zipCode ? `Postcode ${item.zipCode}` : "UK"}
+                            rate={item.hourlyRate ? `£${item.hourlyRate}/hr` : "Contact"}
+                            img={item.profilePhoto}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="rounded-2xl bg-gray-50 px-5 py-6 text-sm text-gray-500">
+                        {postcode.trim() ? `No ${service.title.toLowerCase()} providers found for this postcode.` : `No ${service.title.toLowerCase()} profiles to highlight yet.`}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           <p className="mt-8 max-w-3xl text-xs leading-6 text-gray-500">
@@ -543,17 +574,17 @@ function SectionHeader({ eyebrow, parts, sub, dark = false }) {
   );
 }
 
-function StepRow({ n, icon: Icon, title, desc }) {
+function StepRow({ n, icon: Icon, title, desc, active }) {
   return (
-    <li className="group flex items-start gap-5 py-8 sm:gap-8 lg:py-10">
-      <span className="font-poppins text-5xl font-semibold leading-none text-white/20 transition group-hover:text-brandColor sm:text-6xl">
+    <li aria-current={active ? "step" : undefined} className={`group flex items-start gap-5 rounded-2xl border-l-2 px-4 py-8 transition-all duration-500 sm:gap-8 sm:px-6 lg:py-10 ${active ? "translate-x-1 border-brandColor bg-white/10 shadow-lg shadow-black/10" : "border-transparent hover:bg-white/5"}`}>
+      <span className={`font-poppins text-5xl font-semibold leading-none transition-all duration-500 sm:text-6xl ${active ? "scale-105 text-[#a7d27a] drop-shadow-[0_0_14px_rgba(167,210,122,0.35)]" : "text-white/20 group-hover:text-brandColor"}`}>
         {n}
       </span>
       <div className="flex-1">
-        <h3 className="font-poppins text-xl font-semibold sm:text-2xl">{title}</h3>
-        <p className="mt-2 max-w-md text-sm leading-7 text-white/60 sm:text-base">{desc}</p>
+        <h3 className={`font-poppins text-xl font-semibold transition-colors duration-500 sm:text-2xl ${active ? "text-white" : "text-white/75"}`}>{title}</h3>
+        <p className={`mt-2 max-w-md text-sm leading-7 transition-colors duration-500 sm:text-base ${active ? "text-white/85" : "text-white/60"}`}>{desc}</p>
       </div>
-      <span className="hidden h-12 w-12 flex-shrink-0 place-items-center rounded-full border border-white/15 text-[#a7d27a] transition group-hover:border-brandColor group-hover:bg-brandColor group-hover:text-white sm:grid">
+      <span className={`hidden h-12 w-12 flex-shrink-0 place-items-center rounded-full border transition-all duration-500 sm:grid ${active ? "scale-110 border-brandColor bg-brandColor text-white shadow-lg shadow-brandColor/30" : "border-white/15 text-[#a7d27a] group-hover:border-brandColor group-hover:bg-brandColor group-hover:text-white"}`}>
         <Icon className="h-5 w-5" />
       </span>
     </li>

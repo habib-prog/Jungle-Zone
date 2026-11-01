@@ -36,6 +36,7 @@ const Page = () => {
     isLoggedIn: false,
     role: null,
     hasActiveSubscription: false,
+    hasPaidSubscription: false,
     canSeeContact: false,
   });
   const [contactRevealed, setContactRevealed] = useState(false);
@@ -144,6 +145,7 @@ const Page = () => {
           isLoggedIn: false,
           role: null,
           hasActiveSubscription: false,
+          hasPaidSubscription: false,
           canSeeContact: false,
         };
 
@@ -475,9 +477,9 @@ const Page = () => {
                         <p>
                           {!viewer.isLoggedIn
                             ? "Please register or log in to reveal contact details."
-                            : viewer.hasActiveSubscription
+                            : viewer.hasPaidSubscription
                               ? "Click the button to reveal the provider's contact details."
-                              : "Subscribe to reveal this provider's contact details."}
+                              : "Pay for platform access to reveal this provider's contact details."}
                         </p>
                         <button
                           onClick={() => {
@@ -486,7 +488,7 @@ const Page = () => {
                               return;
                             }
 
-                            if (!viewer.hasActiveSubscription) {
+                            if (!viewer.hasPaidSubscription) {
                               router.push("/pricing");
                               return;
                             }
@@ -497,9 +499,9 @@ const Page = () => {
                         >
                           {!isLoggedIn
                             ? "Register to Reveal"
-                            : viewer.hasActiveSubscription
+                            : viewer.hasPaidSubscription
                               ? "Click to Reveal"
-                              : "Subscribe to Reveal"}
+                              : "Pay to Reveal"}
                         </button>
                       </div>
                     )}

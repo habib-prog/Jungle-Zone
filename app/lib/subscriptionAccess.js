@@ -1,6 +1,7 @@
 import Parent from "@/models/parentSchema";
 import BabySitterRegistration from "@/models/BabySitterRegistrationSchema";
 import Subscription from "@/models/subscriptionSchema";
+import Payment from "@/models/paymentSchema";
 import { normalizeRole } from "@/app/lib/roleUtils";
 
 const ACTIVE_PAYMENT_STATUSES = ["active", "cancelled"];
@@ -49,15 +50,26 @@ export const getAccountForAuthUser = async (auth) => {
 export const hasUsablePaidSubscription = async (auth, now = new Date()) => {
   if (!auth?.id) return false;
 
-  const activeSubscription = await Subscription.exists({
+  const activeSubscription = await Subscription.findOne({
     userId: auth.id,
     category: normalizeRole(auth.role),
     isActive: true,
     paymentStatus: { $in: ACTIVE_PAYMENT_STATUSES },
     endDate: { $gt: now },
+  }).sort({ endDate: -1 });
+
+  if (!activeSubscription?.stripeSubscriptionId) return false;
+
+  const successfulCharge = await Payment.exists({
+    userId: auth.id,
+    category: normalizeRole(auth.role),
+    stripeSubscriptionId: activeSubscription.stripeSubscriptionId,
+    status: "completed",
+    amount: { $gt: 0 },
+    stripePaymentIntentId: { $exists: true, $nin: [null, ""] },
   });
 
-  return Boolean(activeSubscription);
+  return Boolean(successfulCharge);
 };
 
 export const getFacilityAccessForUser = async (auth, options = {}) => {
@@ -85,15 +97,17 @@ export const getFacilityAccessForUser = async (auth, options = {}) => {
   }
 
   const now = new Date();
+  const hasPaidSubscription = await hasUsablePaidSubscription({ ...auth, role }, now);
   const account = await getAccountForAuthUser({ ...auth, role });
   const hasActiveSubscription =
     hasUsableAccountSubscription(account, now) ||
-    (await hasUsablePaidSubscription({ ...auth, role }, now));
+    hasPaidSubscription;
 
   return {
     isLoggedIn: true,
     role,
     hasActiveSubscription,
+    hasPaidSubscription,
     canUseFacilities: hasActiveSubscription,
     reason: hasActiveSubscription ? "active" : "subscription_required",
   };
